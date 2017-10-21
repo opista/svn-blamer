@@ -19,8 +19,13 @@ const blamer = {
             .then((revisions) => {
                 this.getFiles()
                 .then(() => {
-                    this.setLines(revisions);
-                    this.gutter();
+                    this.findUniques(revisions)
+                        .then(() => {
+                            this.setLines(revisions);
+                        });
+                })
+                .catch((err) => {
+                    console.log(err);
                 })
             })
     },   
@@ -33,10 +38,40 @@ const blamer = {
         this.files = [];
         this.images = {};
     },
+
+    findUniques(revisions) {
+        return new Promise((resolve) => {
+            const uniques = Object.values(revisions).reduce((x,  y) => x.includes(y) ? x : [...x, y], []);
+            const promises = [];
+
+            uniques.forEach((unique) => {
+                promises.push(new Promise((resolve) => {
+                    subversion.getLog(unique)
+                        .then((commit) => {
+                            this.images[unique] = {
+                                image: this.randomImage(),
+                                email: commit.email,
+                                date: commit.date,
+                                message: commit.message,  
+                            }
+                            resolve();
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                }))
+
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    resolve();
+                });
+        });
+    },
     
     setLines(revisions) {
         Object.entries(revisions).forEach(([line, revision]) => {
-            if (!this.images[revision]) this.images[revision] = this.randomImage();         
             decoration.set(this.editor, line, this.images[revision]);
         });
     },
@@ -56,10 +91,6 @@ const blamer = {
         const image = this.files[index]; 
         this.files.splice(index, 1);
         return image;
-    },
-
-    gutter() {
-
     },
 };
 

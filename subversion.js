@@ -50,6 +50,7 @@ const subversion = {
     },
 
     getLog(revision) {
+        if (Object.keys(this.revisions).length === 0) return;
         return new Promise((resolve) => {
             const script = `svn log -r${revision} "${this.path}"`;
             child_process.exec(script, (error, stdout, stderr) => {

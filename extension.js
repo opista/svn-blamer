@@ -12,8 +12,6 @@ function activate(context) {
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     let start = vscode.commands.registerCommand('extension.blameFile', function () {
-        // The code you place here will be executed every time your command is executed
-
         // Initialise Blamer
         blamer.init();
     });
