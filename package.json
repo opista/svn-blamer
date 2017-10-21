@@ -1,7 +1,7 @@
 {
-    "name": "blamer",
-    "displayName": "Blamer",
-    "description": "Visual identification of SVN commits on a line-by-line basis",
+    "name": "blamer-vs",
+    "displayName": "SVN Blamer",
+    "description": "Visually blame SVN-stored code line-by-line",
     "version": "0.0.1",
     "publisher": "beaugust",
     "engines": {
@@ -11,13 +11,14 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.blameFile"
     ],
     "main": "./extension",
     "contributes": {
         "commands": [{
-            "command": "extension.sayHello",
-            "title": "Hello World"
+            "command": "extension.blameFile",
+            "key": "ctrl+f12",
+            "title": "Blame file"
         }]
     },
     "scripts": {
