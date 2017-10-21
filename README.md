@@ -7,6 +7,7 @@ This is the Visual Studio Code version of the [Blamer](https://github.com/BeauAg
 This extension contributes the following commands to the Command palette.
 
 `SVN Gutter - Show Blame`: Adds icons to gutter with tooltips containing information from each revision
+
 `SVN Gutter - Clear Blame`: Clears icons and tooltips
 
 
