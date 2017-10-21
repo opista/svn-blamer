@@ -8,6 +8,7 @@ const subversion = {
     revisions: {},
 
     init(editor) {
+        this.destroy();
         return new Promise((resolve) => {
             this.path = editor.document.fileName;
             this.name = path.basename(this.path);
@@ -18,6 +19,12 @@ const subversion = {
                     resolve(this.revisions);
                 });
         });
+    },
+
+    destroy() {
+        this.path = '';
+        this.name = '';
+        this.revisions = {};
     },
 
     blame() {
@@ -35,6 +42,7 @@ const subversion = {
         const lines = data.split(/\n/);
 
         lines.forEach((line, index) => {
+            if (line.substring(5, 6) === '-') return;
             const pos = line.search(/\d/);
             const revision = line.split(' ', 2)[[pos]];
             if (revision) this.revisions[index] = parseInt(revision);

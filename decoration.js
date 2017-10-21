@@ -1,16 +1,24 @@
 const vscode = require('vscode');
 
 const decoration = {
+    icons: [],
 
     set(editor, line, image) {
         const path = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
-        const decoration = vscode.window.createTextEditorDecorationType({
+        const icon = vscode.window.createTextEditorDecorationType({
             gutterIconPath: `${path}\\img\\${image}`,
             gutterIconSize: 'contain'
         });
-
-        editor.setDecorations(decoration, [new vscode.Range(line,0,line,0)]);
+        this.icons.push(icon);
+        editor.setDecorations(icon, [new vscode.Range(parseInt(line),0,parseInt(line),0)]);
     },
+
+    destroy() {
+        if (!this.icons.length) return;
+        this.icons.forEach((icon) => {
+            icon.dispose();
+        });
+    }
 };
 
 module.exports = decoration;

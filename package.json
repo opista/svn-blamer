@@ -15,11 +15,16 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [{
-            "command": "extension.blameFile",
-            "key": "ctrl+f12",
-            "title": "Blame file"
-        }]
+        "commands": [
+            {
+                "command": "extension.blameFile",
+                "title": "Show Blame"
+            },
+            {
+                "command": "extension.clearBlame",
+                "title": "Clear Blame"
+            }
+        ]
     },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",

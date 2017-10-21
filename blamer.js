@@ -11,24 +11,32 @@ const blamer = {
     images: {},
 
     init() {
+        this.destroy();
         this.editor = vscode.window.activeTextEditor;
         this.extensionPath = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
         
         subversion.init(this.editor)
             .then((revisions) => {
                 this.getFiles()
-                    .then(() => {
-                        this.setLines(revisions);
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
+                .then(() => {
+                    this.setLines(revisions);
+                    this.gutter();
+                })
             })
+    },   
+        
+    destroy() { 
+        subversion.destroy();
+        decoration.destroy();
+        this.editor = '';
+        this.extensionPath = '';
+        this.files = [];
+        this.images = {};
     },
     
     setLines(revisions) {
         Object.entries(revisions).forEach(([line, revision]) => {
-            if (!this.images[revision]) this.images[revision] = this.randomImage();
+            if (!this.images[revision]) this.images[revision] = this.randomImage();         
             decoration.set(this.editor, line, this.images[revision]);
         });
     },
@@ -48,6 +56,10 @@ const blamer = {
         const image = this.files[index]; 
         this.files.splice(index, 1);
         return image;
+    },
+
+    gutter() {
+
     },
 };
 
