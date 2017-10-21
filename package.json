@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Gutter",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "beaugust",
     "engines": {
         "vscode": "^1.17.0"
