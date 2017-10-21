@@ -19,8 +19,6 @@ For example if you're working on a project and you want to see who modified a sp
 
 ![Example Usage](example.gif)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
 ## Requirements
 
 This extension requires that you have Tortoise SVN installed, with command-line tools.
