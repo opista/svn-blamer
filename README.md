@@ -10,6 +10,11 @@ This extension contributes the following commands to the Command palette.
 
 `SVN Gutter - Clear Blame`: Clears icons and tooltips
 
+It also adds a keyboard shortcut.
+
+`Shift + B`: Will run the `SVN Gutter - Show Blame` command.
+
+
 
 ## Features
 
@@ -25,14 +30,16 @@ This extension requires that you have Tortoise SVN installed, with command-line 
 
 ## Extension Settings
 
-Currently there are no settings, but some shortcuts will be added in due course.
+Currently there are no settings
 ## Known Issues
 
-- No shortcuts as of yet.
 - A little bit slow, because all unique logs have to be retrieved first.
 
 ## Release Notes
 
+### 0.1.1
+Added keyboard shortcut
 ### 0.1.0
-
 Initial build of extension
+
+
