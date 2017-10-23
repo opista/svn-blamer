@@ -22,7 +22,8 @@
         "keybindings": [
             {
                 "command": "extension.blameFile",
-                "key": "shift+b",
+                "key": "ctrl+alt+d",
+                "mac": "cmd+option+d",
                 "when": "editorTextFocus"
             }
         ],

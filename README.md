@@ -12,13 +12,15 @@ This extension contributes the following commands to the Command palette.
 
 It also adds a keyboard shortcut.
 
-`Shift + B`: Will run the `SVN Gutter - Show Blame` command.
+`CTRL + ALT + D`: (Windows) Will run the `SVN Gutter - Show Blame` command.
+
+`CMD + OPTION + D`: (Mac) Will run the `SVN Gutter - Show Blame` command.
 
 
 
 ## Features
 
-When run, this extension will place a "pip" next to each line of your file. Each differently-coloured pip means a different revision. Hovering a line will produce a tooltip, showing the committer, date, and message. 
+When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will produce a tooltip, showing the committer, date, and message. 
 
 For example if you're working on a project and you want to see who modified a specific line:
 
