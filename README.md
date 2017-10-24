@@ -15,10 +15,7 @@ This extension contributes the following commands to the Command palette.
 
 It also adds a keyboard shortcut.
 
-`CTRL + ALT + D`: (Windows) Will run the `SVN Gutter - Show Blame` command.
-
-`CMD + OPTION + D`: (Mac) Will run the `SVN Gutter - Show Blame` command.
-
+`CTRL + ALT + D`: Will run the `SVN Gutter - Show Blame` command.
 
 
 ## Features
@@ -31,18 +28,19 @@ For example if you're working on a project and you want to see who modified a sp
 
 ## Requirements
 
-This extension requires that you have Tortoise SVN installed, with command-line tools.
+This extension requires that you're on a Windows machine and have Tortoise SVN installed, with command-line tools.
 
 ## Extension Settings
 
 Currently there are no settings
 ## Known Issues
 
-- A little bit slow, because all unique logs have to be retrieved first.
+- Likely to be imcompatible with Mac & Linux. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues))
+- A little bit slow, because all unique logs have to be retrieved first. ([Issue](https://github.com/BeauAgst/blamer-vs/issues/3))
 
 ## Release Notes
 
-### 0.1.1
+### 0.2.0
 Added keyboard shortcut
 ### 0.1.0
 Initial build of extension

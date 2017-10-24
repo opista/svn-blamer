@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Gutter",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "publisher": "beaugust",
     "repository": {
         "type": "git",
@@ -23,7 +23,6 @@
             {
                 "command": "extension.blameFile",
                 "key": "ctrl+alt+d",
-                "mac": "cmd+option+d",
                 "when": "editorTextFocus"
             }
         ],
