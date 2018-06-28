@@ -6,7 +6,7 @@ const decoration = {
     set(editor, line, revision) {
         const path = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
         const icon = vscode.window.createTextEditorDecorationType({
-            gutterIconPath: `${path}\\img\\${revision.image}`,
+            gutterIconPath: `${path}/img/${revision.image}`,
             gutterIconSize: 'contain'
         });
         this.icons.push(icon);

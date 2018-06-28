@@ -78,8 +78,8 @@ const blamer = {
     
     getFiles() {
         return new Promise((resolve) => {
-            fs.readdir(`${blamer.extensionPath}\\img\\`, (err, files) => {
-                this.files = files;
+            fs.readdir(`${blamer.extensionPath}/img`, (err, files) => {
+                this.files = files || [];
                 resolve();
             });
         })

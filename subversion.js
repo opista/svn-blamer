@@ -43,8 +43,7 @@ const subversion = {
 
         lines.forEach((line, index) => {
             if (line.substring(5, 6) === '-') return;
-            const pos = line.search(/\d/);
-            const revision = line.split(' ', 2)[[pos]];
+            const revision = line.split(' ').filter(s => s)[0];
             if (revision) this.revisions[index] = parseInt(revision);
         });
     },
