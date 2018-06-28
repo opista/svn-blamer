@@ -14,7 +14,7 @@ const decoration = {
             icon,
             [{
                 range: new vscode.Range(parseInt(line),0,parseInt(line),1000),
-                hoverMessage: new vscode.MarkdownString(`**${revision.email}**\n\n${revision.date}\n\n${revision.message}`)
+                hoverMessage: new vscode.MarkdownString(`${revision.email}\n\n${revision.date}\n\n${revision.message}`)
             }]
         );
     },

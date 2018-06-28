@@ -28,21 +28,31 @@ For example if you're working on a project and you want to see who modified a sp
 
 ## Requirements
 
-This extension requires that you're on a Windows machine and have Tortoise SVN installed, with command-line tools.
+This extension requires that you're either:
+
+* On a Windows machine with Tortoise SVN installed, with command-line tools.
+* A Unix machine.
 
 ## Extension Settings
 
 Currently there are no settings
 ## Known Issues
 
-- Likely to be imcompatible with Mac & Linux. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues))
+- Likely to be incompatible with Mac. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues/1))
 - A little bit slow, because all unique logs have to be retrieved first. ([Issue](https://github.com/BeauAgst/blamer-vs/issues/3))
 
 ## Release Notes
 
-### 0.2.0
-Added keyboard shortcut
-### 0.1.0
-Initial build of extension
+## 0.3.1
+- Removed formatting error in decoration caused by conflict with `mailto:`
+- Added icon to extension
 
+## 0.3.0
+- Linux support added.
 
+## 0.2.0
+- Added keyboard shortcut
+- Fixed readme typo
+
+## 0.1.0
+- Initial release
