@@ -48,5 +48,8 @@
         "eslint": "^4.6.1",
         "@types/node": "^7.0.0",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "xml2js": "^0.4.19"
     }
 }
