@@ -1,7 +1,6 @@
 const vscode = require('vscode');
 const path = require('path');
 const child_process = require('child_process');
-const parseString = require('xml2js').parseString;
 const formatDate = require('./functions/formatDate');
 
 const subversion = {
@@ -57,13 +56,12 @@ const subversion = {
             child_process.exec(script, (error, stdout, stderr) => {
                 if (error) return vscode.window.showErrorMessage(stderr);
 
-                parseString(stdout, (err, result) => {
-                    const data = result.log.logentry[0];
-                    const email = data.author[0];
-                    const date = formatDate(data.date[0]);
-                    const message = data.msg[0];
-                    resolve({ email, date, message });
-                });         
+                const email = stdout.match(/<author>([^<]*)<\/author>/)[1];
+                const message = stdout.match(/<msg>([^<]*)<\/msg>/)[1];
+                let date = stdout.match(/<date>([^<]*)<\/date>/)[1];
+
+                date = formatDate(date);
+                resolve({ email, date, message });        
             });
         });
     },

@@ -40,5 +40,5 @@ module.exports = (dateString) => {
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
 
-  return `${days[dayIndex]} the ${day}${nth(day)} of ${months[monthIndex]} ${year}`;
+  return `${days[dayIndex]} ${day}${nth(day)} ${months[monthIndex]} ${year}`;
 };
