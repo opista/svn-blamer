@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const path = require('path');
 const child_process = require('child_process');
+const formatDate = require('./functions/formatDate');
 
 const subversion = {
     path: '',
@@ -51,16 +52,16 @@ const subversion = {
     getLog(revision) {
         if (Object.keys(this.revisions).length === 0) return;
         return new Promise((resolve) => {
-            const script = `svn log -r${revision} "${this.path}"`;
+            const script = `svn log -r${revision} "${this.path}" --xml`;
             child_process.exec(script, (error, stdout, stderr) => {
-                if (error) vscode.window.showErrorMessage(stderr);
-                else {
-                    const log = (stdout).split(/\n/);
-                    const email = log[1].split(" | ")[1];
-                    const date = log[1].match(/[^()]+(?=\))/)[0];
-                    const message = log.slice(3, -2);
-                    resolve({ email, date, message });
-                }
+                if (error) return vscode.window.showErrorMessage(stderr);
+
+                const email = stdout.match(/<author>([^<]*)<\/author>/)[1];
+                const message = stdout.match(/<msg>([^<]*)<\/msg>/)[1];
+                let date = stdout.match(/<date>([^<]*)<\/date>/)[1];
+
+                date = formatDate(date);
+                resolve({ email, date, message });        
             });
         });
     },

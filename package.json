@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Gutter",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "publisher": "beaugust",
     "repository": {
         "type": "git",
@@ -48,5 +48,6 @@
         "eslint": "^4.6.1",
         "@types/node": "^7.0.0",
         "@types/mocha": "^2.2.42"
-    }
+    },
+    "dependencies": {}
 }
