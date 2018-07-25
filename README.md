@@ -38,17 +38,20 @@ This extension requires that you're either:
 Currently there are no settings
 ## Known Issues
 
-- Likely to be incompatible with Mac. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues/1))
+- Possibly incompatible with Mac. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues/1))
 - A little bit slow, because all unique logs have to be retrieved first. ([Issue](https://github.com/BeauAgst/blamer-vs/issues/3))
 
 ## Release Notes
+
+## 0.3.2
+- Fixed decoration issue causing characters to show incorrectly dependant on the language [#6](https://github.com/BeauAgst/blamer-vs/issues/6)
 
 ## 0.3.1
 - Removed formatting error in decoration caused by conflict with `mailto:`
 - Added icon to extension
 
 ## 0.3.0
-- Linux support added.
+- Linux support added. [#2](https://github.com/BeauAgst/blamer-vs/issues/2)
 
 ## 0.2.0
 - Added keyboard shortcut
