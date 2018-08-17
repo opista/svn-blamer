@@ -50,6 +50,7 @@ const blamer = {
                         .then((commit) => {
                             this.images[unique] = {
                                 image: this.randomImage(),
+                                revision: commit.revision,
                                 email: commit.email,
                                 date: commit.date,
                                 message: commit.message,  
