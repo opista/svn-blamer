@@ -56,12 +56,14 @@ const subversion = {
             child_process.exec(script, (error, stdout, stderr) => {
                 if (error) return vscode.window.showErrorMessage(stderr);
 
+                console.log(stdout);
+                const revision = stdout.match(/revision="(.*)">/)[1];
                 const email = stdout.match(/<author>([^<]*)<\/author>/)[1];
                 const message = stdout.match(/<msg>([^<]*)<\/msg>/)[1];
                 let date = stdout.match(/<date>([^<]*)<\/date>/)[1];
 
                 date = formatDate(date);
-                resolve({ email, date, message });        
+                resolve({ email, revision, date, message });        
             });
         });
     },

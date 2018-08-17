@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Gutter",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "publisher": "beaugust",
     "repository": {
         "type": "git",
@@ -42,12 +42,12 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.5.2",
-        "vscode": "^1.1.5",
-        "mocha": "^3.5.0",
-        "eslint": "^4.6.1",
+        "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.0",
-        "@types/mocha": "^2.2.42"
+        "eslint": "^4.6.1",
+        "mocha": "^5.2.0",
+        "typescript": "^2.5.2",
+        "vscode": "^1.1.5"
     },
     "dependencies": {}
 }
