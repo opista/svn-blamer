@@ -46,7 +46,7 @@
         "@types/node": "^7.0.0",
         "eslint": "^4.6.1",
         "mocha": "^5.2.0",
-        "typescript": "^2.5.2",
+        "typescript": "^3.4.5",
         "vscode": "^1.1.5"
     },
     "dependencies": {}
