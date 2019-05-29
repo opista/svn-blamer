@@ -9,25 +9,29 @@ const blamer = {
     extensionPath: '',
     files: [],
     images: {},
+    statusBarItem: undefined,
+    uniqueCommits: [],
 
     init() {
         this.destroy();
         this.editor = vscode.window.activeTextEditor;
         this.extensionPath = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
+        this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
         
+        this.updateStatusBar('Blamer Started');
+
         subversion.init(this.editor)
             .then((revisions) => {
-                this.getFiles()
-                .then(() => {
+                this.updateStatusBar(`Preparing ${subversion.name}`);
+                this.getFiles().then(() => {
                     this.findUniques(revisions)
                         .then(() => {
+                            this.updateStatusBar(`Processing complete`);
                             this.setLines(revisions);
+                            this.statusBarItem.dispose();
                         });
                 })
-                .catch((err) => {
-                    console.log(err);
-                })
-            })
+            }).catch(this.handleError)
     },   
         
     destroy() { 
@@ -37,38 +41,33 @@ const blamer = {
         this.extensionPath = '';
         this.files = [];
         this.images = {};
+        if (this.statusBarItem) {
+            this.statusBarItem.dispose();
+        }
     },
 
     findUniques(revisions) {
-        return new Promise((resolve) => {
-            const uniques = Object.values(revisions).reduce((x,  y) => x.includes(y) ? x : [...x, y], []);
-            const promises = [];
+        const promises = [];
+        this.uniqueCommits = Object.values(revisions).reduce((x,  y) => x.includes(y) ? x : [...x, y], []);
+        this.uniqueCommits.forEach((unique) => {
+            promises.push(
+                subversion.getLog(unique)
+                    .then((commit) => {
+                        this.updateStatusBar(`Processing revision ${commit.revision + 1}`);
+                        this.images[unique] = {
+                            image: this.randomImage(),
+                            revision: commit.revision,
+                            email: commit.email,
+                            date: commit.date,
+                            message: commit.message,  
+                        }
+                    })
+                    .catch(this.handleError)
+            )
 
-            uniques.forEach((unique) => {
-                promises.push(new Promise((resolve) => {
-                    subversion.getLog(unique)
-                        .then((commit) => {
-                            this.images[unique] = {
-                                image: this.randomImage(),
-                                revision: commit.revision,
-                                email: commit.email,
-                                date: commit.date,
-                                message: commit.message,  
-                            }
-                            resolve();
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                        })
-                }))
-
-            });
-
-            Promise.all(promises)
-                .then(() => {
-                    resolve();
-                });
         });
+
+        return Promise.all(promises);
     },
     
     setLines(revisions) {
@@ -93,6 +92,21 @@ const blamer = {
         this.files.splice(index, 1);
         return image;
     },
+
+    updateStatusBar(text) {
+        if (text) {
+            this.statusBarItem.text = `$(versions) ${text}`;
+            this.statusBarItem.show();
+        } else {
+            this.statusBarItem.hide();
+        }
+    },
+
+    handleError(error) {
+        this.updateStatusBar(`Error`);
+        vscode.window.showErrorMessage(error);
+        console.error('Error: ', error);
+    }
 };
 
 module.exports = blamer;
