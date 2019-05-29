@@ -23,8 +23,7 @@ const blamer = {
         subversion.init(this.editor)
             .then((revisions) => {
                 this.updateStatusBar(`Preparing ${subversion.name}`);
-                this.getFiles()
-                .then(() => {
+                this.getFiles().then(() => {
                     this.findUniques(revisions)
                         .then(() => {
                             this.updateStatusBar(`Processing complete`);
@@ -32,13 +31,7 @@ const blamer = {
                             this.statusBarItem.dispose();
                         });
                 })
-                .catch((err) => {
-                    console.log(err);
-                })
-            }).catch((err) => {
-                this.updateStatusBar(`Error`);
-                vscode.window.showErrorMessage(err);
-            })
+            }).catch(this.handleError)
     },   
         
     destroy() { 
@@ -69,9 +62,7 @@ const blamer = {
                             message: commit.message,  
                         }
                     })
-                    .catch((err) => {
-                        console.log(err);
-                    })
+                    .catch(this.handleError)
             )
 
         });
@@ -109,6 +100,12 @@ const blamer = {
         } else {
             this.statusBarItem.hide();
         }
+    },
+
+    handleError(error) {
+        this.updateStatusBar(`Error`);
+        vscode.window.showErrorMessage(error);
+        console.error('Error: ', error);
     }
 };
 
