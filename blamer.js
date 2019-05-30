@@ -30,9 +30,9 @@ const blamer = {
                             this.setLines(revisions);
                             this.statusBarItem.dispose();
                         })
-                        .catch(this.handleError)
+                        .catch(error => this.handleError(error));
                 })
-            }).catch(this.handleError)
+            }).catch((error) => this.handleError(error));
     },   
         
     destroy() { 
@@ -61,7 +61,7 @@ const blamer = {
                     message: commit.message,  
                 }
             })
-            .catch(this.handleError)
+            .catch(error => this.handleError(error))
         );
 
         return Promise.all(promises);
