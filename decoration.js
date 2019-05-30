@@ -1,17 +1,30 @@
 const vscode = require('vscode');
 
 const decoration = {
-    icons: [],
+    decorations: [],
 
     set(editor, line, commit) {
+        const { enablePips } = vscode.workspace.getConfiguration('svn-gutter');
         const path = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
-        const icon = vscode.window.createTextEditorDecorationType({
-            gutterIconPath: `${path}/img/${commit.image}`,
-            gutterIconSize: 'contain'
-        });
-        this.icons.push(icon);
+        let decoration;
+
+        if (enablePips) {
+            decoration = vscode.window.createTextEditorDecorationType({
+                gutterIconPath: `${path}/img/${commit.image}`,
+                gutterIconSize: 'contain'
+            });
+        } else {
+            decoration = vscode.window.createTextEditorDecorationType({
+                after: {
+                    margin: '0 0 0 3em',
+                    textDecoration: 'none'
+                },
+            })
+        }
+
+        this.decorations.push(decoration);
         editor.setDecorations(
-            icon,
+            decoration,
             [{
                 range: new vscode.Range(parseInt(line),0,parseInt(line),1000),
                 hoverMessage: new vscode.MarkdownString(`${commit.revision}: ${commit.email}\n\n${commit.date}\n\n${commit.message}`)
@@ -21,9 +34,9 @@ const decoration = {
 
 
     destroy() {
-        if (!this.icons.length) return;
-        this.icons.forEach((icon) => {
-            icon.dispose();
+        if (!this.decorations.length) return;
+        this.decorations.forEach((decoration) => {
+            decoration.dispose();
         });
     }
 };
