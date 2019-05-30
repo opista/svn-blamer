@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## 0.5.0
+- Mac blame shortcut added
+- Setting added to disable visual pips
+- Better error handling, blame indicator in workbench
+
 ## 0.4.0
 - Revision number added to tooltips
 

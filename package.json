@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Gutter",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "publisher": "beaugust",
     "repository": {
         "type": "git",
@@ -12,6 +12,7 @@
         "vscode": "^1.17.0"
     },
     "categories": [
+        "SCM Providers",
         "Other"
     ],
     "activationEvents": [
@@ -23,6 +24,7 @@
             {
                 "command": "extension.blameFile",
                 "key": "ctrl+alt+d",
+                "mac": "ctrl+cmd+x",
                 "when": "editorTextFocus"
             }
         ],
@@ -35,7 +37,18 @@
                 "command": "extension.clearBlame",
                 "title": "SVN Gutter - Clear Blame"
             }
-        ]
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "SVN Gutter configuration",
+            "properties": {
+                "svn-gutter.enablePips": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/Disable visual 'pip' decoration, that sits alongside the line number."
+                }
+            }
+        }
     },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
