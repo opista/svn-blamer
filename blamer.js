@@ -29,7 +29,8 @@ const blamer = {
                             this.updateStatusBar(`Processing complete`);
                             this.setLines(revisions);
                             this.statusBarItem.dispose();
-                        });
+                        })
+                        .catch(this.handleError)
                 })
             }).catch(this.handleError)
     },   
@@ -47,25 +48,21 @@ const blamer = {
     },
 
     findUniques(revisions) {
-        const promises = [];
         this.uniqueCommits = Object.values(revisions).reduce((x,  y) => x.includes(y) ? x : [...x, y], []);
-        this.uniqueCommits.forEach((unique) => {
-            promises.push(
-                subversion.getLog(unique)
-                    .then((commit) => {
-                        this.updateStatusBar(`Processing revision ${commit.revision + 1}`);
-                        this.images[unique] = {
-                            image: this.randomImage(),
-                            revision: commit.revision,
-                            email: commit.email,
-                            date: commit.date,
-                            message: commit.message,  
-                        }
-                    })
-                    .catch(this.handleError)
-            )
 
-        });
+        const promises = this.uniqueCommits.map((unique) => subversion.getLog(unique)
+            .then((commit) => {
+                this.updateStatusBar(`Processing revision ${commit.revision}`);
+                this.images[unique] = {
+                    image: this.randomImage(),
+                    revision: commit.revision,
+                    email: commit.email,
+                    date: commit.date,
+                    message: commit.message,  
+                }
+            })
+            .catch(this.handleError)
+        );
 
         return Promise.all(promises);
     },
