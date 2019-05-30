@@ -2,7 +2,7 @@
 [![](https://vsmarketplacebadge.apphb.com/installs/beaugust.blamer-vs.svg)](https://marketplace.visualstudio.com/items?itemName=beaugust.blamer-vs)
 
 # SVN Gutter
-This is the Visual Studio Code version of the [Blamer](https://github.com/BeauAgst/Blamer) plugin, built for Sublime Text.
+This is the Visual Studio Code version of the [Blamer](https://github.com/BeauAgst/Blamer) plugin, built for Sublime Text. [Pull requests are always welcome!](https://github.com/BeauAgst/blamer-vs/issues/)
 
 ## Commands:
 This extension contributes the following commands to the Command palette.
@@ -11,9 +11,12 @@ This extension contributes the following commands to the Command palette.
 
 `SVN Gutter - Clear Blame`: Clears icons and tooltips
 
-It also adds a keyboard shortcut.
+## Shortcuts:
+Currently only a single keyboard shortcut is available.
 
-`CTRL + ALT + D`: Will run the `SVN Gutter - Show Blame` command.
+**SVN Gutter - Show Blame**
+`CTRL + ALT + D` (Windows)
+`CTRL + CMD + X` (Mac)
 
 ## Features
 When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will produce a tooltip, showing the committer, date, and message. 
@@ -29,13 +32,23 @@ This extension requires that you're either:
 * A Unix machine.
 
 ## Extension Settings
-Currently there are no settings
+**Enable Pips** - By default, the extension displays a coloured pip next to each line number. This can be turned off, whilst still showing the blame information in the tooltip.
 
 ## Known Issues
-- Possibly incompatible with Mac. ([Pull requests welcome!](https://github.com/BeauAgst/blamer-vs/issues/1))
 - A little bit slow, because all unique logs have to be retrieved first. ([Issue](https://github.com/BeauAgst/blamer-vs/issues/3))
+- Authentication errors [#5](https://github.com/BeauAgst/blamer-vs/issues/5), [#9](https://github.com/BeauAgst/blamer-vs/issues/9)
+
+## Future features
+- Automatic blame on file open
+- Ideas and contributions always welcome!
 
 ## Release Notes
+
+## 0.5.0
+- Mac blame shortcut added
+- Setting added to disable visual pips [#10](https://github.com/BeauAgst/blamer-vs/issues/10)
+- Better error handling, blame indicator in workbench [#3](https://github.com/BeauAgst/blamer-vs/issues/3)
+
 ## 0.4.0
 - Revision number added to tooltips [#7](https://github.com/BeauAgst/blamer-vs/issues/7)
 
