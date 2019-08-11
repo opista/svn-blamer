@@ -17,7 +17,7 @@ const blamer = {
         this.editor = vscode.window.activeTextEditor;
         this.extensionPath = vscode.extensions.getExtension('beaugust.blamer-vs').extensionPath;
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
-        
+
         this.updateStatusBar('Blamer Started');
 
         subversion.init(this.editor)
@@ -33,9 +33,9 @@ const blamer = {
                         .catch(error => this.handleError(error));
                 })
             }).catch((error) => this.handleError(error));
-    },   
-        
-    destroy() { 
+    },
+
+    destroy() {
         subversion.destroy();
         decoration.destroy();
         this.editor = '';
@@ -55,10 +55,10 @@ const blamer = {
                 this.updateStatusBar(`Processing revision ${commit.revision}`);
                 this.images[unique] = {
                     image: this.randomImage(),
-                    revision: commit.revision,
-                    email: commit.email,
-                    date: commit.date,
-                    message: commit.message,  
+                    revision: commit.revision || '',
+                    email: commit.email || '',
+                    date: commit.date || '',
+                    message: commit.message || '',
                 }
             })
             .catch(error => this.handleError(error))
@@ -66,13 +66,13 @@ const blamer = {
 
         return Promise.all(promises);
     },
-    
+
     setLines(revisions) {
         Object.entries(revisions).forEach(([line, revision]) => {
             decoration.set(this.editor, line, this.images[revision]);
         });
     },
-    
+
     getFiles() {
         return new Promise((resolve) => {
             fs.readdir(`${blamer.extensionPath}/img`, (err, files) => {
@@ -85,7 +85,7 @@ const blamer = {
     randomImage() {
         const length = this.files.length;
         const index = Math.floor(Math.random() * length);
-        const image = this.files[index]; 
+        const image = this.files[index];
         this.files.splice(index, 1);
         return image;
     },
