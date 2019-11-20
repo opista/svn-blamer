@@ -3,8 +3,6 @@ const path = require('path');
 const child_process = require('child_process');
 const formatDate = require('./functions/formatDate');
 
-const _MAX_BUFFER = 1024 * 500; //500kb
-
 const subversion = {
     path: '',
     name: '',
@@ -28,11 +26,18 @@ const subversion = {
     blame() {
         return new Promise((resolve, reject) => {
             const script = `svn blame -x "-w --ignore-eol-style" "${this.path}"`;
-            child_process.exec(script, { maxBuffer: _MAX_BUFFER }, (error, stdout, stderr) => {
-                if (error) { reject(stderr); }
-                const revisions = this.getRevisions(stdout);
-                resolve(revisions);
-            });
+            const process = child_process.spawn(script, { shell: true })
+
+            let [stdout, stderr] = ['', ''];
+            process.stderr.on('data', data => { stderr += data.toString() });
+            process.stdout.on('data', data => { stdout += data.toString(); });
+            process.stdout.on('close', code => {
+                if (stderr || code) {
+                    reject(stderr);
+                } else {
+                    resolve(this.getRevisions(stdout));
+                }
+            })
         })
     },
 
@@ -50,26 +55,34 @@ const subversion = {
 
     getLog(revision) {
         if (Object.keys(this.revisions).length === 0) return;
+
         return new Promise((resolve, reject) => {
             const script = `svn log -r${revision} "${this.path}" --xml`;
-            child_process.exec(script, { maxBuffer: _MAX_BUFFER }, (error, stdout, stderr) => {
-                if (error) { reject(stderr); }
+            const process = child_process.spawn(script, { shell: true });
 
-                const commit = {};
-                if (commit.revision = stdout.match(/revision="(.*)">/)) {
-                    commit.revision = commit.revision[1];
-                }
-                if (commit.email = stdout.match(/<author>([^<]*)<\/author>/)) {
-                    commit.email = commit.email[1];
-                }
-                if (commit.message = stdout.match(/<msg>([^<]*)<\/msg>/)) {
-                    commit.message = commit.message[1];
-                }
-                if (commit.date = stdout.match(/<date>([^<]*)<\/date>/)) {
-                    commit.date = formatDate(commit.date[1]);
-                }
+            let [stdout, stderr] = ['', ''];
+            process.stderr.on('data', data => stderr += data.toString());
+            process.stdout.on('data', data => stdout += data.toString());
+            process.stdout.on('close', code => {
+                if (stderr || code) {
+                    reject(stderr);
+                } else {
+                    const commit = {};
+                    if (commit.revision = stdout.match(/revision="(.*)">/)) {
+                        commit.revision = commit.revision[1];
+                    }
+                    if (commit.author = stdout.match(/<author>([^<]*)<\/author>/)) {
+                        commit.author = commit.author[1];
+                    }
+                    if (commit.message = stdout.match(/<msg>([^<]*)<\/msg>/)) {
+                        commit.message = commit.message[1];
+                    }
+                    if (commit.date = stdout.match(/<date>([^<]*)<\/date>/)) {
+                        commit.date = formatDate(commit.date[1]);
+                    }
 
-                resolve(commit);
+                    resolve(commit);
+                }
             });
         });
     },
