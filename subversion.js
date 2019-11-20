@@ -12,7 +12,7 @@ const subversion = {
 
     init(editor) {
         this.destroy();
-        this.path = editor.document.fileName.replace(/\$/g,'\\$');
+        this.path = editor.document.fileName.replace(/\$/g, '\\$');
         this.name = path.basename(this.path);
 
         if (this.path === this.name) return vscode.window.showInformationMessage('Blamer: Cannot identify file');
@@ -28,7 +28,7 @@ const subversion = {
     blame() {
         return new Promise((resolve, reject) => {
             const script = `svn blame -x "-w --ignore-eol-style" "${this.path}"`;
-            child_process.exec(script, {maxBuffer: _MAX_BUFFER}, (error, stdout, stderr) => {
+            child_process.exec(script, { maxBuffer: _MAX_BUFFER }, (error, stdout, stderr) => {
                 if (error) { reject(stderr); }
                 const revisions = this.getRevisions(stdout);
                 resolve(revisions);
@@ -52,16 +52,24 @@ const subversion = {
         if (Object.keys(this.revisions).length === 0) return;
         return new Promise((resolve, reject) => {
             const script = `svn log -r${revision} "${this.path}" --xml`;
-            child_process.exec(script, {maxBuffer: _MAX_BUFFER}, (error, stdout, stderr) => {
+            child_process.exec(script, { maxBuffer: _MAX_BUFFER }, (error, stdout, stderr) => {
                 if (error) { reject(stderr); }
 
-                const revision = stdout.match(/revision="(.*)">/)[1];
-                const email = stdout.match(/<author>([^<]*)<\/author>/)[1];
-                const message = stdout.match(/<msg>([^<]*)<\/msg>/)[1];
-                let date = stdout.match(/<date>([^<]*)<\/date>/)[1];
+                const commit = {};
+                if (commit.revision = stdout.match(/revision="(.*)">/)) {
+                    commit.revision = commit.revision[1];
+                }
+                if (commit.email = stdout.match(/<author>([^<]*)<\/author>/)) {
+                    commit.email = commit.email[1];
+                }
+                if (commit.message = stdout.match(/<msg>([^<]*)<\/msg>/)) {
+                    commit.message = commit.message[1];
+                }
+                if (commit.date = stdout.match(/<date>([^<]*)<\/date>/)) {
+                    commit.date = formatDate(commit.date[1]);
+                }
 
-                date = formatDate(date);
-                resolve({ email, revision, date, message });        
+                resolve(commit);
             });
         });
     },
