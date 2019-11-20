@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## 0.5.1
+- Handle cases where author metadata is missing 
+- Use spawn instead of exec 
+- Dependency updates
+
 ## 0.5.0
 - Mac blame shortcut added
 - Setting added to disable visual pips

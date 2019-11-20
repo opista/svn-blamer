@@ -35,7 +35,7 @@ This extension requires that you're either:
 **Enable Pips** - By default, the extension displays a coloured pip next to each line number. This can be turned off, whilst still showing the blame information in the tooltip.
 
 ## Known Issues
-- A little bit slow, because all unique logs have to be retrieved first. ([Issue](https://github.com/BeauAgst/blamer-vs/issues/3))
+- A little bit slow, because all unique logs have to be retrieved first. ([#3](https://github.com/BeauAgst/blamer-vs/issues/3))
 - Authentication errors [#5](https://github.com/BeauAgst/blamer-vs/issues/5), [#9](https://github.com/BeauAgst/blamer-vs/issues/9)
 
 ## Future features
@@ -43,6 +43,11 @@ This extension requires that you're either:
 - Ideas and contributions always welcome!
 
 ## Release Notes
+
+## 0.5.1
+- Handle cases where author metadata is missing [#53](https://github.com/BeauAgst/blamer-vs/issues/53)
+- Use spawn instead of exec [#53](https://github.com/BeauAgst/blamer-vs/issues/53)
+- Dependency updates
 
 ## 0.5.0
 - Mac blame shortcut added
