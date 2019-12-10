@@ -27,7 +27,7 @@ const decoration = {
             decoration,
             [{
                 range: new vscode.Range(parseInt(line),0,parseInt(line),1000),
-                hoverMessage: new vscode.MarkdownString(`${commit.revision}: ${commit.email}\n\n${commit.date}\n\n${commit.message}`)
+                hoverMessage: new vscode.MarkdownString(`${commit.revision}: ${commit.author}\n\n${commit.date}\n\n${commit.message}`)
             }]
         );
     },

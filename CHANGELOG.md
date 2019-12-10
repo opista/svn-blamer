@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## 0.5.2
+- Fix bug where commit author disappeared
+
 ## 0.5.1
 - Handle cases where author metadata is missing 
 - Use spawn instead of exec 

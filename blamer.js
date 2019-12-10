@@ -56,7 +56,7 @@ const blamer = {
                 this.images[unique] = {
                     image: this.randomImage(),
                     revision: commit.revision || '',
-                    email: commit.email || '',
+                    author: commit.author || '',
                     date: commit.date || '',
                     message: commit.message || '',
                 }
