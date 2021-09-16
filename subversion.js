@@ -4,6 +4,19 @@ const child_process = require("child_process");
 const formatDate = require("./functions/formatDate");
 const parser = require("fast-xml-parser");
 
+function parseCommit(commit) {
+  const revision = commit["@_revision"];
+  const date = formatDate(commit.date);
+  let rev = { ...commit };
+  delete rev["@_revision"];
+  delete rev["date"];
+  return {
+    ...rev,
+    revision,
+    date,
+  };
+}
+
 const subversion = {
   path: "",
   name: "",
@@ -59,18 +72,9 @@ const subversion = {
   },
 
   getRevisions(data) {
-    this.revisions = data.blame.target.entry.map(({ commit }) => {
-      const revision = commit["@_revision"];
-      const date = formatDate(commit.date);
-      let rev = { ...commit };
-      delete rev["@_revision"];
-      delete rev["date"];
-      return {
-        ...rev,
-        revision,
-        date,
-      };
-    });
+    this.revisions = data.blame.target.entry.map(({ commit }) =>
+      parseCommit(commit)
+    );
 
     return this.revisions;
   },
@@ -95,22 +99,14 @@ const subversion = {
         if (stderr || code) {
           reject(stderr);
         } else {
-          let commitX = {};
           if (parser.validate(stdout) === true) {
-            const commit = parser.parse(stdout, {
-              ignoreAttributes: false,
-              parseAttributeValue: true,
-            }).log.logentry;
-            const revision = commit["@_revision"];
-            const date = formatDate(commit.date);
-            let rev = { ...commit };
-            delete rev["@_revision"];
-            delete rev["date"];
-            resolve({
-              ...rev,
-              revision,
-              date,
-            });
+            const commit = parseCommit(
+              parser.parse(stdout, {
+                ignoreAttributes: false,
+                parseAttributeValue: true,
+              }).log.logentry
+            );
+            resolve(commit);
           } else reject(`SVN Error: Invalid XML rev${revision}`);
         }
       });
