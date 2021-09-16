@@ -49,8 +49,8 @@
         },
         "svn-gutter.enableDetail": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable/Disable SVN details from SVN log (impacts performance)"
+          "default": true,
+          "description": "Enable/Disable SVN details from SVN log. Disabling this setting will significantly speed up blame."
         }
       }
     }
@@ -67,5 +67,8 @@
     "mocha": "^6.2.2",
     "prettier": "^2.4.1",
     "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^3.20.0"
   }
 }
