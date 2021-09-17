@@ -54,7 +54,7 @@ const subversion = {
       });
       process.stdout.on("close", (code) => {
         if (stderr || code) {
-          reject(stderr);
+          reject(new Error(stderr));
         } else {
           if (parser.validate(stdout) === true)
             resolve(
@@ -65,7 +65,7 @@ const subversion = {
                 })
               )
             );
-          else reject("SVN Error: Invalid XML");
+          else reject(new Error("SVN Error: Invalid XML"));
         }
       });
     });
@@ -82,12 +82,11 @@ const subversion = {
   getLog(revision) {
     if (Object.keys(this.revisions).length === 0) return;
 
+    const getSimpleRev = () =>
+      this.revisions.find((commit) => commit?.revision === revision);
     return new Promise((resolve, reject) => {
       const { enableDetail } = vscode.workspace.getConfiguration("svn-gutter");
-      if (!enableDetail)
-        return resolve(
-          this.revisions.find((commit) => commit?.revision === revision)
-        );
+      if (!enableDetail) return resolve(getSimpleRev());
 
       const script = `svn log -r${revision} "${this.path}" --xml`;
       const process = child_process.spawn(script, { shell: true });
@@ -97,7 +96,7 @@ const subversion = {
       process.stdout.on("data", (data) => (stdout += data.toString()));
       process.stdout.on("close", (code) => {
         if (stderr || code) {
-          reject(stderr);
+          resolve({ ...getSimpleRev(), msg: stderr });
         } else {
           if (parser.validate(stdout) === true) {
             const commit = parseCommit(
@@ -107,7 +106,7 @@ const subversion = {
               }).log.logentry
             );
             resolve(commit);
-          } else reject(`SVN Error: Invalid XML rev${revision}`);
+          } else reject(new Error(`SVN Error: Invalid XML rev${revision}`));
         }
       });
     });

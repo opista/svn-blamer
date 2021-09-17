@@ -59,11 +59,22 @@ const blamer = {
       []
     );
 
-    const promises = this.uniqueCommits.map((unique) =>
-      subversion
+    let done = 0;
+    const statusPercent = (rev) => {
+      done += 1;
+      this.updateStatusBar(
+        `Processing revision ${rev} ${(
+          (100 * done) /
+          this.uniqueCommits.length
+        ).toFixed(0)}%`
+      );
+    };
+
+    const promises = this.uniqueCommits.map((unique) => {
+      return subversion
         .getLog(unique)
         .then((commit) => {
-          this.updateStatusBar(`Processing revision ${commit.revision}`);
+          statusPercent(unique);
           this.images[unique] = {
             image: this.randomImage(),
             revision: commit.revision || "",
@@ -72,8 +83,8 @@ const blamer = {
             msg: commit.msg || "",
           };
         })
-        .catch((error) => this.handleError(error))
-    );
+        .catch((error) => this.handleError(error));
+    });
 
     return Promise.all(promises);
   },
@@ -112,8 +123,8 @@ const blamer = {
 
   handleError(error) {
     this.updateStatusBar(`Error`);
-    vscode.window.showErrorMessage(error);
-    console.error("Error: ", error);
+    vscode.window.showErrorMessage(error.message);
+    console.error("Error: ", error.message);
   },
 };
 
