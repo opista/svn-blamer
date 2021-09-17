@@ -38,6 +38,8 @@ This extension requires that you're either:
 
 ## Extension Settings
 
+**Enable Detail** - By default, the extension get detailed log information for each unique revisions. Disabling this can increase speed, while still showing revision, date, & author in the tooltip.
+
 **Enable Pips** - By default, the extension displays a coloured pip next to each line number. This can be turned off, whilst still showing the blame information in the tooltip.
 
 ## Known Issues
@@ -54,7 +56,7 @@ This extension requires that you're either:
 
 ## 0.5.2
 
-- Parse blame via XML
+- Add a new option to disable fetching details via svn log
 - Percentage complete when pulling logs
 - Fallback on blame info when log fails instead of failing completely
 - Dependency updates
