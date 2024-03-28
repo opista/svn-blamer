@@ -16,5 +16,5 @@ export const mapBlameToInlineMessage = (blame: Blame, log?: string): string => {
     const truncatedLog = truncateString(log);
     const prefix = `${revision}: ${authorAndTime}`;
 
-    return [prefix, truncatedLog].join(" • ");
+    return [prefix, truncatedLog].filter(Boolean).join(" • ");
 };
