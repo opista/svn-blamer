@@ -10,7 +10,7 @@
 A Visual Studio Code extension to SVN blame files.
 When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
-https://github.com/BeauAgst/blamer-vs/assets/10343831/bcdcd279-06b9-42cf-a162-a8740d29c88d
+https://github.com/BeauAgst/blamer-vs/assets/10343831/e1512c76-4388-490d-b67e-fc56c77e2b4b
 
 ## Requirements
 
