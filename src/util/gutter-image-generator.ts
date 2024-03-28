@@ -11,7 +11,7 @@ export function* generator(imagePaths: string[], extensionPath: string) {
         const imagePath = imagePaths[index];
         imagePaths.splice(index, 1);
 
-        yield path.join(extensionPath, "src", "img", imagePath);
+        yield path.join(extensionPath, "dist", "img", imagePath);
     }
 
     return undefined;
@@ -24,7 +24,8 @@ export const gutterImageGenerator = async () => {
         throw new Error("Unable to find extension path");
     }
 
-    const imagePaths = await readdir(`${extensionPath}/src/img`);
+    const imageDir = path.join(extensionPath, "dist", "img");
+    const imagePaths = await readdir(imageDir);
 
     return generator(imagePaths, extensionPath);
 };

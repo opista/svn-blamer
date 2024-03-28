@@ -12,7 +12,7 @@
         "url": "https://github.com/BeauAgst/blamer-vs/issues"
     },
     "homepage": "https://github.com/BeauAgst/blamer-vs",
-    "icon": "img/blamer.png",
+    "icon": "./dist/public/icon.png",
     "engines": {
         "vscode": "^1.87.0"
     },
@@ -77,17 +77,20 @@
     },
     "scripts": {
         "compile-tests": "tsc -p . --outDir out",
-        "compile": "webpack",
-        "lint": "npm run eslint && npm run prettier",
+        "esbuild-base": "node ./esbuild.config.mjs",
+        "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+        "esbuild": "npm run esbuild-base -- --sourcemap",
         "eslint": "eslint src --ext ts",
-        "prettier": "prettier --write --ignore-unknown .",
+        "lint": "npm run eslint && npm run prettier",
         "package": "webpack --mode production --devtool hidden-source-map",
-        "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+        "prepare": "husky",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "prettier": "prettier --write --ignore-unknown .",
+        "test-compile": "tsc -p ./",
         "test": "vscode-test",
-        "vscode:prepublish": "yarn run package",
+        "vscode:prepublish": "npm run esbuild-base",
         "watch-tests": "tsc -p . -w --outDir out",
-        "watch": "webpack --watch",
-        "prepare": "husky"
+        "watch": "esbuild app.ts --bundle --outdir=dist --watch"
     },
     "devDependencies": {
         "@types/luxon": "^3.4.2",
@@ -98,6 +101,8 @@
         "@typescript-eslint/parser": "^7.0.2",
         "@vscode/test-cli": "^0.0.6",
         "@vscode/test-electron": "^2.3.9",
+        "esbuild": "^0.20.2",
+        "esbuild-plugin-copy": "^2.1.1",
         "eslint": "^8.56.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-simple-import-sort": "^12.0.0",
@@ -107,9 +112,7 @@
         "prettier": "3.2.5",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
-        "typescript": "^5.4.3",
-        "webpack": "^5.90.3",
-        "webpack-cli": "^5.1.4"
+        "typescript": "^5.4.3"
     },
     "dependencies": {
         "luxon": "^3.4.4",
