@@ -2,6 +2,15 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## 0.6.0
+
+-   Major refactor & update of the codebase
+-   Introduces auto-blame - blame files as you open them
+-   Adds configuration option to disable fetching logs. Blame will still work as usual
+-   Fixes bug where revision is not set, blamer would fail
+-   Adds a toggle command - toggle between showing and clearing blame
+-   Appends blame to the line when clicked, a-la gitlens
+
 ## 0.5.2
 
 -   Fixed a bug where the commit author disappeared

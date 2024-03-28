@@ -17,5 +17,5 @@ export const mapBlameOutputToBlameModel = (data: string): Blame[] => {
         revision: entry?.commit?.attributes?.revision,
     }));
 
-    return blamed.filter(({ revision }) => revision);
+    return blamed.filter(({ revision }) => revision && revision !== "-");
 };

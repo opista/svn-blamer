@@ -57,6 +57,15 @@ Feel free to submit [pull requests](/../../pulls)
 
 ## Release Notes
 
+## 0.6.0
+
+-   Major refactor & update of the codebase
+-   Introduces auto-blame - blame files as you open them
+-   Adds configuration option to disable fetching logs. Blame will still work as usual [#77](/../../issues/77) [#471](/../../issues/471)
+-   Fixes bug where revision is not set, blamer would fail [#470](/../../issues/470)
+-   Adds a toggle command - toggle between showing and clearing blame [#71](/../../issues/71) [#88](/../../issues/88)
+-   Appends blame to the line when clicked, a-la gitlens [#327](/../../issues/327)
+
 ## 0.5.2
 
 -   Fixed a bug where the commit author disappeared
