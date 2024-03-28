@@ -9,7 +9,7 @@ export const mapBlameToDecorationData = (
     revisionLog?: string,
 ): DecorationData => {
     return {
-        afterMessage: mapBlameToInlineMessage(blame),
+        afterMessage: mapBlameToInlineMessage(blame, revisionLog),
         gutterImagePath,
         hoverMessage: mapBlameToHoverMessage(blame, revisionLog),
         line: blame.line,
