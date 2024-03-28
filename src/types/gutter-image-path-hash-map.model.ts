@@ -1,3 +1,3 @@
 export type GutterImagePathHashMap = {
-  [key: string]: string | undefined;
+    [key: string]: string | undefined;
 };

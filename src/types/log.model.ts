@@ -1,4 +1,4 @@
 export type Log = {
-  log?: string;
-  revision: string;
+    log?: string;
+    revision: string;
 };

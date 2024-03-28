@@ -84,7 +84,8 @@
     "test": "vscode-test",
     "vscode:prepublish": "yarn run package",
     "watch-tests": "tsc -p . -w --outDir out",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2",
@@ -96,6 +97,12 @@
     "@vscode/test-cli": "^0.0.6",
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "eslint-plugin-unused-imports": "^3.1.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "3.2.5",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3",
@@ -105,5 +112,11 @@
   "dependencies": {
     "luxon": "^3.4.4",
     "xml-js": "^1.6.11"
+  },
+  "lint-staged": {
+    "**/*.{js,ts}": [
+      "prettier --write --ignore-unknown",
+      "eslint src --ext ts --fix"
+    ]
   }
 }

@@ -40,8 +40,8 @@ This extension contributes the following commands to the Command palette.
 
 ## Known Issues
 
-- Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first. ([#3](/../../issues/3))
-- Authentication errors [#5](/../../issues/5), [#9](/../../issues/9)
+-   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first. ([#3](/../../issues/3))
+-   Authentication errors [#5](/../../issues/5), [#9](/../../issues/9)
 
 ## Feedback & Contributing
 
@@ -50,51 +50,51 @@ Feel free to submit [pull requests](/../../pulls)
 
 ## TODO
 
-- Automate release flow
-  - Tests pass
-  - https://github.com/marketplace/actions/gh-release
-  - https://github.com/marketplace/actions/vsix-publisher
+-   Automate release flow
+    -   Tests pass
+    -   https://github.com/marketplace/actions/gh-release
+    -   https://github.com/marketplace/actions/vsix-publisher
 
 ## Release Notes
 
 ## 0.5.2
 
-- Fixed a bug where the commit author disappeared
+-   Fixed a bug where the commit author disappeared
 
 ## 0.5.1
 
-- Handle cases where author metadata is missing [#53](/../../issues/53)
-- Use spawn instead of exec [#53](/../../issues/53)
-- Dependency updates
+-   Handle cases where author metadata is missing [#53](/../../issues/53)
+-   Use spawn instead of exec [#53](/../../issues/53)
+-   Dependency updates
 
 ## 0.5.0
 
-- Mac blame shortcut added
-- Setting added to toggle visual indicator visibility [#10](/../../issues/10)
-- Better error handling, blame indicator in workbench [#3](/../../issues/3)
+-   Mac blame shortcut added
+-   Setting added to toggle visual indicator visibility [#10](/../../issues/10)
+-   Better error handling, blame indicator in workbench [#3](/../../issues/3)
 
 ## 0.4.0
 
-- Revision number added to tooltips [#7](/../../issues/7)
+-   Revision number added to tooltips [#7](/../../issues/7)
 
 ## 0.3.2
 
-- Fixed decoration issue causing characters to show incorrectly depending on the language [#6](/../../issues/6)
+-   Fixed decoration issue causing characters to show incorrectly depending on the language [#6](/../../issues/6)
 
 ## 0.3.1
 
-- Removed formatting error in decoration caused by conflict with `mailto:`
-- Added icon to extension
+-   Removed formatting error in decoration caused by conflict with `mailto:`
+-   Added icon to extension
 
 ## 0.3.0
 
-- Linux support was added. [#2](/../../issues/2)
+-   Linux support was added. [#2](/../../issues/2)
 
 ## 0.2.0
 
-- Added keyboard shortcut
-- Fixed readme typo
+-   Added keyboard shortcut
+-   Fixed readme typo
 
 ## 0.1.0
 
-- Initial release
+-   Initial release
