@@ -77,18 +77,17 @@
     },
     "scripts": {
         "compile-tests": "tsc -p . --outDir out",
-        "esbuild-base": "node ./esbuild.config.mjs",
-        "esbuild": "npm run esbuild-base -- --sourcemap",
+        "esbuild": "node ./esbuild.config.mjs",
         "eslint": "eslint src --ext ts",
         "lint": "npm run eslint && npm run prettier",
         "package": "webpack --mode production --devtool hidden-source-map",
         "prepare": "husky",
         "pretest": "npm run compile-tests && npm run compile && npm run lint",
         "prettier": "prettier --write --ignore-unknown .",
-        "test-compile": "tsc -p ./",
         "test": "vscode-test",
-        "vscode:prepublish": "npm run esbuild-base",
-        "watch-tests": "tsc -p . -w --outDir out"
+        "vscode:prepublish": "npm run esbuild -- --minify",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "watch": "npm run esbuild -- --sourcemap --watch"
     },
     "devDependencies": {
         "@types/luxon": "^3.4.2",

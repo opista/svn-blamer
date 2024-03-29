@@ -6,7 +6,6 @@
         {
             "type": "npm",
             "script": "watch",
-            "problemMatcher": "$ts-webpack-watch",
             "isBackground": true,
             "presentation": {
                 "reveal": "never",
@@ -15,7 +14,41 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": {
+                "owner": "typescript",
+                "source": "ts",
+                "applyTo": "closedDocuments",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "severity": "error",
+                "pattern": [
+                    {
+                        "regexp": "^\\s*✘\\s*\\[ERROR\\]\\s*(.+)$",
+                        "message": 1
+                    },
+                    {
+                        "regexp": "^\\s*$"
+                    },
+                    {
+                        "regexp": "^\\s*(.+):(\\d+):(\\d+):$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": {
+                        "regexp": "^\\[watch\\] build started"
+                    },
+                    "endsPattern": {
+                        "regexp": "^\\[watch\\] build finished"
+                    }
+                }
+            },
         },
         {
             "type": "npm",
@@ -30,7 +63,10 @@
         },
         {
             "label": "tasks: watch-tests",
-            "dependsOn": ["npm: watch", "npm: watch-tests"],
+            "dependsOn": [
+                "npm: watch",
+                "npm: watch-tests"
+            ],
             "problemMatcher": []
         }
     ]
