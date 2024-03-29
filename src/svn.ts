@@ -20,12 +20,7 @@ export class SVN {
 
             return mapBlameOutputToBlameModel(data);
         } catch (err: any) {
-            if (typeof err === "string" && err.includes("E155007")) {
-                this.logger.warn("File is not a working copy, cannot complete action");
-                throw new Error("File is not a working copy");
-            }
-
-            this.logger.error("Failed to blame file", { err: err?.message });
+            this.logger.error("Failed to blame file", { err });
             throw err;
         }
     }

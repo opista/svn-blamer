@@ -68,26 +68,29 @@ export class DecorationManager {
     ): Promise<DecorationRecord> {
         const gutterImagePathHashMap = await this.createGutterImagePathHashMap(revisions);
 
-        return blames.reduce<DecorationRecord>((acc, blame) => {
-            const metadata = mapBlameToDecorationData(
-                blame,
-                gutterImagePathHashMap[blame.revision],
-                logs.find(({ revision }) => blame.revision === revision)?.log,
-            );
+        return blames.reduce<Required<DecorationRecord>>(
+            (acc, blame) => {
+                const metadata = mapBlameToDecorationData(
+                    blame,
+                    gutterImagePathHashMap[blame.revision],
+                    logs.find(({ revision }) => blame.revision === revision)?.log,
+                );
 
-            const decoration = this.createAndSetLineDecoration(textEditor, metadata, "blame");
+                const decoration = this.createAndSetLineDecoration(textEditor, metadata, "blame");
 
-            acc[blame.line] = {
-                decoration,
-                metadata,
-            };
+                acc.lines[blame.line] = {
+                    decoration,
+                    metadata,
+                };
 
-            return acc;
-        }, {});
+                return acc;
+            },
+            { lines: {}, workingCopy: true },
+        );
     }
 
     reApplyDecorations(textEditor: TextEditor, records: DecorationRecord) {
-        return Object.values(records).map(({ decoration, metadata }) => {
+        return Object.values(records.lines || {}).map(({ decoration, metadata }) => {
             textEditor?.setDecorations(decoration, mapDecorationOptions(metadata));
         });
     }

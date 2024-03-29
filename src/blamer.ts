@@ -86,7 +86,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(records)?.map(({ decoration }) => decoration?.dispose?.());
+        Object.values(records?.lines || {})?.map(({ decoration }) => decoration?.dispose?.());
 
         await this.clearRecordsForFile(fileName);
     }
@@ -118,7 +118,7 @@ export class Blamer {
         return result;
     }
 
-    async showBlameForFile(textEditor?: TextEditor, fileName?: string) {
+    async showBlameForFile(textEditor?: TextEditor, fileName?: string, autoBlame: boolean = false) {
         if (!textEditor || !fileName) {
             this.logger.debug("No editor or file found, aborting...");
             return;
@@ -154,9 +154,22 @@ export class Blamer {
 
             this.logger.info("Blame successful", { fileName });
         } catch (err: any) {
-            this.logger.error("Blame action failed", { err: err?.message });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong`);
             this.statusBarItem.hide();
+
+            if (typeof err === "string" && err.includes("E155007")) {
+                this.logger.warn("File is not a working copy, cannot complete action");
+
+                if (autoBlame) {
+                    this.logger.debug("Blame attemped via auto-blame, silently failing");
+                    this.setRecordsForFile(fileName, { workingCopy: false });
+                    return;
+                }
+            }
+
+            const output = err?.message || err;
+
+            this.logger.error("Blame action failed", { err });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${output}`);
         }
     }
 
@@ -186,6 +199,13 @@ export class Blamer {
             const fileName = await getFileNameFromTextEditor(textEditor);
             const existingRecord = await this.getRecordsForFile(fileName);
 
+            // explicit check so that we don't just skip
+            // any previously unchecked files
+            if (existingRecord?.workingCopy === false) {
+                this.logger.debug("Skipping file, not a working copy", { fileName });
+                return;
+            }
+
             if (existingRecord) {
                 this.decorationManager.reApplyDecorations(textEditor, existingRecord);
                 return;
@@ -197,7 +217,7 @@ export class Blamer {
                 return;
             }
 
-            return this.showBlameForFile(textEditor, fileName);
+            return this.showBlameForFile(textEditor, fileName, true);
         } catch (err: any) {
             this.logger.error("Failed to auto-blame file", { err: err?.message });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong`);
@@ -227,7 +247,7 @@ export class Blamer {
         }
 
         const records = await this.getRecordsForFile(this.activeFileName);
-        const existingDecoration = records?.[this.activeLine];
+        const existingDecoration = records?.lines?.[this.activeLine];
 
         if (!existingDecoration) {
             return;
@@ -256,7 +276,7 @@ export class Blamer {
 
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
         const records = await this.getRecordsForFile(fileName);
-        const existingDecoration = records?.[line];
+        const existingDecoration = records?.lines?.[line];
 
         if (!existingDecoration) {
             return;
