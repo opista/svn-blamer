@@ -5,23 +5,14 @@
         "ecmaVersion": 6,
         "sourceType": "module"
     },
-    "extends": [
-        "prettier"
-    ],
-    "plugins": [
-        "@typescript-eslint",
-        "simple-import-sort",
-        "unused-imports"
-    ],
+    "extends": ["prettier"],
+    "plugins": ["@typescript-eslint", "simple-import-sort", "unused-imports"],
     "rules": {
         "@typescript-eslint/naming-convention": [
             "warn",
             {
                 "selector": "import",
-                "format": [
-                    "camelCase",
-                    "PascalCase"
-                ]
+                "format": ["camelCase", "PascalCase"]
             }
         ],
         "@typescript-eslint/semi": "warn",
@@ -34,10 +25,5 @@
         "unused-imports/no-unused-imports": "error",
         "no-console": "error"
     },
-    "ignorePatterns": [
-        "out",
-        "dist",
-        "**/*.d.ts",
-        ".github"
-    ]
+    "ignorePatterns": ["out", "dist", "**/*.d.ts", ".github"]
 }
