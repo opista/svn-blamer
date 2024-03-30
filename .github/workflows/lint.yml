@@ -33,4 +33,4 @@ jobs:
         run: npm run eslint:fix
 
       - name: Run Prettier
-        run: prettier
+        run: npm run prettier
