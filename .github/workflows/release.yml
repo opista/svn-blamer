@@ -29,20 +29,13 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
-      # - name: Package VS Code extension
-      #   id: package
-      #   uses: nhedger/package-vscode-extension@v1
+      - name: Package VS Code extension
+        id: package
+        uses: nhedger/package-vscode-extension@v1
 
-      - run: npm run vscode:prepublish
-      - run: ls -a -R
-      - run: mkdir artifact
-      - run: npx @vscode/vsce package
-      - run: sudo npm install -g vsce
-      - run: vsce package -o ./artifact/svn-blamer.vsix
-
-      # - name: Publish to Visual Studio Marketplace
-      #   uses: HaaLeo/publish-vscode-extension@v1
-      #   with:
-      #     pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-      #     preRelease: true
-      #     registryUrl: https://marketplace.visualstudio.com
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          preRelease: true
+          registryUrl: https://marketplace.visualstudio.com
