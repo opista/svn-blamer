@@ -78,13 +78,12 @@
     "scripts": {
         "compile-tests": "tsc -p . --outDir out",
         "esbuild": "node ./esbuild.config.mjs",
-        "eslint": "eslint src --ext ts",
-        "eslint:fix": "eslint src --ext ts --fix",
-        "lint": "npm run eslint && npm run prettier",
+        "format": "prettier --write --ignore-unknown .",
+        "lint:fix": "npm run lint -- --fix",
+        "lint": "eslint src --ext ts",
         "package": "webpack --mode production --devtool hidden-source-map",
         "prepare": "husky",
         "pretest": "npm run compile-tests && npm run compile && npm run lint",
-        "prettier": "prettier --write --ignore-unknown .",
         "test": "vscode-test",
         "vscode:prepublish": "npm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
@@ -118,8 +117,8 @@
     },
     "lint-staged": {
         "**/*.{js,ts}": [
-            "prettier --write --ignore-unknown",
-            "eslint src --ext ts --fix"
+            "eslint src --ext ts --fix",
+            "prettier --cache --write --ignore-unknown"
         ]
     }
 }
