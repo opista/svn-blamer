@@ -1,5 +1,6 @@
 import { LogOutputChannel } from "vscode";
 
+import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapBlameOutputToBlameModel } from "./mapping/map-blame-output-to-blame-model";
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
 import { Blame } from "./types/blame.model";
@@ -22,11 +23,11 @@ export class SVN {
         } catch (err: any) {
             if (typeof err === "string" && err.includes("E155007")) {
                 this.logger.warn("File is not a working copy, cannot complete action");
-                throw new Error("File is not a working copy");
+                throw new NotWorkingCopyError(fileName);
             }
 
             this.logger.error("Failed to blame file", { err });
-            throw err;
+            throw new Error(err);
         }
     }
 
@@ -50,12 +51,12 @@ export class SVN {
             this.logger.debug("Log child process successful");
 
             return logs;
-        } catch (err) {
+        } catch (err: any) {
             this.logger.error("Failed to to fetch logs for file", {
                 err,
                 logs: revisions.length,
             });
-            throw err;
+            throw new Error(err);
         }
     }
 }

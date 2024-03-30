@@ -12,6 +12,7 @@ import {
 
 import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
+import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { DecorationRecord } from "./types/decoration-record.model";
@@ -158,10 +159,9 @@ export class Blamer {
         try {
             return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
-            const output = err?.message || err;
             this.statusBarItem.hide();
             this.logger.error("Blame action failed", { err });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${output}`);
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
         }
     }
 
@@ -174,10 +174,9 @@ export class Blamer {
                 : await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
             const blameAction = fileData ? "hide" : "show";
-            const output = err?.message || err;
             this.statusBarItem.hide();
-            this.logger.error(`Blame action failed [${blameAction}]`, { err });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${output}`);
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
         }
     }
 
@@ -218,7 +217,8 @@ export class Blamer {
         } catch (err: any) {
             this.statusBarItem.hide();
             this.logger.debug("Blame attemped via auto-blame, silently failing");
-            if (fileName) {
+
+            if (fileName && err instanceof NotWorkingCopyError) {
                 await this.setRecordsForFile(fileName, { lines: {}, workingCopy: false });
             }
         }
