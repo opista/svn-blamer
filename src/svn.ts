@@ -25,7 +25,6 @@ export class SVN {
                 throw new Error("File is not a working copy");
             }
 
-            this.logger.error("Failed to blame file", { err: err?.message });
             this.logger.error("Failed to blame file", { err });
             throw err;
         }
