@@ -31,7 +31,9 @@ jobs:
 
       - name: Package VS Code extension
         uses: nhedger/package-vscode-extension@v1
-
+        with:
+          extensionPath: ./dist
+          packagePath: ./[name]-[version].vsix
       # - name: Publish to Open VSX Registry
       #   uses: HaaLeo/publish-vscode-extension@v1
       #   with:
