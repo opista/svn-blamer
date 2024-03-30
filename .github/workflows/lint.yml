@@ -33,7 +33,11 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
+          eslint_auto_fix: true
+          eslint_extensions: ts
           prettier: true
+          prettier_auto_fix: true
+          tsc: true,
 
       # - name: Run ESLint
       #   run: npm run eslint:fix
