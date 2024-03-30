@@ -38,9 +38,3 @@ jobs:
           prettier: true
           prettier_auto_fix: true
           tsc: true,
-
-      # - name: Run ESLint
-      #   run: npm run eslint:fix
-
-      # - name: Run Prettier
-      #   run: npm run prettier
