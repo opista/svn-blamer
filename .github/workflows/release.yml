@@ -13,8 +13,8 @@ permissions:
   contents: write
 
 jobs:
-  run-linters:
-    name: Run linters
+  run-release:
+    name: Run release
     runs-on: ubuntu-latest
 
     steps:
