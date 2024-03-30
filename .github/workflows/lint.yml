@@ -37,22 +37,4 @@ jobs:
           eslint_extensions: ts
           prettier: true
           prettier_auto_fix: true
-          tsc: true,
-  build:
-    name: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 20
-
-      - name: Install Node.js dependencies
-        run: npm ci
-
-      - name: Build package
-        run: npm run esbuild
+          tsc: true

@@ -6,7 +6,7 @@ let ctx = await esbuild.context({
     entryPoints: ["./src/extension.ts"],
     external: ["vscode"],
     format: "cjs",
-    logLevel: "info",
+    logLevel: "debug",
     minify: process.argv.includes("--minify"),
     outfile: "./dist/extension.js",
     platform: "node",
