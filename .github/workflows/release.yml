@@ -33,14 +33,11 @@ jobs:
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
-      - name: Extract release notes
-        id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v2
-
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
+          draft: true
           files: ${{ steps.package.outputs.packagePath }}
           tag_name: ${{ steps.previoustag.outputs.tag }}
 
@@ -48,5 +45,5 @@ jobs:
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-          preRelease: true
+          dryRun: true
           registryUrl: https://marketplace.visualstudio.com
