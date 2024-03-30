@@ -118,7 +118,7 @@ export class Blamer {
         return result;
     }
 
-    async showBlameForFile(textEditor?: TextEditor, fileName?: string, autoBlame: boolean = false) {
+    async showBlameForFile(textEditor?: TextEditor, fileName?: string) {
         if (!textEditor || !fileName) {
             this.logger.debug("No editor or file found, aborting...");
             return;
@@ -213,13 +213,13 @@ export class Blamer {
                 return;
             }
 
-            return await this.showBlameForFile(textEditor, fileName, true);
+            return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
             this.statusBarItem.hide();
             this.logger.debug("Blame attemped via auto-blame, silently failing");
 
-            if (fileName && err instanceof NotWorkingCopyError) {
-                await this.setRecordsForFile(fileName, { lines: {}, workingCopy: false });
+            if (err instanceof NotWorkingCopyError) {
+                await this.setRecordsForFile(err.fileName, { lines: {}, workingCopy: false });
             }
         }
     }
