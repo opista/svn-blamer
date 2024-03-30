@@ -29,8 +29,12 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
+      - name: Package VS Code extension
+        id: package
+        uses: nhedger/package-vscode-extension@v1
+
       - name: Package extension
-        run: npx vsce package
+        run: npx @vscode/vsce package
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
