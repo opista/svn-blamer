@@ -19,10 +19,7 @@
                 "owner": "typescript",
                 "source": "ts",
                 "applyTo": "closedDocuments",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceFolder}"
-                ],
+                "fileLocation": ["relative", "${workspaceFolder}"],
                 "severity": "error",
                 "pattern": [
                     {
@@ -48,7 +45,7 @@
                         "regexp": "^\\[watch\\] build finished"
                     }
                 }
-            },
+            }
         },
         {
             "type": "npm",
@@ -63,10 +60,7 @@
         },
         {
             "label": "tasks: watch-tests",
-            "dependsOn": [
-                "npm: watch",
-                "npm: watch-tests"
-            ],
+            "dependsOn": ["npm: watch", "npm: watch-tests"],
             "problemMatcher": []
         }
     ]

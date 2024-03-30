@@ -12,6 +12,7 @@ import {
 
 import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
+import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { DecorationRecord } from "./types/decoration-record.model";
@@ -38,24 +39,23 @@ export class Blamer {
         this.statusBarItem.text = text.filter(Boolean).join(" ");
     }
 
-    clearRecordsForFile(fileName: string) {
-        return this.storage.delete(fileName);
+    async clearRecordsForFile(fileName: string) {
+        return await this.storage.delete(fileName);
     }
 
-    clearRecordsForAllFiles() {
-        return this.storage.clear();
+    async clearRecordsForAllFiles() {
+        return await this.storage.clear();
     }
 
     async getRecordsForFile(fileName?: string) {
         if (!fileName) {
             return undefined;
         }
-        const result = await this.storage.get<DecorationRecord>(fileName);
-        return result;
+        return await this.storage.get<DecorationRecord>(fileName);
     }
 
-    setRecordsForFile(fileName: string, record: DecorationRecord) {
-        return this.storage.set<DecorationRecord>(fileName, record);
+    async setRecordsForFile(fileName: string, record: DecorationRecord) {
+        return await this.storage.set<DecorationRecord>(fileName, record);
     }
 
     async getActiveTextEditorAndFileName() {
@@ -86,7 +86,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(records)?.map(({ decoration }) => decoration?.dispose?.());
+        Object.values(records?.lines)?.map(({ decoration }) => decoration?.dispose?.());
 
         await this.clearRecordsForFile(fileName);
     }
@@ -94,7 +94,7 @@ export class Blamer {
     async clearBlameForActiveTextEditor() {
         const { fileName } = await this.getActiveTextEditorAndFileName();
 
-        return this.clearBlameForFile(fileName);
+        return await this.clearBlameForFile(fileName);
     }
 
     async getLogsForFile(fileName: string, revisions: string[]) {
@@ -126,65 +126,81 @@ export class Blamer {
 
         this.logger.info("Blaming file", { fileName });
 
-        try {
-            this.statusBarItem.show();
-            this.setStatusBarText("Blaming file...", "loading~spin");
+        this.statusBarItem.show();
+        this.setStatusBarText("Blaming file...", "loading~spin");
 
-            await this.clearBlameForFile(fileName);
+        await this.clearBlameForFile(fileName);
 
-            const blame = await this.svn.blameFile(fileName);
+        const blame = await this.svn.blameFile(fileName);
 
-            if (!blame.length) {
-                return;
-            }
-
-            const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
-
-            const logs = await this.getLogsForFile(fileName, uniqueRevisions);
-
-            const decorationRecords = await this.decorationManager.createAndSetDecorationsForBlame(
-                textEditor,
-                blame,
-                uniqueRevisions,
-                logs,
-            );
-
-            this.statusBarItem.hide();
-            await this.setRecordsForFile(fileName, decorationRecords);
-
-            this.logger.info("Blame successful", { fileName });
-        } catch (err: any) {
-            this.logger.error("Blame action failed", { err: err?.message });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong`);
-            this.statusBarItem.hide();
+        if (!blame.length) {
+            return;
         }
+
+        const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
+
+        const logs = await this.getLogsForFile(fileName, uniqueRevisions);
+
+        const decorationRecords = await this.decorationManager.createAndSetDecorationsForBlame(
+            textEditor,
+            blame,
+            uniqueRevisions,
+            logs,
+        );
+
+        this.statusBarItem.hide();
+        await this.setRecordsForFile(fileName, decorationRecords);
+
+        this.logger.info("Blame successful", { fileName });
     }
 
     async showBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return this.showBlameForFile(textEditor, fileName);
+        try {
+            return await this.showBlameForFile(textEditor, fileName);
+        } catch (err: any) {
+            this.statusBarItem.hide();
+            this.logger.error("Blame action failed", { err });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
+        }
     }
 
     async toggleBlameForFile(textEditor?: TextEditor, fileName?: string) {
         const fileData = await this.getRecordsForFile(fileName);
-        return fileData
-            ? this.clearBlameForFile(fileName)
-            : this.showBlameForFile(textEditor, fileName);
+
+        try {
+            return fileData
+                ? await this.clearBlameForFile(fileName)
+                : await this.showBlameForFile(textEditor, fileName);
+        } catch (err: any) {
+            const blameAction = fileData ? "hide" : "show";
+            this.statusBarItem.hide();
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
+        }
     }
 
     async toggleBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return this.toggleBlameForFile(textEditor, fileName);
+        return await this.toggleBlameForFile(textEditor, fileName);
     }
 
     async autoBlame(textEditor?: TextEditor) {
+        if (!textEditor) {
+            return;
+        }
+
+        const fileName = await getFileNameFromTextEditor(textEditor);
+
         try {
-            if (!textEditor) {
+            const existingRecord = await this.getRecordsForFile(fileName);
+
+            // explicit check so that we don't just skip
+            // any previously unchecked files
+            if (existingRecord?.workingCopy === false) {
+                this.logger.debug("Skipping file, not a working copy", { fileName });
                 return;
             }
-
-            const fileName = await getFileNameFromTextEditor(textEditor);
-            const existingRecord = await this.getRecordsForFile(fileName);
 
             if (existingRecord) {
                 this.decorationManager.reApplyDecorations(textEditor, existingRecord);
@@ -197,11 +213,14 @@ export class Blamer {
                 return;
             }
 
-            return this.showBlameForFile(textEditor, fileName);
+            return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
-            this.logger.error("Failed to auto-blame file", { err: err?.message });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong`);
             this.statusBarItem.hide();
+            this.logger.debug("Blame attemped via auto-blame, silently failing");
+
+            if (err instanceof NotWorkingCopyError) {
+                await this.setRecordsForFile(err.fileName, { lines: {}, workingCopy: false });
+            }
         }
     }
 
@@ -227,7 +246,7 @@ export class Blamer {
         }
 
         const records = await this.getRecordsForFile(this.activeFileName);
-        const existingDecoration = records?.[this.activeLine];
+        const existingDecoration = records?.lines?.[this.activeLine];
 
         if (!existingDecoration) {
             return;
@@ -256,7 +275,7 @@ export class Blamer {
 
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
         const records = await this.getRecordsForFile(fileName);
-        const existingDecoration = records?.[line];
+        const existingDecoration = records?.lines?.[line];
 
         if (!existingDecoration) {
             return;
