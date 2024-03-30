@@ -36,6 +36,7 @@ jobs:
       - run: npm run vscode:prepublish
       - run: mkdir artifact
       - run: npx @vscode/vsce package
+      - run: sudo npm install -g vsce
       - run: vsce package -o ./artifact/svn-blamer.vsix
 
       # - name: Publish to Visual Studio Marketplace
