@@ -33,7 +33,7 @@ jobs:
       #   id: package
       #   uses: nhedger/package-vscode-extension@v1
 
-      - run: npm run vsce:prepublish
+      - run: npm run vscode:prepublish
       - run: mkdir artifact
       - run: npx @vscode/vsce package
       - run: vsce package -o ./artifact/svn-blamer.vsix
