@@ -90,7 +90,7 @@ export class DecorationManager {
     }
 
     reApplyDecorations(textEditor: TextEditor, records: DecorationRecord) {
-        return Object.values(records.lines || {}).map(({ decoration, metadata }) => {
+        return Object.values(records.lines).map(({ decoration, metadata }) => {
             textEditor?.setDecorations(decoration, mapDecorationOptions(metadata));
         });
     }

@@ -38,24 +38,23 @@ export class Blamer {
         this.statusBarItem.text = text.filter(Boolean).join(" ");
     }
 
-    clearRecordsForFile(fileName: string) {
-        return this.storage.delete(fileName);
+    async clearRecordsForFile(fileName: string) {
+        return await this.storage.delete(fileName);
     }
 
-    clearRecordsForAllFiles() {
-        return this.storage.clear();
+    async clearRecordsForAllFiles() {
+        return await this.storage.clear();
     }
 
     async getRecordsForFile(fileName?: string) {
         if (!fileName) {
             return undefined;
         }
-        const result = await this.storage.get<DecorationRecord>(fileName);
-        return result;
+        return await this.storage.get<DecorationRecord>(fileName);
     }
 
-    setRecordsForFile(fileName: string, record: DecorationRecord) {
-        return this.storage.set<DecorationRecord>(fileName, record);
+    async setRecordsForFile(fileName: string, record: DecorationRecord) {
+        return await this.storage.set<DecorationRecord>(fileName, record);
     }
 
     async getActiveTextEditorAndFileName() {
@@ -86,7 +85,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(records?.lines || {})?.map(({ decoration }) => decoration?.dispose?.());
+        Object.values(records?.lines)?.map(({ decoration }) => decoration?.dispose?.());
 
         await this.clearRecordsForFile(fileName);
     }
@@ -94,7 +93,7 @@ export class Blamer {
     async clearBlameForActiveTextEditor() {
         const { fileName } = await this.getActiveTextEditorAndFileName();
 
-        return this.clearBlameForFile(fileName);
+        return await this.clearBlameForFile(fileName);
     }
 
     async getLogsForFile(fileName: string, revisions: string[]) {
@@ -126,77 +125,75 @@ export class Blamer {
 
         this.logger.info("Blaming file", { fileName });
 
+        this.statusBarItem.show();
+        this.setStatusBarText("Blaming file...", "loading~spin");
+
+        await this.clearBlameForFile(fileName);
+
+        const blame = await this.svn.blameFile(fileName);
+
+        if (!blame.length) {
+            return;
+        }
+
+        const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
+
+        const logs = await this.getLogsForFile(fileName, uniqueRevisions);
+
+        const decorationRecords = await this.decorationManager.createAndSetDecorationsForBlame(
+            textEditor,
+            blame,
+            uniqueRevisions,
+            logs,
+        );
+
+        this.statusBarItem.hide();
+        await this.setRecordsForFile(fileName, decorationRecords);
+
+        this.logger.info("Blame successful", { fileName });
+    }
+
+    async showBlameForActiveTextEditor() {
+        const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
         try {
-            this.statusBarItem.show();
-            this.setStatusBarText("Blaming file...", "loading~spin");
-
-            await this.clearBlameForFile(fileName);
-
-            const blame = await this.svn.blameFile(fileName);
-
-            if (!blame.length) {
-                return;
-            }
-
-            const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
-
-            const logs = await this.getLogsForFile(fileName, uniqueRevisions);
-
-            const decorationRecords = await this.decorationManager.createAndSetDecorationsForBlame(
-                textEditor,
-                blame,
-                uniqueRevisions,
-                logs,
-            );
-
-            this.statusBarItem.hide();
-            await this.setRecordsForFile(fileName, decorationRecords);
-
-            this.logger.info("Blame successful", { fileName });
+            return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
-            this.statusBarItem.hide();
-
-            if (typeof err === "string" && err.includes("E155007")) {
-                this.logger.warn("File is not a working copy, cannot complete action");
-
-                if (autoBlame) {
-                    this.logger.debug("Blame attemped via auto-blame, silently failing");
-                    this.setRecordsForFile(fileName, { workingCopy: false });
-                    return;
-                }
-            }
-
             const output = err?.message || err;
-
+            this.statusBarItem.hide();
             this.logger.error("Blame action failed", { err });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${output}`);
         }
     }
 
-    async showBlameForActiveTextEditor() {
-        const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return this.showBlameForFile(textEditor, fileName);
-    }
-
     async toggleBlameForFile(textEditor?: TextEditor, fileName?: string) {
         const fileData = await this.getRecordsForFile(fileName);
-        return fileData
-            ? this.clearBlameForFile(fileName)
-            : this.showBlameForFile(textEditor, fileName);
+
+        try {
+            return fileData
+                ? await this.clearBlameForFile(fileName)
+                : await this.showBlameForFile(textEditor, fileName);
+        } catch (err: any) {
+            const blameAction = fileData ? "hide" : "show";
+            const output = err?.message || err;
+            this.statusBarItem.hide();
+            this.logger.error(`Blame action failed [${blameAction}]`, { err });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${output}`);
+        }
     }
 
     async toggleBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return this.toggleBlameForFile(textEditor, fileName);
+        return await this.toggleBlameForFile(textEditor, fileName);
     }
 
     async autoBlame(textEditor?: TextEditor) {
-        try {
-            if (!textEditor) {
-                return;
-            }
+        if (!textEditor) {
+            return;
+        }
 
-            const fileName = await getFileNameFromTextEditor(textEditor);
+        const fileName = await getFileNameFromTextEditor(textEditor);
+
+        try {
             const existingRecord = await this.getRecordsForFile(fileName);
 
             // explicit check so that we don't just skip
@@ -217,11 +214,13 @@ export class Blamer {
                 return;
             }
 
-            return this.showBlameForFile(textEditor, fileName, true);
+            return await this.showBlameForFile(textEditor, fileName, true);
         } catch (err: any) {
-            this.logger.error("Failed to auto-blame file", { err: err?.message });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong`);
             this.statusBarItem.hide();
+            this.logger.debug("Blame attemped via auto-blame, silently failing");
+            if (fileName) {
+                await this.setRecordsForFile(fileName, { lines: {}, workingCopy: false });
+            }
         }
     }
 
