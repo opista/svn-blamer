@@ -1,16 +1,6 @@
 name: Release
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
-permissions:
-  checks: write
-  contents: write
+on: workflow_dispatch
 
 jobs:
   run-release:
@@ -32,6 +22,12 @@ jobs:
       - name: Package VS Code extension
         id: package
         uses: nhedger/package-vscode-extension@v1
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.package.outputs.packagePath }}
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
