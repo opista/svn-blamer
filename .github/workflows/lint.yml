@@ -38,7 +38,6 @@ jobs:
           prettier: true
           prettier_auto_fix: true
           tsc: true,
-
   build:
     name: build
     runs-on: ubuntu-latest
