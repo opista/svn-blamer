@@ -2,6 +2,12 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.6.1] - 2024-03-31
+
+## Fixed
+
+-   Bug where auto-blamed files repeatedly surface an error
+
 ## [0.6.0] - 2024-03-28
 
 ### Changed
