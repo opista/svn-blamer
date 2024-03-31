@@ -1,6 +1,7 @@
 # Ignore artifacts:
+.github
 build
 coverage
 dist
-out
 img
+out

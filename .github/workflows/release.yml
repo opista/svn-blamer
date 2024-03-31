@@ -1,0 +1,33 @@
+name: Release
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  run-release:
+    name: Run release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Package VS Code extension
+        id: package
+        uses: nhedger/package-vscode-extension@v1
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
