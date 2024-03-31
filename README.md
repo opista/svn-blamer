@@ -10,7 +10,7 @@
 A Visual Studio Code extension to SVN blame files.
 When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
-https://github.com/BeauAgst/blamer-vs/assets/10343831/e1512c76-4388-490d-b67e-fc56c77e2b4b
+![](/marketplace/example.gif)
 
 ## Requirements
 
@@ -40,70 +40,10 @@ This extension contributes the following commands to the Command palette.
 
 ## Known Issues
 
--   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first. ([#3](/../../issues/3))
--   Authentication errors [#5](/../../issues/5), [#9](/../../issues/9)
+-   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first. ([#3](https://github.com/BeauAgst/svn-blamer/issues/3))
+-   Authentication errors [#5](https://github.com/BeauAgst/svn-blamer/issues/5), [#9](https://github.com/BeauAgst/svn-blamer/issues/9)
 
 ## Feedback & Contributing
 
-Please report any bugs, suggestions or documentation requests via [issues](/../../issues)
-Feel free to submit [pull requests](/../../pulls)
-
-## TODO
-
--   Automate release flow
-    -   Tests pass
-    -   https://github.com/marketplace/actions/gh-release
-    -   https://github.com/marketplace/actions/vsix-publisher
-
-## Release Notes
-
-## 0.6.0
-
--   Major refactor & update of the codebase
--   Introduces auto-blame - blame files as you open them
--   Adds configuration option to disable fetching logs. Blame will still work as usual [#77](/../../issues/77) [#471](/../../issues/471)
--   Fixes bug where revision is not set, blamer would fail [#470](/../../issues/470)
--   Adds a toggle command - toggle between showing and clearing blame [#71](/../../issues/71) [#88](/../../issues/88)
--   Appends blame to the line when clicked, a-la gitlens [#327](/../../issues/327)
-
-## 0.5.2
-
--   Fixed a bug where the commit author disappeared
-
-## 0.5.1
-
--   Handle cases where author metadata is missing [#53](/../../issues/53)
--   Use spawn instead of exec [#53](/../../issues/53)
--   Dependency updates
-
-## 0.5.0
-
--   Mac blame shortcut added
--   Setting added to toggle visual indicator visibility [#10](/../../issues/10)
--   Better error handling, blame indicator in workbench [#3](/../../issues/3)
-
-## 0.4.0
-
--   Revision number added to tooltips [#7](/../../issues/7)
-
-## 0.3.2
-
--   Fixed decoration issue causing characters to show incorrectly depending on the language [#6](/../../issues/6)
-
-## 0.3.1
-
--   Removed formatting error in decoration caused by conflict with `mailto:`
--   Added icon to extension
-
-## 0.3.0
-
--   Linux support was added. [#2](/../../issues/2)
-
-## 0.2.0
-
--   Added keyboard shortcut
--   Fixed readme typo
-
-## 0.1.0
-
--   Initial release
+Please report any bugs, suggestions or documentation requests via [issues](https://github.com/BeauAgst/svn-blamer/issues)
+Feel free to submit [pull requests](https://github.com/BeauAgst/svn-blamer/pulls)
