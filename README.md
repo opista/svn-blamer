@@ -40,8 +40,8 @@ This extension contributes the following commands to the Command palette.
 
 ## Known Issues
 
--   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first. ([#3](https://github.com/BeauAgst/svn-blamer/issues/3))
--   Authentication errors [#5](https://github.com/BeauAgst/svn-blamer/issues/5), [#9](https://github.com/BeauAgst/svn-blamer/issues/9)
+-   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first.
+-   Authentication errors [#5](https://github.com/BeauAgst/svn-blamer/issues/5)
 
 ## Feedback & Contributing
 
