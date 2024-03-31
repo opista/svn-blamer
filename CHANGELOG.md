@@ -6,6 +6,7 @@ All notable changes to the "blamer-vs" extension will be documented in this file
 
 ## Fixed
 
+-   Bug where hover messages would duplicate due to untracked decorations
 -   Bug where auto-blamed files repeatedly surface an error
 
 ## [0.6.0] - 2024-03-28

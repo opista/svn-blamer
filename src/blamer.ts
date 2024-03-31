@@ -234,7 +234,6 @@ export class Blamer {
         }
 
         const line = (textEditor.selection.active.line + 1).toString();
-
         this.activeLineDecoration?.dispose();
         await this.restorePreviousDecoration();
         await this.setUpdatedDecoration(textEditor, fileName, line);
@@ -256,6 +255,7 @@ export class Blamer {
             fileName: this.activeFileName,
             line: this.activeLine,
         });
+
         existingDecoration.decoration.dispose();
         const decoration = this.decorationManager.createAndSetLineDecoration(
             this.activeTextEditor,
@@ -263,9 +263,12 @@ export class Blamer {
             "blame",
         );
 
-        this.setRecordsForFile(this.activeFileName, {
+        await this.setRecordsForFile(this.activeFileName, {
             ...records,
-            [this.activeLine]: { decoration, metadata: existingDecoration.metadata },
+            lines: {
+                ...records.lines,
+                [this.activeLine]: { ...existingDecoration, decoration },
+            },
         });
 
         this.activeTextEditor = undefined;
