@@ -1,6 +1,7 @@
 import { LogOutputChannel, workspace } from "vscode";
 
 import { EXTENSION_CONFIGURATION } from "./const/extension";
+import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapBlameOutputToBlameModel } from "./mapping/map-blame-output-to-blame-model";
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
@@ -10,13 +11,23 @@ import { spawnProcess } from "./util/spawn-process";
 export class SVN {
     constructor(private logger: LogOutputChannel) {}
 
-    async blameFile(fileName: string): Promise<Blame[]> {
+    private async command(command: string) {
         const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+
+        if (!svnExecutablePath) {
+            throw new ConfigurationError(
+                `${EXTENSION_CONFIGURATION}.svnExecutablePath`,
+                svnExecutablePath,
+            );
+        }
+
+        return await spawnProcess(`${svnExecutablePath} ${command}`);
+    }
+
+    async blameFile(fileName: string): Promise<Blame[]> {
         this.logger.debug("Running blame child process");
         try {
-            const data = await spawnProcess(
-                `${svnExecutablePath} blame --xml -x "-w --ignore-eol-style" "${fileName}"`,
-            );
+            const data = await this.command(`blame --xml -x "-w --ignore-eol-style" "${fileName}"`);
 
             this.logger.debug("Blame child process successful");
 
@@ -33,10 +44,7 @@ export class SVN {
     }
 
     async getLogForRevision(fileName: string, revision: string) {
-        const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
-        const data = await spawnProcess(
-            `${svnExecutablePath} log --xml -r ${revision} "${fileName}"`,
-        );
+        const data = await this.command(`log --xml -r ${revision} "${fileName}"`);
 
         return mapLogOutputToMessage(data);
     }
