@@ -107,7 +107,7 @@ export class Blamer {
         return await this.clearBlameForFile(fileName);
     }
 
-    async getLogForFileRevision(fileName: string, revision: string) {
+    async getLogForRevision(fileName: string, revision: string) {
         const { enableLogs } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
         if (!enableLogs) {
@@ -328,7 +328,7 @@ export class Blamer {
 
         if (!log) {
             // Don't await this
-            this.getLogForFileRevision(fileName, blame.revision)
+            this.getLogForRevision(fileName, blame.revision)
                 .then(async (log) => {
                     // Don't do anything if no log is returned
                     if (!log) {
