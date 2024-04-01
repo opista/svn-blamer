@@ -20,6 +20,14 @@ When run, this extension will place an icon next to each line of your file. Each
 
 If you use TortoiseSVN, make sure the option Command Line Tools is checked during installation, and C:\Program Files\TortoiseSVN\bin is available in PATH.
 
+## Features
+
+-   Visually identify lines changed by the same revision
+-   Display revision information and logs in line
+-   Hover line blame to read the full commit log
+-   Auto-blame files as you open them
+-   Toggle blame from the toolbar
+
 ## Commands
 
 This extension contributes the following commands to the Command palette.
@@ -37,6 +45,7 @@ This extension contributes the following commands to the Command palette.
 | **Auto Blame**               | Automatically blames files as you open them.                      | `true`        |
 | **Enable Details**           | Fetches and displays revision log data in the popup.              | `false`       |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
+| **SVN Executable**           | Configuration for SVN executable path.                            | `"svn"`       |
 
 ## Known Issues
 
