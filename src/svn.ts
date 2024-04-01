@@ -1,5 +1,6 @@
-import { LogOutputChannel } from "vscode";
+import { LogOutputChannel, workspace } from "vscode";
 
+import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapBlameOutputToBlameModel } from "./mapping/map-blame-output-to-blame-model";
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
@@ -10,10 +11,11 @@ export class SVN {
     constructor(private logger: LogOutputChannel) {}
 
     async blameFile(fileName: string): Promise<Blame[]> {
+        const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
         this.logger.debug("Running blame child process");
         try {
             const data = await spawnProcess(
-                `svn blame --xml -x "-w --ignore-eol-style" "${fileName}"`,
+                `${svnExecutablePath} blame --xml -x "-w --ignore-eol-style" "${fileName}"`,
             );
 
             this.logger.debug("Blame child process successful");
@@ -31,8 +33,24 @@ export class SVN {
     }
 
     async getLogForRevision(fileName: string, revision: string) {
+        const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        const data = await spawnProcess(
+            `${svnExecutablePath} log --xml -r ${revision} "${fileName}"`,
+        );
+
+        return mapLogOutputToMessage(data);
+    }
+
+    async getLogsForRevisions(fileName: string, revisions: string[]): Promise<Log[]> {
+        this.logger.debug("Running log child process");
+
         try {
-            const data = await spawnProcess(`svn log --xml -r ${revision} "${fileName}"`);
+            const logs = await Promise.all(
+                revisions.map(async (revision) => {
+                    const log = await this.getLogForRevision(fileName, revision);
+                    return { log, revision };
+                }),
+            );
 
             this.logger.debug("Log child process successful");
 
