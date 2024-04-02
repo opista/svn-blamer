@@ -8,7 +8,7 @@
 # SVN Blamer
 
 A Visual Studio Code extension to SVN blame files.
-When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
+When run, this extension will place an icon next to each line of your file. Each icon colour refers to a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
 <img src="src/img/marketplace/example.gif" width="700">
 
@@ -56,8 +56,8 @@ This extension contributes the following commands to the Command palette.
 
 | Setting                      | Description                                                       | Default value |
 | ---------------------------- | ----------------------------------------------------------------- | ------------- |
-| **Auto Blame**               | Automatically blames files as you open them.                      | `true`        |
-| **Enable Details**           | Fetches and displays revision log data in the popup.              | `false`       |
+| **Auto Blame**               | Automatically blames files as you open them.                      | `false`       |
+| **Enable Details**           | Fetches and displays revision log data in the popup.              | `true`        |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
 | **SVN Executable Path**      | Path to svn executable or alternative command.                    | `"svn"`       |
 
