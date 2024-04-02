@@ -5,6 +5,9 @@
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/beaugust.blamer-vs?style=for-the-badge)
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/beaugust.blamer-vs?style=for-the-badge)
 
+![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/beaugust.blamer-vs?style=for-the-badge)
+![Visual Studio Marketplace Release Date](https://img.shields.io/visual-studio-marketplace/release-date/beaugust.blamer-vs?style=for-the-badge)
+
 # SVN Blamer
 
 A Visual Studio Code extension to SVN blame files.
