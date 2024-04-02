@@ -57,7 +57,7 @@ This extension contributes the following commands to the Command palette.
 | Setting                      | Description                                                       | Default value |
 | ---------------------------- | ----------------------------------------------------------------- | ------------- |
 | **Auto Blame**               | Automatically blames files as you open them.                      | `false`       |
-| **Enable Details**           | Fetches and displays revision log data in the popup.              | `true`        |
+| **Enable Logs**              | Fetches and displays revision log data in the popup.              | `true`        |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
 | **SVN Executable Path**      | Path to svn executable or alternative command.                    | `"svn"`       |
 
