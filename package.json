@@ -12,13 +12,18 @@
         "url": "https://github.com/BeauAgst/blamer-vs/issues"
     },
     "homepage": "https://github.com/BeauAgst/blamer-vs",
-    "icon": "dist/public/icon.png",
+    "icon": "dist/img/marketplace/icon.png",
     "engines": {
         "vscode": "^1.87.0"
     },
     "categories": [
         "SCM Providers",
         "Other"
+    ],
+    "keywords": [
+        "svn",
+        "blame",
+        "log"
     ],
     "main": "./dist/extension.js",
     "activationEvents": [
@@ -36,6 +41,7 @@
             },
             {
                 "command": "blamer-vs.toggleBlame",
+                "icon": "$(git-merge)",
                 "title": "SVN Blamer: Toggle blame"
             }
         ],
@@ -52,6 +58,11 @@
                     "default": false,
                     "description": "Enables popup revision log data. Disabling this setting will significantly speed up blame.",
                     "type": "boolean"
+                },
+                "svnBlamer.svnExecutablePath": {
+                    "type": "string",
+                    "default": "svn",
+                    "description": "Path to svn executable or alternative command"
                 },
                 "svnBlamer.enableVisualIndicators": {
                     "default": true,
@@ -73,7 +84,15 @@
                 "mac": "ctrl+cmd+y",
                 "when": "editorTextFocus"
             }
-        ]
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "blamer-vs.toggleBlame",
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "scripts": {
         "compile-tests": "tsc -p . --outDir out",

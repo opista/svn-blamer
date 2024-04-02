@@ -16,7 +16,7 @@ export class DecorationManager {
 
     constructor() {
         const extensionPath = extensions.getExtension(EXTENSION_ID)!.extensionPath;
-        this.imageDir = path.join(extensionPath, "dist", "img");
+        this.imageDir = path.join(extensionPath, "dist", "img", "indicators");
     }
 
     private *generator(files: string[]) {

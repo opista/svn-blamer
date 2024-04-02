@@ -10,7 +10,7 @@
 A Visual Studio Code extension to SVN blame files.
 When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
-![](/marketplace/example.gif)
+<img src="src/img/marketplace/example.gif" width="700">
 
 ## Requirements
 
@@ -19,6 +19,28 @@ When run, this extension will place an icon next to each line of your file. Each
 ### Windows users
 
 If you use TortoiseSVN, make sure the option Command Line Tools is checked during installation, and C:\Program Files\TortoiseSVN\bin is available in PATH.
+
+## Features
+
+#### Visually identify lines changed by the same revision
+
+<img src="src/img/marketplace/visual-indicators.png" width="700">
+
+#### Display revision information and logs in line
+
+<img src="src/img/marketplace/inline-blame.png" width="700">
+
+#### Hover line blame to read the full commit log
+
+<img src="src/img/marketplace/blame-hover-message.png" width="700">
+
+#### Auto-blame files as you open them
+
+<img src="src/img/marketplace/auto-blame.gif" width="700">
+
+#### Toggle blame from the toolbar
+
+<img src="src/img/marketplace/toolbar-toggle.gif" width="700">
 
 ## Commands
 
@@ -37,6 +59,7 @@ This extension contributes the following commands to the Command palette.
 | **Auto Blame**               | Automatically blames files as you open them.                      | `true`        |
 | **Enable Details**           | Fetches and displays revision log data in the popup.              | `false`       |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
+| **SVN Executable Path**      | Path to svn executable or alternative command.                    | `"svn"`       |
 
 ## Known Issues
 

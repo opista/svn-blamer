@@ -18,13 +18,6 @@ let ctx = await esbuild.context({
                 to: ["./dist/img"],
             },
         }),
-        copy({
-            resolveFrom: "cwd",
-            assets: {
-                from: ["./public/**/*"],
-                to: ["./dist/public"],
-            },
-        }),
     ],
     sourcemap: process.argv.includes("--sourcemap"),
 });
