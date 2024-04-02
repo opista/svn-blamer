@@ -64,7 +64,7 @@ export class Blamer {
         const existingRecord = await this.getRecordForFile(fileName);
         return await this.storage.set<DecorationRecord>(
             fileName,
-            mapToDecorationRecord(merge(existingRecord, update)),
+            merge({}, existingRecord, update),
         );
     }
 
@@ -214,6 +214,9 @@ export class Blamer {
             }
 
             if (existingRecord) {
+                this.logger.debug("Blame already exists for file, re-applying decorations", {
+                    fileName,
+                });
                 this.decorationManager.reApplyDecorations(textEditor, existingRecord);
                 return;
             }
