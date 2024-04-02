@@ -32,18 +32,18 @@ This extension contributes the following commands to the Command palette.
 
 ## Configuration
 
-| Setting                      | Description                                                                                | Default value |
-| ---------------------------- | ------------------------------------------------------------------------------------------ | ------------- |
-| **Auto Blame**               | Automatically blames files as you open them.                                               | `true`        |
-| **Enable Details**           | Enables popup revision log data. Disabling this setting will significantly speed up blame. | `false`       |
-| **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number.                          | `true`        |
+| Setting                      | Description                                                       | Default value |
+| ---------------------------- | ----------------------------------------------------------------- | ------------- |
+| **Auto Blame**               | Automatically blames files as you open them.                      | `true`        |
+| **Enable Details**           | Fetches and displays revision log data in the popup.              | `false`       |
+| **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
 
 ## Known Issues
 
--   Causes slowdown when the "**Enable Details**" setting is enabled because all unique logs have to be retrieved first.
 -   Authentication errors [#5](https://github.com/BeauAgst/svn-blamer/issues/5)
 
 ## Feedback & Contributing
 
 Please report any bugs, suggestions or documentation requests via [issues](https://github.com/BeauAgst/svn-blamer/issues)
+
 Feel free to submit [pull requests](https://github.com/BeauAgst/svn-blamer/pulls)

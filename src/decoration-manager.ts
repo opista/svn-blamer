@@ -1,38 +1,63 @@
-import { TextEditor, window, workspace } from "vscode";
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 
-import { EXTENSION_CONFIGURATION } from "./const/extension";
-import { mapBlameToDecorationData } from "./mapping/map-blame-to-decoration-data";
+import { extensions, TextEditor, window, workspace } from "vscode";
+
+import { EXTENSION_CONFIGURATION, EXTENSION_ID } from "./const/extension";
+import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
 import { mapDecorationOptions } from "./mapping/map-decoration-options";
 import { Blame } from "./types/blame.model";
-import { DecorationData } from "./types/decoration-data.model";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { GutterImagePathHashMap } from "./types/gutter-image-path-hash-map.model";
-import { Log } from "./types/log.model";
-import { gutterImageGenerator } from "./util/gutter-image-generator";
+import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
-    constructor() {}
+    private imageDir: string;
+
+    constructor() {
+        const extensionPath = extensions.getExtension(EXTENSION_ID)!.extensionPath;
+        this.imageDir = path.join(extensionPath, "dist", "img");
+    }
+
+    private *generator(files: string[]) {
+        while (files.length) {
+            const index = Math.floor(Math.random() * files.length);
+            const imagePath = files[index];
+            files.splice(index, 1);
+
+            yield imagePath;
+        }
+
+        return undefined;
+    }
+
+    private async gutterImageGenerator() {
+        const files = await readdir(this.imageDir);
+        return this.generator(files);
+    }
 
     createAndSetLineDecoration(
         textEditor: TextEditor,
-        decorationData: DecorationData,
+        blame: Blame,
         action: "blame" | "active_line",
+        gutterIconImage?: string,
+        log?: string,
     ) {
         const decoration = window.createTextEditorDecorationType({
             after:
                 action === "active_line"
                     ? {
                           color: "rgba(153, 153, 153, 0.35)",
-                          contentText: decorationData.afterMessage,
+                          contentText: mapBlameToInlineMessage(blame, log),
                           margin: "0 0 0 3em",
                           textDecoration: "none",
                       }
                     : undefined,
-            gutterIconPath: decorationData.gutterImagePath,
+            gutterIconPath: gutterIconImage && path.join(this.imageDir, gutterIconImage),
             gutterIconSize: "contain",
         });
 
-        textEditor?.setDecorations(decoration, mapDecorationOptions(decorationData));
+        textEditor?.setDecorations(decoration, mapDecorationOptions(blame, log));
 
         return decoration;
     }
@@ -44,7 +69,7 @@ export class DecorationManager {
             return {};
         }
 
-        const generator = await gutterImageGenerator();
+        const generator = await this.gutterImageGenerator();
 
         return revisions.reduce<GutterImagePathHashMap>((hashMap, revision: string) => {
             const existingValue = hashMap[revision];
@@ -63,35 +88,33 @@ export class DecorationManager {
     async createAndSetDecorationsForBlame(
         textEditor: TextEditor,
         blames: Blame[],
-        revisions: string[],
-        logs: Log[],
-    ): Promise<DecorationRecord> {
-        const gutterImagePathHashMap = await this.createGutterImagePathHashMap(revisions);
+        icons: GutterImagePathHashMap,
+        logs?: LogHashMap,
+    ): Promise<DecorationRecord["lines"]> {
+        return blames.reduce<Required<DecorationRecord["lines"]>>((acc, blame) => {
+            const decoration = this.createAndSetLineDecoration(
+                textEditor,
+                blame,
+                "blame",
+                icons[blame.revision],
+                logs?.[blame.revision],
+            );
 
-        return blames.reduce<Required<DecorationRecord>>(
-            (acc, blame) => {
-                const metadata = mapBlameToDecorationData(
-                    blame,
-                    gutterImagePathHashMap[blame.revision],
-                    logs.find(({ revision }) => blame.revision === revision)?.log,
-                );
+            acc[blame.line] = {
+                blame,
+                decoration,
+            };
 
-                const decoration = this.createAndSetLineDecoration(textEditor, metadata, "blame");
-
-                acc.lines[blame.line] = {
-                    decoration,
-                    metadata,
-                };
-
-                return acc;
-            },
-            { lines: {}, workingCopy: true },
-        );
+            return acc;
+        }, {});
     }
 
-    reApplyDecorations(textEditor: TextEditor, records: DecorationRecord) {
-        return Object.values(records.lines).map(({ decoration, metadata }) => {
-            textEditor?.setDecorations(decoration, mapDecorationOptions(metadata));
+    reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
+        return Object.values(record.lines).map(({ blame, decoration }) => {
+            textEditor?.setDecorations(
+                decoration,
+                mapDecorationOptions(blame, record.logs[blame.revision]),
+            );
         });
     }
 }
