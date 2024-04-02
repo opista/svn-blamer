@@ -32,13 +32,7 @@ export class DecorationManager {
     }
 
     private async gutterImageGenerator() {
-        const extensionPath = extensions.getExtension(EXTENSION_ID)?.extensionPath;
-
-        if (!extensionPath) {
-            throw new Error("Unable to find extension path");
-        }
         const files = await readdir(this.imageDir);
-
         return this.generator(files);
     }
 
@@ -119,7 +113,7 @@ export class DecorationManager {
         return Object.values(record.lines).map(({ blame, decoration }) => {
             textEditor?.setDecorations(
                 decoration,
-                mapDecorationOptions(blame, record.logs[blame.line]),
+                mapDecorationOptions(blame, record.logs[blame.revision]),
             );
         });
     }
