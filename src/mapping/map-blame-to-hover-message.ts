@@ -19,12 +19,7 @@ export const mapBlameToHoverMessage = (blame: Blame, log?: string) => {
 
     const revisionNumber = revision ? `#${revision}` : "";
 
-    const rows = [
-        [authorText, revisionDateRelative, revisionDate],
-        [revisionNumber],
-        ["<ul><li>test</li></ul>"],
-        [log],
-    ];
+    const rows = [[authorText, revisionDateRelative, revisionDate], [revisionNumber], [log]];
 
     return rows.map((row) => row.filter(Boolean).join(" ")).join("\n\n");
 };

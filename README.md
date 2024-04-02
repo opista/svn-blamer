@@ -10,7 +10,7 @@
 A Visual Studio Code extension to SVN blame files.
 When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
-![](/marketplace/example.gif)
+![](/src/img/marketplace/example.gif)
 
 ## Requirements
 
@@ -22,11 +22,25 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 
 ## Features
 
--   Visually identify lines changed by the same revision
--   Display revision information and logs in line
--   Hover line blame to read the full commit log
--   Auto-blame files as you open them
--   Toggle blame from the toolbar
+#### Visually identify lines changed by the same revision
+
+![](/src/img/marketplace/visual-indicators.png)
+
+#### Display revision information and logs in line
+
+![](/src/img/marketplace/inline-blame.png)
+
+#### Hover line blame to read the full commit log
+
+![](/src/img/marketplace/blame-hover-message.png)
+
+#### Auto-blame files as you open them
+
+![](/src/img/marketplace/auto-blame.gif)
+
+#### Toggle blame from the toolbar
+
+![](/src/img/marketplace/toolbar-toggle.gif)
 
 ## Commands
 
