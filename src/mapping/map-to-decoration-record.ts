@@ -10,4 +10,4 @@ const defaultRecord: DecorationRecord = {
 };
 
 export const mapToDecorationRecord = (record: Partial<DecorationRecord>): DecorationRecord =>
-    merge(defaultRecord, record);
+    merge({}, defaultRecord, record);
