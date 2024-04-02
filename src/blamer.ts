@@ -297,6 +297,55 @@ export class Blamer {
         this.activeLine = undefined;
     }
 
+    async fetchLogAndUpdateDecoration(
+        textEditor: TextEditor,
+        record: DecorationRecord,
+        fileName: string,
+        line: string,
+    ) {
+        const { blame } = record.lines[line];
+
+        try {
+            const log = await this.getLogForRevision(fileName, blame.revision);
+
+            if (!log) {
+                return;
+            }
+
+            await this.updateRecordForFile(fileName, {
+                logs: {
+                    [blame.revision]: log,
+                },
+            });
+
+            if (this.activeLine !== line) {
+                this.logger.debug("Line no longer active, won't update decoration", {
+                    activeLine: this.activeLine,
+                    fileName,
+                    line,
+                });
+                return;
+            }
+
+            this.logger.debug("Updating decoration with fetched log", {
+                fileName,
+                line,
+                revision: blame.revision,
+            });
+            this.activeLineDecoration?.dispose();
+            this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
+                textEditor,
+                blame,
+                "active_line",
+                record.icons[blame.revision],
+                log,
+            );
+        } catch (err) {
+            this.statusBarItem.hide();
+            this.logger.error("Failed to get log for line", { err, fileName, line });
+        }
+    }
+
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
         const record = await this.getRecordForFile(fileName);
         const existingDecoration = record?.lines?.[line];
@@ -327,49 +376,8 @@ export class Blamer {
         this.activeLine = line;
 
         if (!log) {
-            // Don't await this
-            this.getLogForRevision(fileName, blame.revision)
-                .then(async (log) => {
-                    // Don't do anything if no log is returned
-                    if (!log) {
-                        return;
-                    }
-
-                    // Don't update the decoration if the selected line has changed
-                    if (this.activeLine !== line) {
-                        this.logger.debug("Line no longer active, won't update decoration", {
-                            activeLine: this.activeLine,
-                            fileName,
-                            line,
-                        });
-                        return;
-                    }
-
-                    // Dispose of the decoration we just created and replace it
-                    this.logger.debug("Updating decoration with fetched log", {
-                        fileName,
-                        line,
-                        revision: blame.revision,
-                    });
-                    this.activeLineDecoration?.dispose();
-                    this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
-                        textEditor,
-                        blame,
-                        "active_line",
-                        record.icons[blame.revision],
-                        log,
-                    );
-
-                    await this.updateRecordForFile(fileName, {
-                        logs: {
-                            [blame.revision]: log,
-                        },
-                    });
-                })
-                .catch((err) => {
-                    this.statusBarItem.hide();
-                    this.logger.error("Failed to get log for line", { err, fileName, line });
-                });
+            // Don't await this, we don't want it blocking
+            this.fetchLogAndUpdateDecoration(textEditor, record, fileName, line);
         }
     }
 }
