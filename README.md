@@ -1,12 +1,17 @@
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/BeauAgst/blamer-vs?style=for-the-badge)
 ![GitHub License](https://img.shields.io/github/license/BeauAgst/blamer-vs?style=for-the-badge)
 
+![GitHub Release Date](https://img.shields.io/github/release-date/beauagst/svn-blamer?display_date=published_at&style=for-the-badge)
+
+<a href="https://marketplace.visualstudio.com/items?itemName=beaugust.blamer-vs" target="_blank">![Visual Studio Marketplace Link](https://img.shields.io/badge/Visual%20Studio%20Marketplace-black?style=for-the-badge&logo=visualstudiocode)</a>
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/beaugust.blamer-vs?style=for-the-badge)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/beaugust.blamer-vs?style=for-the-badge)
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/beaugust.blamer-vs?style=for-the-badge)
 
-![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/beaugust.blamer-vs?style=for-the-badge)
-![Visual Studio Marketplace Release Date](https://img.shields.io/visual-studio-marketplace/release-date/beaugust.blamer-vs?style=for-the-badge)
+<a href="https://open-vsx.org/extension/beaugust/blamer-vs" target="_blank">![Open VSX Registry Link](https://img.shields.io/badge/Open%20VSX%20Registry-%23c160ef?style=for-the-badge)</a>
+![Open VSX Downloads](https://img.shields.io/open-vsx/dt/beaugust/blamer-vs?style=for-the-badge)
+![Open VSX Rating](https://img.shields.io/open-vsx/rating/beaugust/blamer-vs?style=for-the-badge)
+
 
 # SVN Blamer
 
