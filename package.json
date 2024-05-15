@@ -14,7 +14,7 @@
     "homepage": "https://github.com/BeauAgst/blamer-vs",
     "icon": "dist/img/marketplace/icon.png",
     "engines": {
-        "vscode": "^1.87.0"
+        "vscode": "^1.17.0"
     },
     "categories": [
         "SCM Providers",
