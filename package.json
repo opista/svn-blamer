@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Blamer",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "0.6.2",
+    "version": "0.7.0",
     "publisher": "beaugust",
     "repository": {
         "type": "git",
@@ -50,24 +50,24 @@
             "type": "object",
             "properties": {
                 "svnBlamer.autoBlame": {
-                    "default": true,
+                    "default": false,
                     "description": "Automatically blames files as you open them.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableLogs": {
-                    "default": false,
+                    "default": true,
                     "description": "Enables popup revision log data. Disabling this setting will significantly speed up blame.",
+                    "type": "boolean"
+                },
+                "svnBlamer.enableVisualIndicators": {
+                    "default": true,
+                    "description": "Enable/Disable visual indicators that sit to the left of the line number.",
                     "type": "boolean"
                 },
                 "svnBlamer.svnExecutablePath": {
                     "type": "string",
                     "default": "svn",
                     "description": "Path to svn executable or alternative command"
-                },
-                "svnBlamer.enableVisualIndicators": {
-                    "default": true,
-                    "description": "Enable/Disable visual indicators that sit to the left of the line number.",
-                    "type": "boolean"
                 }
             }
         },

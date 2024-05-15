@@ -2,6 +2,19 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.0] - 2024-04-02
+
+### Changed
+
+-   Logs are now fetched individually on line click, rather than in bulk on blame. This should prevent files from locking up when initially blamed
+-   Auto-blame is disabled by default
+-   Logs are enabled by default now that performance has been improved
+
+### Added
+
+-   Blame toggle button is added to the editor toolbar.
+-   SVN path/command configuration. Change `"svn"` to a different path or command
+
 ## [0.6.2] - 2024-03-31
 
 ### Changed

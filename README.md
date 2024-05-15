@@ -1,14 +1,22 @@
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/BeauAgst/blamer-vs?style=for-the-badge)
 ![GitHub License](https://img.shields.io/github/license/BeauAgst/blamer-vs?style=for-the-badge)
 
+![GitHub Release Date](https://img.shields.io/github/release-date/beauagst/svn-blamer?display_date=published_at&style=for-the-badge)
+
+<a href="https://marketplace.visualstudio.com/items?itemName=beaugust.blamer-vs" target="_blank">![Visual Studio Marketplace Link](https://img.shields.io/badge/Visual%20Studio%20Marketplace-black?style=for-the-badge&logo=visualstudiocode)</a>
 ![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/beaugust.blamer-vs?style=for-the-badge)
 ![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/beaugust.blamer-vs?style=for-the-badge)
 ![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/beaugust.blamer-vs?style=for-the-badge)
 
+<a href="https://open-vsx.org/extension/beaugust/blamer-vs" target="_blank">![Open VSX Registry Link](https://img.shields.io/badge/Open%20VSX%20Registry-%23c160ef?style=for-the-badge)</a>
+![Open VSX Downloads](https://img.shields.io/open-vsx/dt/beaugust/blamer-vs?style=for-the-badge)
+![Open VSX Rating](https://img.shields.io/open-vsx/rating/beaugust/blamer-vs?style=for-the-badge)
+
+
 # SVN Blamer
 
 A Visual Studio Code extension to SVN blame files.
-When run, this extension will place an icon next to each line of your file. Each differently-coloured icon means a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
+When run, this extension will place an icon next to each line of your file. Each icon colour refers to a different revision. Hovering a line will display a tooltip, showing the committer, date, and message. Blame data will also display inline.
 
 <img src="src/img/marketplace/example.gif" width="700">
 
@@ -56,8 +64,8 @@ This extension contributes the following commands to the Command palette.
 
 | Setting                      | Description                                                       | Default value |
 | ---------------------------- | ----------------------------------------------------------------- | ------------- |
-| **Auto Blame**               | Automatically blames files as you open them.                      | `true`        |
-| **Enable Details**           | Fetches and displays revision log data in the popup.              | `false`       |
+| **Auto Blame**               | Automatically blames files as you open them.                      | `false`       |
+| **Enable Logs**              | Fetches and displays revision log data in the popup.              | `true`        |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
 | **SVN Executable Path**      | Path to svn executable or alternative command.                    | `"svn"`       |
 
