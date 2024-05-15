@@ -12,7 +12,6 @@
 ![Open VSX Downloads](https://img.shields.io/open-vsx/dt/beaugust/blamer-vs?style=for-the-badge)
 ![Open VSX Rating](https://img.shields.io/open-vsx/rating/beaugust/blamer-vs?style=for-the-badge)
 
-
 # SVN Blamer
 
 A Visual Studio Code extension to SVN blame files.
