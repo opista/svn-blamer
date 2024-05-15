@@ -2,6 +2,12 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.1] - 2024-05-15
+
+### Changed
+
+-   Reduces the minimum required VSCode version to 1.17.0
+
 ## [0.7.0] - 2024-04-02
 
 ### Changed
