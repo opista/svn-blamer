@@ -2,6 +2,12 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.2] - 2025-01-08
+
+### Fixed
+
+-   Bug when trying to blame from directories with non-English characters
+
 ## [0.7.1] - 2024-05-15
 
 ### Changed

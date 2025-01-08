@@ -1,3 +1,4 @@
+import { basename, dirname } from "path";
 import { LogOutputChannel, workspace } from "vscode";
 
 import { EXTENSION_CONFIGURATION } from "./const/extension";
@@ -11,7 +12,10 @@ import { spawnProcess } from "./util/spawn-process";
 export class SVN {
     constructor(private logger: LogOutputChannel) {}
 
-    private async command(command: string, fileName: string) {
+    private async command(
+        command: string,
+        { cwd, fileName }: { cwd: string; fileName: string },
+    ): Promise<string> {
         try {
             const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
@@ -22,7 +26,7 @@ export class SVN {
                 );
             }
 
-            return await spawnProcess(`${svnExecutablePath} ${command}`);
+            return await spawnProcess(`${svnExecutablePath} ${command}`, { cwd });
         } catch (err: any) {
             if (typeof err === "string") {
                 if (err.includes("E155007")) {
@@ -40,10 +44,13 @@ export class SVN {
     async blameFile(fileName: string): Promise<Blame[]> {
         this.logger.debug("Running blame child process");
         try {
-            const data = await this.command(
-                `blame --xml -x "-w --ignore-eol-style" "${fileName}"`,
+            const dir = dirname(fileName);
+            const file = basename(fileName);
+
+            const data = await this.command(`blame --xml -x "-w --ignore-eol-style" "${file}"`, {
+                cwd: dir,
                 fileName,
-            );
+            });
 
             this.logger.debug("Blame child process successful");
 
@@ -56,7 +63,13 @@ export class SVN {
 
     async getLogForRevision(fileName: string, revision: string) {
         try {
-            const data = await this.command(`log --xml -r ${revision} "${fileName}"`, fileName);
+            const dir = dirname(fileName);
+            const file = basename(fileName);
+
+            const data = await this.command(`log --xml -r ${revision} "${file}"`, {
+                cwd: dir,
+                fileName,
+            });
             return mapLogOutputToMessage(data);
         } catch (err: any) {
             this.logger.error("Failed to get revision log", { err });

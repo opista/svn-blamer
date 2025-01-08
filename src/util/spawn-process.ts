@@ -1,8 +1,11 @@
-import { spawn } from "node:child_process";
+import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
 
-export const spawnProcess = (script: string): Promise<string> => {
+export const spawnProcess = (
+    script: string,
+    options?: SpawnOptionsWithoutStdio,
+): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const child = spawn(script, { shell: true });
+        const child = spawn(script, { ...options, shell: true });
 
         let data = "";
         let err = "";
