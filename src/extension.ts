@@ -5,6 +5,7 @@ import { EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
+import { DecorationRecord } from "./types/decoration-record.model";
 import { debounce } from "./util/debounce";
 
 export async function activate(context: ExtensionContext) {
@@ -12,12 +13,12 @@ export async function activate(context: ExtensionContext) {
         log: true,
     });
     const decorationManager = new DecorationManager();
-    const storage = new Storage(context);
+    const storage = new Storage<DecorationRecord>();
     const svn = new SVN(logger);
     const blamer = new Blamer(logger, storage, svn, decorationManager);
 
     logger.clear();
-    await blamer.clearRecordsForAllFiles();
+    blamer.clearRecordsForAllFiles();
 
     logger.info("Blamer initialised");
 

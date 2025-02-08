@@ -1,26 +1,19 @@
-import { ExtensionContext } from "vscode";
+export class Storage<T> {
+    private storage: Map<string, T> = new Map();
 
-export class Storage {
-    constructor(private context: ExtensionContext) {}
-
-    async get<T>(key: string) {
-        return this.context.workspaceState.get<T>(key);
+    get(key: string): T | undefined {
+        return this.storage.get(key);
     }
 
-    async getKeys() {
-        return await this.context.workspaceState.keys();
+    set(key: string, value: T): void {
+        this.storage.set(key, value);
     }
 
-    async set<T>(key: string, value: T) {
-        return this.context.workspaceState.update(key, value);
+    delete(key: string): void {
+        this.storage.delete(key);
     }
 
-    async delete(key: string) {
-        return this.context.workspaceState.update(key, undefined);
-    }
-
-    async clear() {
-        const keys = await this.getKeys();
-        return Promise.all(keys.map((key) => this.context.workspaceState.update(key, undefined)));
+    clear(): void {
+        this.storage.clear();
     }
 }
