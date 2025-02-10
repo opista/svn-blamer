@@ -29,7 +29,7 @@ export class Blamer {
 
     constructor(
         private logger: LogOutputChannel,
-        private storage: Storage,
+        private storage: Storage<DecorationRecord>,
         private svn: SVN,
         private decorationManager: DecorationManager,
     ) {
@@ -41,31 +41,28 @@ export class Blamer {
         this.statusBarItem.text = text.filter(Boolean).join(" ");
     }
 
-    async clearRecordForFile(fileName: string) {
-        return await this.storage.delete(fileName);
+    clearRecordForFile(fileName: string) {
+        return this.storage.delete(fileName);
     }
 
-    async clearRecordsForAllFiles() {
-        return await this.storage.clear();
+    clearRecordsForAllFiles() {
+        return this.storage.clear();
     }
 
-    async getRecordForFile(fileName?: string) {
+    getRecordForFile(fileName?: string) {
         if (!fileName) {
             return undefined;
         }
-        return await this.storage.get<DecorationRecord>(fileName);
+        return this.storage.get(fileName);
     }
 
-    async setRecordForFile(fileName: string, record: DecorationRecord) {
-        return await this.storage.set<DecorationRecord>(fileName, record);
+    setRecordForFile(fileName: string, record: DecorationRecord) {
+        return this.storage.set(fileName, record);
     }
 
-    async updateRecordForFile(fileName: string, update: Partial<DecorationRecord>) {
-        const existingRecord = await this.getRecordForFile(fileName);
-        return await this.storage.set<DecorationRecord>(
-            fileName,
-            merge({}, existingRecord, update),
-        );
+    updateRecordForFile(fileName: string, update: Partial<DecorationRecord>) {
+        const existingRecord = this.getRecordForFile(fileName);
+        return this.storage.set(fileName, merge({}, existingRecord, update));
     }
 
     async getActiveTextEditorAndFileName() {
@@ -87,7 +84,7 @@ export class Blamer {
             return;
         }
 
-        const record = await this.getRecordForFile(fileName);
+        const record = this.getRecordForFile(fileName);
         this.activeLineDecoration?.dispose();
 
         if (!record) {
@@ -98,13 +95,12 @@ export class Blamer {
 
         Object.values(record?.lines)?.map(({ decoration }) => decoration?.dispose?.());
 
-        await this.clearRecordForFile(fileName);
+        this.clearRecordForFile(fileName);
     }
 
     async clearBlameForActiveTextEditor() {
         const { fileName } = await this.getActiveTextEditorAndFileName();
-
-        return await this.clearBlameForFile(fileName);
+        return this.clearBlameForFile(fileName);
     }
 
     async getLogForRevision(fileName: string, revision: string) {
@@ -160,7 +156,7 @@ export class Blamer {
         const record = mapToDecorationRecord({ icons, lines });
 
         this.statusBarItem.hide();
-        await this.setRecordForFile(fileName, record);
+        this.setRecordForFile(fileName, record);
 
         this.logger.info("Blame successful", { fileName });
     }
@@ -171,13 +167,13 @@ export class Blamer {
             return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
             this.statusBarItem.hide();
-            this.logger.error("Blame action failed", { err });
+            this.logger.error("Blame action failed", { err: err?.toString() });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
         }
     }
 
     async toggleBlameForFile(textEditor?: TextEditor, fileName?: string) {
-        const fileData = await this.getRecordForFile(fileName);
+        const fileData = this.getRecordForFile(fileName);
 
         try {
             return fileData
@@ -186,7 +182,7 @@ export class Blamer {
         } catch (err: any) {
             const blameAction = fileData ? "hide" : "show";
             this.statusBarItem.hide();
-            this.logger.error(`Toggle blame failed [${blameAction}]`, { err });
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: err?.toString() });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
         }
     }
@@ -204,7 +200,7 @@ export class Blamer {
         const fileName = await getFileNameFromTextEditor(textEditor);
 
         try {
-            const existingRecord = await this.getRecordForFile(fileName);
+            const existingRecord = this.getRecordForFile(fileName);
 
             // explicit check so that we don't just skip
             // any previously unchecked files
@@ -233,10 +229,7 @@ export class Blamer {
             this.logger.debug("Blame attemped via auto-blame, silently failing");
 
             if (err instanceof NotWorkingCopyError) {
-                await this.setRecordForFile(
-                    err.fileName,
-                    mapToDecorationRecord({ workingCopy: false }),
-                );
+                this.setRecordForFile(err.fileName, mapToDecorationRecord({ workingCopy: false }));
             }
         }
     }
@@ -257,7 +250,7 @@ export class Blamer {
             await this.setUpdatedDecoration(textEditor, fileName, line);
         } catch (err) {
             this.statusBarItem.hide();
-            this.logger.error("Failed to track line", { err });
+            this.logger.error("Failed to track line", { err: err?.toString() });
         }
     }
 
@@ -266,7 +259,7 @@ export class Blamer {
             return;
         }
 
-        const record = await this.getRecordForFile(this.activeFileName);
+        const record = this.getRecordForFile(this.activeFileName);
         const existingDecoration = record?.lines?.[this.activeLine];
 
         if (!existingDecoration) {
@@ -289,7 +282,7 @@ export class Blamer {
             record.logs[blame.revision],
         );
 
-        await this.updateRecordForFile(this.activeFileName, {
+        this.updateRecordForFile(this.activeFileName, {
             lines: {
                 [this.activeLine]: { ...existingDecoration, decoration },
             },
@@ -315,7 +308,7 @@ export class Blamer {
                 return;
             }
 
-            await this.updateRecordForFile(fileName, {
+            this.updateRecordForFile(fileName, {
                 logs: {
                     [blame.revision]: log,
                 },
@@ -350,7 +343,7 @@ export class Blamer {
     }
 
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
-        const record = await this.getRecordForFile(fileName);
+        const record = this.getRecordForFile(fileName);
         const existingDecoration = record?.lines?.[line];
 
         if (!existingDecoration) {
@@ -365,7 +358,7 @@ export class Blamer {
         const { blame } = existingDecoration;
         const log = record.logs[blame.revision];
 
-        existingDecoration.decoration.dispose();
+        existingDecoration.decoration?.dispose();
         this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
             textEditor,
             blame,

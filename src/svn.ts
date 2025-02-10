@@ -56,7 +56,7 @@ export class SVN {
 
             return mapBlameOutputToBlameModel(data);
         } catch (err: any) {
-            this.logger.error("Failed to blame file", { err });
+            this.logger.error("Failed to blame file", { err: err?.toString() });
             throw err;
         }
     }
@@ -72,7 +72,7 @@ export class SVN {
             });
             return mapLogOutputToMessage(data);
         } catch (err: any) {
-            this.logger.error("Failed to get revision log", { err });
+            this.logger.error("Failed to get revision log", { err: err?.toString() });
             throw err;
         }
     }
