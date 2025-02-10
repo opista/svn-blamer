@@ -2,6 +2,12 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.3] - 2025-02-10
+
+### Fixed
+
+-   Bug with line decorations losing dispose method when being stored
+
 ## [0.7.2] - 2025-01-08
 
 ### Fixed
