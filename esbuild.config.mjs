@@ -1,6 +1,15 @@
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 
+import { generateIndicators } from "./_scripts/generate-indicators.mjs";
+
+const generateIndicatorsPlugin = {
+    name: "generate-indicators",
+    setup(build) {
+        build.onStart(() => generateIndicators(3000));
+    },
+};
+
 let ctx = await esbuild.context({
     bundle: true,
     entryPoints: ["./src/extension.ts"],
@@ -11,6 +20,7 @@ let ctx = await esbuild.context({
     outfile: "./dist/extension.js",
     platform: "node",
     plugins: [
+        generateIndicatorsPlugin,
         copy({
             resolveFrom: "cwd",
             assets: {
