@@ -3,3 +3,4 @@ node_modules
 .vsix
 dist
 out
+src/img/indicators
