@@ -10,7 +10,7 @@ export const mapDecorationOptions = (blame: Blame, log?: string): DecorationOpti
 
     return [
         {
-            hoverMessage: new MarkdownString(hoverMessage),
+            hoverMessage: new MarkdownString(hoverMessage, true),
             range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
         },
     ];
