@@ -13,6 +13,7 @@ import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
     private imageDir: string;
+    private gutterImageFileNames?: string[];
 
     constructor() {
         const extensionPath = extensions.getExtension(EXTENSION_ID)!.extensionPath;
@@ -32,8 +33,11 @@ export class DecorationManager {
     }
 
     private async gutterImageGenerator() {
-        const files = await readdir(this.imageDir);
-        return this.generator(files);
+        if (!this.gutterImageFileNames) {
+            this.gutterImageFileNames = await readdir(this.imageDir);
+        }
+
+        return this.generator([...this.gutterImageFileNames]);
     }
 
     createAndSetLineDecoration(
