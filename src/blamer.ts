@@ -93,7 +93,14 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(record?.lines)?.map(({ decoration }) => decoration?.dispose?.());
+        // Dedup decorations before disposing to avoid multiple calls on shared decorations
+        const decorations = new Set<TextEditorDecorationType>();
+        Object.values(record.lines).forEach(({ decoration }) => {
+            if (decoration) {
+                decorations.add(decoration);
+            }
+        });
+        decorations.forEach((decoration) => decoration.dispose());
 
         this.clearRecordForFile(fileName);
     }
@@ -259,34 +266,10 @@ export class Blamer {
             return;
         }
 
-        const record = this.getRecordForFile(this.activeFileName);
-        const existingDecoration = record?.lines?.[this.activeLine];
+        // We only need to clear internal state.
+        // The shared "blame" decoration persists underneath, so no need to recreate it.
 
-        if (!existingDecoration) {
-            return;
-        }
-
-        this.logger.debug("Reverting line-end decoration", {
-            fileName: this.activeFileName,
-            line: this.activeLine,
-        });
-
-        const { blame } = existingDecoration;
-
-        existingDecoration.decoration.dispose();
-        const decoration = this.decorationManager.createAndSetLineDecoration(
-            this.activeTextEditor,
-            blame,
-            "blame",
-            record.icons[blame.revision],
-            record.logs[blame.revision],
-        );
-
-        this.updateRecordForFile(this.activeFileName, {
-            lines: {
-                [this.activeLine]: { ...existingDecoration, decoration },
-            },
-        });
+        this.activeLineDecoration?.dispose();
 
         this.activeTextEditor = undefined;
         this.activeFileName = undefined;
@@ -314,6 +297,9 @@ export class Blamer {
                 },
             });
 
+            // Update shared decorations to include the new log info (hover message)
+            this.decorationManager.reApplyDecorations(textEditor, record);
+
             if (this.activeLine !== line) {
                 this.logger.debug("Line no longer active, won't update decoration", {
                     activeLine: this.activeLine,
@@ -333,7 +319,7 @@ export class Blamer {
                 textEditor,
                 blame,
                 "active_line",
-                record.icons[blame.revision],
+                undefined, // Use shared decoration's icon
                 log,
             );
         } catch (err) {
@@ -358,12 +344,12 @@ export class Blamer {
         const { blame } = existingDecoration;
         const log = record.logs[blame.revision];
 
-        existingDecoration.decoration?.dispose();
+        // Do NOT dispose existing decoration as it is shared
         this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
             textEditor,
             blame,
             "active_line",
-            record.icons[blame.revision],
+            undefined, // Use shared decoration's icon
             log,
         );
 

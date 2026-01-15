@@ -101,7 +101,7 @@
         "lint:fix": "npm run lint -- --fix",
         "lint": "eslint src --ext ts",
         "prepare": "husky",
-        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "pretest": "npm run compile-tests && npm run esbuild && npm run lint",
         "test": "vscode-test",
         "vscode:prepublish": "npm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
