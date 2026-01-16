@@ -9,7 +9,13 @@ export type DecorationRecord = {
     lines: {
         [key: string]: {
             blame: Blame;
+            // decoration: TextEditorDecorationType; // Deprecated: Decorations are now shared in 'revisions'
+        };
+    };
+    revisions: {
+        [revision: string]: {
             decoration: TextEditorDecorationType;
+            lines: string[];
         };
     };
     logs: LogHashMap;

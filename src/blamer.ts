@@ -14,6 +14,7 @@ import {
 import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
+import { mapDecorationOptions } from "./mapping/map-decoration-options";
 import { mapToDecorationRecord } from "./mapping/map-to-decoration-record";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
@@ -93,7 +94,11 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(record?.lines)?.map(({ decoration }) => decoration?.dispose?.());
+        // Dispose shared decorations
+        Object.values(record.revisions || {}).forEach(({ decoration }) => decoration.dispose());
+
+        // Legacy cleanup (if any old records exist)
+        // Object.values(record?.lines)?.map(({ decoration }) => decoration?.dispose?.());
 
         this.clearRecordForFile(fileName);
     }
@@ -147,13 +152,13 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
-        const lines = await this.decorationManager.createAndSetDecorationsForBlame(
+        const { lines, revisions } = await this.decorationManager.createAndSetDecorationsForBlame(
             textEditor,
             blame,
             icons,
         );
 
-        const record = mapToDecorationRecord({ icons, lines });
+        const record = mapToDecorationRecord({ icons, lines, revisions });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
@@ -245,7 +250,6 @@ export class Blamer {
             }
 
             const line = (textEditor.selection.active.line + 1).toString();
-            this.activeLineDecoration?.dispose();
             await this.restorePreviousDecoration();
             await this.setUpdatedDecoration(textEditor, fileName, line);
         } catch (err) {
@@ -259,10 +263,14 @@ export class Blamer {
             return;
         }
 
-        const record = this.getRecordForFile(this.activeFileName);
-        const existingDecoration = record?.lines?.[this.activeLine];
+        // Dispose the active line decoration
+        this.activeLineDecoration?.dispose();
+        this.activeLineDecoration = undefined;
 
-        if (!existingDecoration) {
+        const record = this.getRecordForFile(this.activeFileName);
+        const lineInfo = record?.lines?.[this.activeLine];
+
+        if (!lineInfo) {
             return;
         }
 
@@ -271,22 +279,25 @@ export class Blamer {
             line: this.activeLine,
         });
 
-        const { blame } = existingDecoration;
+        // We need to re-enable the shared decoration for this line.
+        // The simplest way is to re-render the whole revision group for this line.
+        // OR we can just add this line back to the list of decorated lines for that revision.
 
-        existingDecoration.decoration.dispose();
-        const decoration = this.decorationManager.createAndSetLineDecoration(
-            this.activeTextEditor,
-            blame,
-            "blame",
-            record.icons[blame.revision],
-            record.logs[blame.revision],
-        );
+        const { blame } = lineInfo;
+        const revisionInfo = record.revisions[blame.revision];
 
-        this.updateRecordForFile(this.activeFileName, {
-            lines: {
-                [this.activeLine]: { ...existingDecoration, decoration },
-            },
-        });
+        if (revisionInfo) {
+            // Re-apply decorations for ALL lines in this revision
+            // This ensures the previously hidden line is shown again
+            // We can optimize by not re-calculating everything if we knew the state, but this is safe.
+             const log = record.logs[blame.revision];
+             const allOptions = revisionInfo.lines.flatMap((l) => {
+                 const b = record.lines[l]?.blame;
+                 if (!b) {return [];}
+                 return mapDecorationOptions(b, log);
+             });
+             this.activeTextEditor.setDecorations(revisionInfo.decoration, allOptions);
+        }
 
         this.activeTextEditor = undefined;
         this.activeFileName = undefined;
@@ -344,9 +355,9 @@ export class Blamer {
 
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
         const record = this.getRecordForFile(fileName);
-        const existingDecoration = record?.lines?.[line];
+        const lineInfo = record?.lines?.[line];
 
-        if (!existingDecoration) {
+        if (!lineInfo) {
             return;
         }
 
@@ -355,10 +366,24 @@ export class Blamer {
             line,
         });
 
-        const { blame } = existingDecoration;
+        const { blame } = lineInfo;
         const log = record.logs[blame.revision];
+        const revisionInfo = record.revisions[blame.revision];
 
-        existingDecoration.decoration?.dispose();
+        // Hide the shared decoration for this specific line
+        if (revisionInfo) {
+             const allOptions = revisionInfo.lines
+                .filter(l => l !== line) // Exclude current line
+                .flatMap((l) => {
+                    const b = record.lines[l]?.blame;
+                    if (!b) {return [];}
+                    return mapDecorationOptions(b, log);
+                });
+             textEditor.setDecorations(revisionInfo.decoration, allOptions);
+        }
+
+        // Show active line decoration
+        this.activeLineDecoration?.dispose();
         this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
             textEditor,
             blame,
