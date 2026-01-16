@@ -94,31 +94,56 @@ export class DecorationManager {
         blames: Blame[],
         icons: GutterImagePathHashMap,
         logs?: LogHashMap,
-    ): Promise<DecorationRecord["lines"]> {
-        return blames.reduce<Required<DecorationRecord["lines"]>>((acc, blame) => {
-            const decoration = this.createAndSetLineDecoration(
-                textEditor,
-                blame,
-                "blame",
-                icons[blame.revision],
-                logs?.[blame.revision],
-            );
+    ): Promise<Pick<DecorationRecord, "lines" | "revisions">> {
+        // Group blames by revision to reuse decoration types
+        const lines: DecorationRecord["lines"] = {};
+        const revisions: DecorationRecord["revisions"] = {};
+        const blamesByRevision: { [revision: string]: Blame[] } = {};
 
-            acc[blame.line] = {
-                blame,
+        // 1. Group blames
+        blames.forEach((blame) => {
+            if (!blamesByRevision[blame.revision]) {
+                blamesByRevision[blame.revision] = [];
+            }
+            blamesByRevision[blame.revision].push(blame);
+            lines[blame.line] = { blame };
+        });
+
+        // 2. Create one decoration type per revision and apply it
+        Object.entries(blamesByRevision).forEach(([revision, groupBlames]) => {
+            const icon = icons[revision];
+            const log = logs?.[revision];
+
+            const decoration = window.createTextEditorDecorationType({
+                gutterIconPath: icon && path.join(this.imageDir, icon),
+                gutterIconSize: "contain",
+                // 'after' is undefined for bulk blame decorations
+            });
+
+            // Flatten all decoration options for this revision
+            const allOptions = groupBlames.flatMap((blame) => mapDecorationOptions(blame, log));
+
+            textEditor.setDecorations(decoration, allOptions);
+
+            revisions[revision] = {
                 decoration,
+                lines: groupBlames.map((b) => b.line),
             };
+        });
 
-            return acc;
-        }, {});
+        return { lines, revisions };
     }
 
     reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
-        return Object.values(record.lines).map(({ blame, decoration }) => {
-            textEditor?.setDecorations(
-                decoration,
-                mapDecorationOptions(blame, record.logs[blame.revision]),
-            );
+        // Apply shared decorations
+        Object.entries(record.revisions).forEach(([revision, { decoration, lines }]) => {
+            const log = record.logs[revision];
+            const allOptions = lines.flatMap((line) => {
+                const blame = record.lines[line]?.blame;
+                if (!blame) {return [];}
+                return mapDecorationOptions(blame, log);
+            });
+            textEditor?.setDecorations(decoration, allOptions);
         });
     }
 }
