@@ -118,17 +118,27 @@ export class DecorationManager {
         blames: Blame[],
         icons: GutterImagePathHashMap,
         logs?: LogHashMap,
-    ): Promise<Pick<DecorationRecord, "blames" | "revisionDecorations">> {
-        const blamesByRevision = new Map<string, Blame[]>();
+    ): Promise<
+        Pick<
+            DecorationRecord,
+            "blames" | "blamesByLine" | "blamesByRevision" | "revisionDecorations"
+        >
+    > {
+        const blamesByLine: Record<string, Blame> = {};
+        const blamesByRevision: Record<string, Blame[]> = {};
+
         for (const blame of blames) {
-            const existing = blamesByRevision.get(blame.revision) || [];
-            existing.push(blame);
-            blamesByRevision.set(blame.revision, existing);
+            blamesByLine[blame.line] = blame;
+
+            if (!blamesByRevision[blame.revision]) {
+                blamesByRevision[blame.revision] = [];
+            }
+            blamesByRevision[blame.revision].push(blame);
         }
 
         const revisionDecorations: Record<string, TextEditorDecorationType> = {};
 
-        for (const [revision, revisionBlames] of blamesByRevision) {
+        for (const [revision, revisionBlames] of Object.entries(blamesByRevision)) {
             const decoration = this.createGutterDecorationType(icons[revision]);
             const options = this.createDecorationOptions(revisionBlames, logs);
 
@@ -138,20 +148,15 @@ export class DecorationManager {
 
         return {
             blames,
+            blamesByLine,
+            blamesByRevision,
             revisionDecorations,
         };
     }
 
     reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
-        const blamesByRevision = new Map<string, Blame[]>();
-        for (const blame of record.blames) {
-            const existing = blamesByRevision.get(blame.revision) || [];
-            existing.push(blame);
-            blamesByRevision.set(blame.revision, existing);
-        }
-
         for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
-            const revisionBlames = blamesByRevision.get(revision) || [];
+            const revisionBlames = record.blamesByRevision[revision] || [];
             const options = this.createDecorationOptions(revisionBlames, record.logs);
             textEditor.setDecorations(decoration, options);
         }
@@ -167,7 +172,7 @@ export class DecorationManager {
             return;
         }
 
-        const revisionBlames = record.blames.filter((b) => b.revision === revision);
+        const revisionBlames = record.blamesByRevision[revision] || [];
         const options = this.createDecorationOptions(revisionBlames, record.logs);
         textEditor.setDecorations(decoration, options);
     }

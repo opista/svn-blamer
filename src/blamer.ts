@@ -146,10 +146,16 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
-        const { blames, revisionDecorations } =
+        const { blames, blamesByLine, blamesByRevision, revisionDecorations } =
             await this.decorationManager.createAndSetDecorationsForBlame(textEditor, blame, icons);
 
-        const record = mapToDecorationRecord({ icons, blames, revisionDecorations });
+        const record = mapToDecorationRecord({
+            icons,
+            blames,
+            blamesByLine,
+            blamesByRevision,
+            revisionDecorations,
+        });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
@@ -231,7 +237,7 @@ export class Blamer {
     }
 
     private getBlameForLine(record: DecorationRecord, line: string): Blame | undefined {
-        return record.blames.find((blame) => blame.line === line);
+        return record.blamesByLine[line];
     }
 
     async trackLine(selectionChangeEvent: TextEditorSelectionChangeEvent) {
