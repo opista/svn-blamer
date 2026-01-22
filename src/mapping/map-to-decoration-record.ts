@@ -4,7 +4,8 @@ import { DecorationRecord } from "../types/decoration-record.model";
 
 const defaultRecord: DecorationRecord = {
     icons: {},
-    lines: {},
+    blames: [],
+    revisionDecorations: {},
     logs: {},
     workingCopy: true,
 };

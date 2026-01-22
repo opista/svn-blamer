@@ -17,12 +17,11 @@ import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapToDecorationRecord } from "./mapping/map-to-decoration-record";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
+import { Blame } from "./types/blame.model";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { getFileNameFromTextEditor } from "./util/get-file-name-from-text-editor";
 
 export class Blamer {
-    private activeTextEditor: TextEditor | undefined;
-    private activeFileName: string | undefined;
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
     private statusBarItem: StatusBarItem;
@@ -93,7 +92,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(record?.lines)?.map(({ decoration }) => decoration?.dispose?.());
+        Object.values(record.revisionDecorations).forEach((decoration) => decoration?.dispose?.());
 
         this.clearRecordForFile(fileName);
     }
@@ -147,13 +146,10 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
-        const lines = await this.decorationManager.createAndSetDecorationsForBlame(
-            textEditor,
-            blame,
-            icons,
-        );
+        const { blames, revisionDecorations } =
+            await this.decorationManager.createAndSetDecorationsForBlame(textEditor, blame, icons);
 
-        const record = mapToDecorationRecord({ icons, lines });
+        const record = mapToDecorationRecord({ icons, blames, revisionDecorations });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
@@ -234,6 +230,10 @@ export class Blamer {
         }
     }
 
+    private getBlameForLine(record: DecorationRecord, line: string): Blame | undefined {
+        return record.blames.find((blame) => blame.line === line);
+    }
+
     async trackLine(selectionChangeEvent: TextEditorSelectionChangeEvent) {
         const { textEditor } = selectionChangeEvent;
         const fileName = await getFileNameFromTextEditor(textEditor);
@@ -246,51 +246,11 @@ export class Blamer {
 
             const line = (textEditor.selection.active.line + 1).toString();
             this.activeLineDecoration?.dispose();
-            await this.restorePreviousDecoration();
             await this.setUpdatedDecoration(textEditor, fileName, line);
         } catch (err) {
             this.statusBarItem.hide();
             this.logger.error("Failed to track line", { err: err?.toString() });
         }
-    }
-
-    async restorePreviousDecoration() {
-        if (!this.activeTextEditor || !this.activeFileName || !this.activeLine) {
-            return;
-        }
-
-        const record = this.getRecordForFile(this.activeFileName);
-        const existingDecoration = record?.lines?.[this.activeLine];
-
-        if (!existingDecoration) {
-            return;
-        }
-
-        this.logger.debug("Reverting line-end decoration", {
-            fileName: this.activeFileName,
-            line: this.activeLine,
-        });
-
-        const { blame } = existingDecoration;
-
-        existingDecoration.decoration.dispose();
-        const decoration = this.decorationManager.createAndSetLineDecoration(
-            this.activeTextEditor,
-            blame,
-            "blame",
-            record.icons[blame.revision],
-            record.logs[blame.revision],
-        );
-
-        this.updateRecordForFile(this.activeFileName, {
-            lines: {
-                [this.activeLine]: { ...existingDecoration, decoration },
-            },
-        });
-
-        this.activeTextEditor = undefined;
-        this.activeFileName = undefined;
-        this.activeLine = undefined;
     }
 
     async fetchLogAndUpdateDecoration(
@@ -299,7 +259,11 @@ export class Blamer {
         fileName: string,
         line: string,
     ) {
-        const { blame } = record.lines[line];
+        const blame = this.getBlameForLine(record, line);
+
+        if (!blame) {
+            return;
+        }
 
         try {
             const log = await this.getLogForRevision(fileName, blame.revision);
@@ -313,6 +277,16 @@ export class Blamer {
                     [blame.revision]: log,
                 },
             });
+
+            const updatedRecord = this.getRecordForFile(fileName);
+
+            if (updatedRecord) {
+                this.decorationManager.updateRevisionHoverMessages(
+                    textEditor,
+                    updatedRecord,
+                    blame.revision,
+                );
+            }
 
             if (this.activeLine !== line) {
                 this.logger.debug("Line no longer active, won't update decoration", {
@@ -328,13 +302,13 @@ export class Blamer {
                 line,
                 revision: blame.revision,
             });
+
             this.activeLineDecoration?.dispose();
-            this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
+            this.activeLineDecoration = this.decorationManager.setActiveLineDecoration(
                 textEditor,
                 blame,
-                "active_line",
-                record.icons[blame.revision],
                 log,
+                updatedRecord?.icons[blame.revision],
             );
         } catch (err) {
             this.statusBarItem.hide();
@@ -344,31 +318,27 @@ export class Blamer {
 
     async setUpdatedDecoration(textEditor: TextEditor, fileName: string, line: string) {
         const record = this.getRecordForFile(fileName);
-        const existingDecoration = record?.lines?.[line];
+        const blame = record && this.getBlameForLine(record, line);
 
-        if (!existingDecoration) {
+        if (!blame) {
             return;
         }
 
         this.logger.debug("Setting new line decoration", {
+            beauROCKS: true,
             fileName,
             line,
         });
 
-        const { blame } = existingDecoration;
         const log = record.logs[blame.revision];
 
-        existingDecoration.decoration?.dispose();
-        this.activeLineDecoration = this.decorationManager.createAndSetLineDecoration(
+        this.activeLineDecoration = this.decorationManager.setActiveLineDecoration(
             textEditor,
             blame,
-            "active_line",
-            record.icons[blame.revision],
             log,
+            record.icons[blame.revision],
         );
 
-        this.activeTextEditor = textEditor;
-        this.activeFileName = fileName;
         this.activeLine = line;
 
         if (!log) {

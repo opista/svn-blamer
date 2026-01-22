@@ -1,11 +1,22 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { extensions, TextEditor, window, workspace } from "vscode";
+import {
+    DecorationOptions,
+    DecorationRangeBehavior,
+    extensions,
+    MarkdownString,
+    Range,
+    TextEditor,
+    TextEditorDecorationType,
+    window,
+    workspace,
+} from "vscode";
 
 import { EXTENSION_CONFIGURATION, EXTENSION_ID } from "./const/extension";
+import { MAX_NUMBER } from "./const/number";
+import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
-import { mapDecorationOptions } from "./mapping/map-decoration-options";
 import { Blame } from "./types/blame.model";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { GutterImagePathHashMap } from "./types/gutter-image-path-hash-map.model";
@@ -40,30 +51,43 @@ export class DecorationManager {
         return this.generator([...this.gutterImageFileNames]);
     }
 
-    createAndSetLineDecoration(
-        textEditor: TextEditor,
-        blame: Blame,
-        action: "blame" | "active_line",
-        gutterIconImage?: string,
-        log?: string,
-    ) {
-        const decoration = window.createTextEditorDecorationType({
-            after:
-                action === "active_line"
-                    ? {
-                          color: "rgba(153, 153, 153, 0.35)",
-                          contentText: mapBlameToInlineMessage(blame, log),
-                          margin: "0 0 0 3em",
-                          textDecoration: "none",
-                      }
-                    : undefined,
+    createGutterDecorationType(gutterIconImage?: string): TextEditorDecorationType {
+        return window.createTextEditorDecorationType({
             gutterIconPath: gutterIconImage && path.join(this.imageDir, gutterIconImage),
             gutterIconSize: "contain",
+            rangeBehavior: DecorationRangeBehavior.ClosedClosed,
         });
+    }
 
-        textEditor?.setDecorations(decoration, mapDecorationOptions(blame, log));
+    createActiveLineDecorationType(
+        blame: Blame,
+        log?: string,
+        gutterIconImage?: string,
+    ): TextEditorDecorationType {
+        return window.createTextEditorDecorationType({
+            after: {
+                color: "rgba(153, 153, 153, 0.35)",
+                contentText: mapBlameToInlineMessage(blame, log),
+                margin: "0 0 0 3em",
+                textDecoration: "none",
+            },
+            gutterIconPath: gutterIconImage && path.join(this.imageDir, gutterIconImage),
+            gutterIconSize: "contain",
+            rangeBehavior: DecorationRangeBehavior.ClosedClosed,
+        });
+    }
 
-        return decoration;
+    private createDecorationOptions(blames: Blame[], logs?: LogHashMap): DecorationOptions[] {
+        return blames.map((blame) => {
+            const log = logs?.[blame.revision];
+            const hoverMessage = mapBlameToHoverMessage(blame, log);
+            const lineNumber = Number(blame.line) - 1;
+
+            return {
+                hoverMessage: new MarkdownString(hoverMessage, true),
+                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+            };
+        });
     }
 
     async createGutterImagePathHashMap(revisions: string[]) {
@@ -94,31 +118,75 @@ export class DecorationManager {
         blames: Blame[],
         icons: GutterImagePathHashMap,
         logs?: LogHashMap,
-    ): Promise<DecorationRecord["lines"]> {
-        return blames.reduce<Required<DecorationRecord["lines"]>>((acc, blame) => {
-            const decoration = this.createAndSetLineDecoration(
-                textEditor,
-                blame,
-                "blame",
-                icons[blame.revision],
-                logs?.[blame.revision],
-            );
+    ): Promise<Pick<DecorationRecord, "blames" | "revisionDecorations">> {
+        const blamesByRevision = new Map<string, Blame[]>();
+        for (const blame of blames) {
+            const existing = blamesByRevision.get(blame.revision) || [];
+            existing.push(blame);
+            blamesByRevision.set(blame.revision, existing);
+        }
 
-            acc[blame.line] = {
-                blame,
-                decoration,
-            };
+        const revisionDecorations: Record<string, TextEditorDecorationType> = {};
 
-            return acc;
-        }, {});
+        for (const [revision, revisionBlames] of blamesByRevision) {
+            const decoration = this.createGutterDecorationType(icons[revision]);
+            const options = this.createDecorationOptions(revisionBlames, logs);
+
+            textEditor.setDecorations(decoration, options);
+            revisionDecorations[revision] = decoration;
+        }
+
+        return {
+            blames,
+            revisionDecorations,
+        };
     }
 
     reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
-        return Object.values(record.lines).map(({ blame, decoration }) => {
-            textEditor?.setDecorations(
-                decoration,
-                mapDecorationOptions(blame, record.logs[blame.revision]),
-            );
-        });
+        const blamesByRevision = new Map<string, Blame[]>();
+        for (const blame of record.blames) {
+            const existing = blamesByRevision.get(blame.revision) || [];
+            existing.push(blame);
+            blamesByRevision.set(blame.revision, existing);
+        }
+
+        for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
+            const revisionBlames = blamesByRevision.get(revision) || [];
+            const options = this.createDecorationOptions(revisionBlames, record.logs);
+            textEditor.setDecorations(decoration, options);
+        }
+    }
+
+    updateRevisionHoverMessages(
+        textEditor: TextEditor,
+        record: DecorationRecord,
+        revision: string,
+    ) {
+        const decoration = record.revisionDecorations[revision];
+        if (!decoration) {
+            return;
+        }
+
+        const revisionBlames = record.blames.filter((b) => b.revision === revision);
+        const options = this.createDecorationOptions(revisionBlames, record.logs);
+        textEditor.setDecorations(decoration, options);
+    }
+
+    setActiveLineDecoration(
+        textEditor: TextEditor,
+        blame: Blame,
+        log?: string,
+        gutterIconImage?: string,
+    ): TextEditorDecorationType {
+        const decoration = this.createActiveLineDecorationType(blame, log, gutterIconImage);
+        const lineNumber = Number(blame.line) - 1;
+
+        textEditor.setDecorations(decoration, [
+            {
+                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+            },
+        ]);
+
+        return decoration;
     }
 }

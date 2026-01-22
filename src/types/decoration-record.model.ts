@@ -6,11 +6,9 @@ import { LogHashMap } from "./log-hash-map.model";
 
 export type DecorationRecord = {
     icons: GutterImagePathHashMap;
-    lines: {
-        [key: string]: {
-            blame: Blame;
-            decoration: TextEditorDecorationType;
-        };
+    blames: Blame[];
+    revisionDecorations: {
+        [revision: string]: TextEditorDecorationType;
     };
     logs: LogHashMap;
     workingCopy: boolean;
