@@ -146,12 +146,11 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
-        const { blames, blamesByLine, blamesByRevision, revisionDecorations } =
+        const { blamesByLine, blamesByRevision, revisionDecorations } =
             await this.decorationManager.createAndSetDecorationsForBlame(textEditor, blame, icons);
 
         const record = mapToDecorationRecord({
             icons,
-            blames,
             blamesByLine,
             blamesByRevision,
             revisionDecorations,

@@ -119,10 +119,7 @@ export class DecorationManager {
         icons: GutterImagePathHashMap,
         logs?: LogHashMap,
     ): Promise<
-        Pick<
-            DecorationRecord,
-            "blames" | "blamesByLine" | "blamesByRevision" | "revisionDecorations"
-        >
+        Pick<DecorationRecord, "blamesByLine" | "blamesByRevision" | "revisionDecorations">
     > {
         const blamesByLine: Record<string, Blame> = {};
         const blamesByRevision: Record<string, Blame[]> = {};
@@ -147,7 +144,6 @@ export class DecorationManager {
         }
 
         return {
-            blames,
             blamesByLine,
             blamesByRevision,
             revisionDecorations,

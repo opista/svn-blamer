@@ -14,7 +14,6 @@ export type BlamesByRevision = {
 
 export type DecorationRecord = {
     icons: GutterImagePathHashMap;
-    blames: Blame[];
     blamesByLine: BlamesByLine;
     blamesByRevision: BlamesByRevision;
     revisionDecorations: {
