@@ -1,21 +1,28 @@
-import { ElementCompact, xml2js } from "xml-js";
+import { XMLParser } from "fast-xml-parser";
 
 import { Blame } from "../types/blame.model";
 
-export const mapBlameOutputToBlameModel = (data: string): Blame[] => {
-    const json: ElementCompact = xml2js(data, {
-        attributesKey: "attributes",
-        compact: true,
-        textKey: "text",
-        trim: true,
-    });
+const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    attributesGroupName: "attributes",
+    textNodeName: "text",
+    trimValues: true,
+    parseTagValue: false,
+    parseAttributeValue: false,
+    isArray: (name) => name === "entry",
+});
 
-    const blamed: Blame[] = json?.blame?.target.entry?.map((entry: any) => ({
-        author: entry?.commit?.author?.text,
-        date: entry?.commit?.date?.text,
-        line: entry?.attributes?.["line-number"],
-        revision: entry?.commit?.attributes?.revision,
-    }));
+export const mapBlameOutputToBlameModel = (data: string): Blame[] => {
+    const json = parser.parse(data);
+
+    const blamed: Blame[] =
+        json?.blame?.target?.entry?.map((entry: any) => ({
+            author: entry?.commit?.author?.text ?? entry?.commit?.author,
+            date: entry?.commit?.date?.text ?? entry?.commit?.date,
+            line: entry?.attributes?.["line-number"],
+            revision: entry?.commit?.attributes?.revision,
+        })) || [];
 
     return blamed.filter(({ revision }) => revision && revision !== "-");
 };
