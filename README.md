@@ -52,19 +52,20 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 #### Secure Authentication
 
 This extension supports secure credential management for SVN repositories:
-- **Per-Repository Credentials**: Store different credentials for different SVN repositories.
-- **Secure Storage**: Credentials are encrypted and stored using VS Code's `SecretStorage`.
-- **Automatic Recovery**: If authentication fails, the extension will automatically check for stored credentials or prompt you for new ones and retry the operation.
+
+-   **Per-Repository Credentials**: Store different credentials for different SVN repositories.
+-   **Secure Storage**: Credentials are encrypted and stored using VS Code's `SecretStorage`.
+-   **Automatic Recovery**: If authentication fails, the extension will automatically check for stored credentials or prompt you for new ones and retry the operation.
 
 ## Commands
 
 This extension contributes the following commands to the Command palette.
 
-| Command                       | Description                                                            | Shortcut                                               |
-| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
-| **SVN Blamer - Show blame**   | Blames file, and retrieves log data (if setting is enabled)            | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
-| **SVN Blamer - Clear blame**  | Clears the applied blame for the active file                           |                                                        |
-| **SVN Blamer - Toggle blame**        | Will toggle between fetching blame data and clearing visual indicators | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
+| Command                            | Description                                                            | Shortcut                                               |
+| ---------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
+| **SVN Blamer - Show blame**        | Blames file, and retrieves log data (if setting is enabled)            | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
+| **SVN Blamer - Clear blame**       | Clears the applied blame for the active file                           |                                                        |
+| **SVN Blamer - Toggle blame**      | Will toggle between fetching blame data and clearing visual indicators | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
 | **SVN Blamer - Clear credentials** | Opens a management UI to clear stored credentials for specific repos   |                                                        |
 
 ## Configuration
@@ -79,7 +80,7 @@ This extension contributes the following commands to the Command palette.
 
 ## Known Issues
 
-- None known currently. Please report any issues you find!
+-   None known currently. Please report any issues you find!
 
 ## Feedback & Contributing
 
