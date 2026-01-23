@@ -100,7 +100,6 @@ export class DecorationManager {
         const generator = await this.gutterImageGenerator();
         const hashMap: GutterImagePathHashMap = {};
 
-        // Bolt: Optimized from reduce with object spread (O(N^2)) to loop with mutation (O(N))
         for (const revision of revisions) {
             if (!hashMap[revision]) {
                 hashMap[revision] = generator?.next().value;
