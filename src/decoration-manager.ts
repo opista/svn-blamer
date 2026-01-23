@@ -78,13 +78,20 @@ export class DecorationManager {
     }
 
     private createDecorationOptions(blames: Blame[], logs?: LogHashMap): DecorationOptions[] {
+        if (!blames.length) {
+            return [];
+        }
+
+        const [firstBlame] = blames;
+        const log = logs?.[firstBlame.revision];
+        const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+        const hoverMessage = new MarkdownString(hoverMessageText, true);
+
         return blames.map((blame) => {
-            const log = logs?.[blame.revision];
-            const hoverMessage = mapBlameToHoverMessage(blame, log);
             const lineNumber = Number(blame.line) - 1;
 
             return {
-                hoverMessage: new MarkdownString(hoverMessage, true),
+                hoverMessage,
                 range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
             };
         });
