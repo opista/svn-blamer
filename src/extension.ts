@@ -46,6 +46,10 @@ export async function activate(context: ExtensionContext) {
         blamer.handleDocumentChange(event),
     );
 
+    let scrollUpdate = window.onDidChangeTextEditorVisibleRanges(
+        debounce((event) => blamer.handleVisibleRangesChange(event), 50),
+    );
+
     let trackLine = window.onDidChangeTextEditorSelection(
         debounce((event) => blamer.trackLine(event)),
     );
@@ -56,6 +60,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(trackLine);
     context.subscriptions.push(clearOnClose);
     context.subscriptions.push(updateOnChange);
+    context.subscriptions.push(scrollUpdate);
     context.subscriptions.push(autoBlame);
 }
 

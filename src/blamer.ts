@@ -1,6 +1,7 @@
 import merge from "lodash.merge";
 import {
     LogOutputChannel,
+    Range,
     StatusBarAlignment,
     StatusBarItem,
     TextDocument,
@@ -8,6 +9,7 @@ import {
     TextEditor,
     TextEditorDecorationType,
     TextEditorSelectionChangeEvent,
+    TextEditorVisibleRangesChangeEvent,
     window,
     workspace,
 } from "vscode";
@@ -162,11 +164,41 @@ export class Blamer {
         if (textEditor && textEditor.document.fileName === fileName) {
             const updatedRecord = this.getRecordForFile(fileName);
             if (updatedRecord) {
-                this.decorationManager.reApplyDecorations(textEditor, updatedRecord);
+                const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+                this.decorationManager.reApplyDecorations(
+                    textEditor,
+                    updatedRecord,
+                    extendedRanges,
+                );
             }
         }
 
         this.logger.debug("Document changed, updated line positions", { fileName });
+    }
+
+    handleVisibleRangesChange(event: TextEditorVisibleRangesChangeEvent) {
+        const { textEditor } = event;
+        const { fileName } = textEditor.document;
+
+        const record = this.getRecordForFile(fileName);
+        if (!record) {
+            return;
+        }
+
+        const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+        this.decorationManager.reApplyDecorations(textEditor, record, extendedRanges);
+    }
+
+    private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
+        const buffer = 200; // Lines buffer
+        return textEditor.visibleRanges.map((range) => {
+            return new Range(
+                Math.max(0, range.start.line - buffer),
+                0,
+                Math.min(textEditor.document.lineCount - 1, range.end.line + buffer),
+                0,
+            );
+        });
     }
 
     async clearBlameForFile(fileName?: string) {
@@ -247,8 +279,16 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
+        const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+
         const { blamesByLine, blamesByRevision, revisionDecorations } =
-            await this.decorationManager.createAndSetDecorationsForBlame(textEditor, blame, icons);
+            await this.decorationManager.createAndSetDecorationsForBlame(
+                textEditor,
+                blame,
+                icons,
+                undefined,
+                extendedRanges,
+            );
 
         const record = mapToDecorationRecord({
             icons,
