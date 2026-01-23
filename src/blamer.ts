@@ -19,6 +19,7 @@ import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { Blame } from "./types/blame.model";
 import { DecorationRecord } from "./types/decoration-record.model";
+import { disposeDecorations } from "./util/dispose-decorations";
 import { getFileNameFromTextEditor } from "./util/get-file-name-from-text-editor";
 
 export class Blamer {
@@ -92,7 +93,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        Object.values(record.revisionDecorations).forEach((decoration) => decoration?.dispose?.());
+        await disposeDecorations(Object.values(record.revisionDecorations));
 
         this.clearRecordForFile(fileName);
     }
