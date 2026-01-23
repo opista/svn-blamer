@@ -4,6 +4,7 @@
     "description": "Visually blame SVN-stored code line-by-line",
     "version": "0.7.3",
     "publisher": "beaugust",
+    "packageManager": "pnpm@10.25.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BeauAgst/blamer-vs.git"
@@ -98,14 +99,14 @@
         "compile-tests": "tsc -p . --outDir out",
         "esbuild": "node ./esbuild.config.mjs",
         "format": "prettier --write --ignore-unknown .",
-        "lint:fix": "npm run lint -- --fix",
+        "lint:fix": "pnpm lint -- --fix",
         "lint": "eslint src --ext ts",
         "prepare": "husky",
-        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
-        "vscode:prepublish": "npm run esbuild -- --minify",
+        "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
-        "watch": "npm run esbuild -- --sourcemap --watch"
+        "watch": "pnpm run esbuild -- --sourcemap --watch"
     },
     "devDependencies": {
         "@types/lodash.merge": "^4.6.9",
