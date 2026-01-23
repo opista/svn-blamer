@@ -7,22 +7,24 @@ export const spawnProcess = (
     return new Promise((resolve, reject) => {
         const child = spawn(script, { ...options, shell: true });
 
-        let data = "";
-        let err = "";
+        const data: Buffer[] = [];
+        const err: Buffer[] = [];
 
-        child.stdout.on("data", (chunk) => {
-            data += chunk.toString();
+        child.stdout.on("data", (chunk: Buffer) => {
+            data.push(chunk);
         });
 
-        child.stderr.on("data", (chunk) => {
-            err += chunk.toString();
+        child.stderr.on("data", (chunk: Buffer) => {
+            err.push(chunk);
         });
 
         child.stdout.on("close", (code: number) => {
-            if (err || code) {
-                reject(err);
+            if (err.length > 0 || code) {
+                const errorString = Buffer.concat(err).toString();
+                reject(errorString);
             } else {
-                resolve(data);
+                const dataString = Buffer.concat(data).toString();
+                resolve(dataString);
             }
         });
     });
