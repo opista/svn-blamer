@@ -1,4 +1,3 @@
-import merge from "lodash.merge";
 import {
     LogOutputChannel,
     Range,
@@ -65,7 +64,29 @@ export class Blamer {
 
     updateRecordForFile(fileName: string, update: Partial<DecorationRecord>) {
         const existingRecord = this.getRecordForFile(fileName);
-        return this.storage.set(fileName, merge({}, existingRecord, update));
+
+        if (!existingRecord) {
+            return this.storage.set(fileName, update as DecorationRecord);
+        }
+
+        for (const key of Object.keys(update)) {
+            const k = key as keyof DecorationRecord;
+            const updateValue = update[k];
+
+            if (updateValue && typeof updateValue === "object" && !Array.isArray(updateValue)) {
+                if (existingRecord[k] && typeof existingRecord[k] === "object") {
+                    Object.assign(existingRecord[k], updateValue);
+                } else {
+                    // @ts-ignore
+                    existingRecord[k] = updateValue;
+                }
+            } else {
+                // @ts-ignore
+                existingRecord[k] = updateValue;
+            }
+        }
+
+        return this.storage.set(fileName, existingRecord);
     }
 
     async getActiveTextEditorAndFileName() {

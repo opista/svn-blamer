@@ -116,7 +116,6 @@
         "watch": "pnpm run esbuild -- --sourcemap --watch"
     },
     "devDependencies": {
-        "@types/lodash.merge": "^4.6.9",
         "@types/luxon": "^3.4.2",
         "@types/mocha": "^10.0.6",
         "@types/node": "18.x",
@@ -140,7 +139,6 @@
     },
     "dependencies": {
         "fast-xml-parser": "^5.3.3",
-        "lodash.merge": "^4.6.2",
         "luxon": "^3.4.4"
     },
     "lint-staged": {

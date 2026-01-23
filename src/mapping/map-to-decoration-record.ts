@@ -1,5 +1,3 @@
-import merge from "lodash.merge";
-
 import { DecorationRecord } from "../types/decoration-record.model";
 
 const defaultRecord: DecorationRecord = {
@@ -11,5 +9,7 @@ const defaultRecord: DecorationRecord = {
     workingCopy: true,
 };
 
-export const mapToDecorationRecord = (record: Partial<DecorationRecord>): DecorationRecord =>
-    merge({}, defaultRecord, record);
+export const mapToDecorationRecord = (record: Partial<DecorationRecord>): DecorationRecord => ({
+    ...defaultRecord,
+    ...record,
+});
