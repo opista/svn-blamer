@@ -93,7 +93,7 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        await disposeDecorations(Object.values(record.revisionDecorations));
+        await disposeDecorations([...new Set(Object.values(record.revisionDecorations))]);
 
         this.clearRecordForFile(fileName);
     }

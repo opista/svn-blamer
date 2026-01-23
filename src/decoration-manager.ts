@@ -142,13 +142,28 @@ export class DecorationManager {
         }
 
         const revisionDecorations: Record<string, TextEditorDecorationType> = {};
+        const revisionsByIcon = new Map<string, string[]>();
 
-        for (const [revision, revisionBlames] of Object.entries(blamesByRevision)) {
-            const decoration = this.createGutterDecorationType(icons[revision]);
-            const options = this.createDecorationOptions(revisionBlames, logs);
+        for (const revision of Object.keys(blamesByRevision)) {
+            const icon = icons[revision] || "";
+            if (!revisionsByIcon.has(icon)) {
+                revisionsByIcon.set(icon, []);
+            }
+            revisionsByIcon.get(icon)!.push(revision);
+        }
 
-            textEditor.setDecorations(decoration, options);
-            revisionDecorations[revision] = decoration;
+        for (const [icon, revisions] of revisionsByIcon) {
+            const decoration = this.createGutterDecorationType(icon || undefined);
+            const allOptions: DecorationOptions[] = [];
+
+            for (const revision of revisions) {
+                revisionDecorations[revision] = decoration;
+                const revisionBlames = blamesByRevision[revision];
+                const options = this.createDecorationOptions(revisionBlames, logs);
+                allOptions.push(...options);
+            }
+
+            textEditor.setDecorations(decoration, allOptions);
         }
 
         return {
@@ -159,10 +174,23 @@ export class DecorationManager {
     }
 
     reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
+        const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
+
         for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
-            const revisionBlames = record.blamesByRevision[revision] || [];
-            const options = this.createDecorationOptions(revisionBlames, record.logs);
-            textEditor.setDecorations(decoration, options);
+            if (!decorationToRevisions.has(decoration)) {
+                decorationToRevisions.set(decoration, []);
+            }
+            decorationToRevisions.get(decoration)!.push(revision);
+        }
+
+        for (const [decoration, revisions] of decorationToRevisions) {
+            const allOptions: DecorationOptions[] = [];
+            for (const revision of revisions) {
+                const revisionBlames = record.blamesByRevision[revision] || [];
+                const options = this.createDecorationOptions(revisionBlames, record.logs);
+                allOptions.push(...options);
+            }
+            textEditor.setDecorations(decoration, allOptions);
         }
     }
 
@@ -176,9 +204,21 @@ export class DecorationManager {
             return;
         }
 
-        const revisionBlames = record.blamesByRevision[revision] || [];
-        const options = this.createDecorationOptions(revisionBlames, record.logs);
-        textEditor.setDecorations(decoration, options);
+        const revisionsSharingDecoration: string[] = [];
+        for (const [rev, dec] of Object.entries(record.revisionDecorations)) {
+            if (dec === decoration) {
+                revisionsSharingDecoration.push(rev);
+            }
+        }
+
+        const allOptions: DecorationOptions[] = [];
+        for (const rev of revisionsSharingDecoration) {
+            const revisionBlames = record.blamesByRevision[rev] || [];
+            const options = this.createDecorationOptions(revisionBlames, record.logs);
+            allOptions.push(...options);
+        }
+
+        textEditor.setDecorations(decoration, allOptions);
     }
 
     setActiveLineDecoration(
