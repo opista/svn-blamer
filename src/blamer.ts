@@ -222,6 +222,15 @@ export class Blamer {
             return;
         }
 
+        // Check if the document has unsaved changes
+        if (textEditor.document.isDirty) {
+            this.logger.info("Document has unsaved changes, cannot blame", { fileName });
+            window.showWarningMessage(
+                `${EXTENSION_NAME}: File has unsaved changes. Please save the file to ensure accurate blame information.`,
+            );
+            return;
+        }
+
         this.logger.info("Blaming file", { fileName });
 
         this.statusBarItem.show();
