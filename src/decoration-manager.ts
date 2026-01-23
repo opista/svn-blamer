@@ -77,14 +77,27 @@ export class DecorationManager {
         });
     }
 
+    /**
+     * Creates decoration options for a list of blames.
+     *
+     * IMPORTANT: This method assumes that all blames in the provided array belong to the SAME revision.
+     * This assumption allows for performance optimization by computing the hover message once for the entire group.
+     */
     private createDecorationOptions(blames: Blame[], logs?: LogHashMap): DecorationOptions[] {
+        if (blames.length === 0) {
+            return [];
+        }
+
+        const [firstBlame] = blames;
+        const log = logs?.[firstBlame.revision];
+        const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+        const hoverMessage = new MarkdownString(hoverMessageText, true);
+
         return blames.map((blame) => {
-            const log = logs?.[blame.revision];
-            const hoverMessage = mapBlameToHoverMessage(blame, log);
             const lineNumber = Number(blame.line) - 1;
 
             return {
-                hoverMessage: new MarkdownString(hoverMessage, true),
+                hoverMessage,
                 range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
             };
         });
