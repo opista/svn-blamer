@@ -31,13 +31,17 @@ export class DecorationManager {
         this.imageDir = path.join(extensionPath, "dist", "img", "indicators");
     }
 
-    private *generator(files: string[]) {
-        while (files.length) {
-            const index = Math.floor(Math.random() * files.length);
-            const imagePath = files[index];
-            files.splice(index, 1);
+    private shuffle<T>(array: T[]): T[] {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
-            yield imagePath;
+    private *createGutterIconImageGenerator(files: string[]) {
+        for (const file of files) {
+            yield file;
         }
 
         return undefined;
@@ -45,10 +49,11 @@ export class DecorationManager {
 
     private async gutterImageGenerator() {
         if (!this.gutterImageFileNames) {
-            this.gutterImageFileNames = await readdir(this.imageDir);
+            const fileNames = await readdir(this.imageDir);
+            this.gutterImageFileNames = this.shuffle(fileNames);
         }
 
-        return this.generator([...this.gutterImageFileNames]);
+        return this.createGutterIconImageGenerator(this.gutterImageFileNames);
     }
 
     createGutterDecorationType(gutterIconImage?: string): TextEditorDecorationType {
