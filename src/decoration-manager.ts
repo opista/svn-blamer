@@ -77,14 +77,8 @@ export class DecorationManager {
         });
     }
 
-    /**
-     * Creates decoration options for a list of blames.
-     *
-     * IMPORTANT: This method assumes that all blames in the provided array belong to the SAME revision.
-     * This assumption allows for performance optimization by computing the hover message once for the entire group.
-     */
     private createDecorationOptions(blames: Blame[], logs?: LogHashMap): DecorationOptions[] {
-        if (blames.length === 0) {
+        if (!blames.length) {
             return [];
         }
 
