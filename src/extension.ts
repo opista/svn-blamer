@@ -42,6 +42,10 @@ export async function activate(context: ExtensionContext) {
         blamer.handleClosedDocument(textDocument),
     );
 
+    let updateOnChange = workspace.onDidChangeTextDocument((event) =>
+        blamer.handleDocumentChange(event),
+    );
+
     let trackLine = window.onDidChangeTextEditorSelection(
         debounce((event) => blamer.trackLine(event)),
     );
@@ -51,6 +55,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(toggle);
     context.subscriptions.push(trackLine);
     context.subscriptions.push(clearOnClose);
+    context.subscriptions.push(updateOnChange);
     context.subscriptions.push(autoBlame);
 }
 

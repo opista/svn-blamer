@@ -4,6 +4,7 @@ import {
     StatusBarAlignment,
     StatusBarItem,
     TextDocument,
+    TextDocumentChangeEvent,
     TextEditor,
     TextEditorDecorationType,
     TextEditorSelectionChangeEvent,
@@ -76,6 +77,96 @@ export class Blamer {
         const { fileName } = textDocument;
         this.logger.debug("Document closed, clearing blame", { fileName });
         return this.clearRecordForFile(fileName);
+    }
+
+    handleDocumentChange(event: TextDocumentChangeEvent) {
+        const { document, contentChanges } = event;
+        const { fileName } = document;
+
+        if (contentChanges.length === 0) {
+            return;
+        }
+
+        const record = this.getRecordForFile(fileName);
+        if (!record || !record.blamesByLine || Object.keys(record.blamesByLine).length === 0) {
+            return;
+        }
+
+        // Calculate line delta from content changes
+        // Process changes in reverse order (bottom to top) to handle shifts correctly
+        const sortedChanges = [...contentChanges].sort(
+            (a, b) => b.range.start.line - a.range.start.line,
+        );
+
+        let updatedBlamesByLine = { ...record.blamesByLine };
+        let updatedBlamesByRevision = { ...record.blamesByRevision };
+
+        for (const change of sortedChanges) {
+            const changeEndLine = change.range.end.line + 1; // Convert to 1-indexed
+            const linesInserted = (change.text.match(/\n/g) || []).length;
+
+            // Calculate how many original lines were affected (for multi-line deletions)
+            const originalLinesAffected = change.range.end.line - change.range.start.line;
+            const lineDelta = linesInserted - originalLinesAffected;
+
+            if (lineDelta === 0) {
+                // No line count change
+                continue;
+            }
+
+            const newBlamesByLine: Record<string, (typeof record.blamesByLine)[string]> = {};
+            const newBlamesByRevision: Record<string, (typeof record.blamesByRevision)[string]> =
+                {};
+
+            for (const [lineStr, blame] of Object.entries(updatedBlamesByLine)) {
+                const lineNum = Number(lineStr);
+
+                if (lineNum <= changeEndLine) {
+                    // Lines at or before the change end: keep as-is
+                    newBlamesByLine[lineStr] = blame;
+                } else if (lineDelta < 0 && lineNum <= changeEndLine - lineDelta) {
+                    // Lines that were deleted: skip them
+                    continue;
+                } else {
+                    // Lines after the change: shift by delta
+                    const newLineNum = lineNum + lineDelta;
+                    const shiftedBlame = { ...blame, line: String(newLineNum) };
+                    newBlamesByLine[String(newLineNum)] = shiftedBlame;
+                }
+            }
+
+            // Rebuild blamesByRevision from the updated blamesByLine
+            for (const blame of Object.values(newBlamesByLine)) {
+                if (!newBlamesByRevision[blame.revision]) {
+                    newBlamesByRevision[blame.revision] = [];
+                }
+                newBlamesByRevision[blame.revision].push(blame);
+            }
+
+            updatedBlamesByLine = newBlamesByLine;
+            updatedBlamesByRevision = newBlamesByRevision;
+        }
+
+        // Replace the record fully (not merge) to ensure old line keys are removed
+        const existingRecord = this.getRecordForFile(fileName);
+        if (existingRecord) {
+            this.setRecordForFile(fileName, {
+                ...existingRecord,
+                blamesByLine: updatedBlamesByLine,
+                blamesByRevision: updatedBlamesByRevision,
+            });
+        }
+
+        // Re-apply decorations if we have an active editor for this file
+        const textEditor = window.activeTextEditor;
+        if (textEditor && textEditor.document.fileName === fileName) {
+            const updatedRecord = this.getRecordForFile(fileName);
+            if (updatedRecord) {
+                this.decorationManager.reApplyDecorations(textEditor, updatedRecord);
+            }
+        }
+
+        this.logger.debug("Document changed, updated line positions", { fileName });
     }
 
     async clearBlameForFile(fileName?: string) {
