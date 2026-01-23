@@ -131,9 +131,9 @@
         "typescript": "^5.4.3"
     },
     "dependencies": {
+        "fast-xml-parser": "^5.3.3",
         "lodash.merge": "^4.6.2",
-        "luxon": "^3.4.4",
-        "xml-js": "^1.6.11"
+        "luxon": "^3.4.4"
     },
     "lint-staged": {
         "**/*.{js,ts}": [

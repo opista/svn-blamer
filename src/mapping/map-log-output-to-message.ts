@@ -1,12 +1,18 @@
-import { ElementCompact, xml2js } from "xml-js";
+import { XMLParser } from "fast-xml-parser";
+
+const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    attributesGroupName: "attributes",
+    textNodeName: "text",
+    trimValues: true,
+    alwaysCreateTextNode: true,
+    parseTagValue: false,
+    parseAttributeValue: false,
+});
 
 export const mapLogOutputToMessage = (data: string): string | undefined => {
-    const json: ElementCompact = xml2js(data, {
-        attributesKey: "attributes",
-        compact: true,
-        textKey: "text",
-        trim: true,
-    });
+    const json = parser.parse(data);
 
     return json?.log?.logentry?.msg?.text;
 };
