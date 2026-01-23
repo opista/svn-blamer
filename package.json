@@ -106,7 +106,7 @@
         "compile-tests": "tsc -p . --outDir out",
         "esbuild": "node ./esbuild.config.mjs",
         "format": "prettier --write --ignore-unknown .",
-        "lint:fix": "pnpm lint -- --fix",
+        "lint:fix": "pnpm lint --fix",
         "lint": "eslint src --ext ts",
         "prepare": "husky",
         "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
