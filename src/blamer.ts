@@ -239,13 +239,16 @@ export class Blamer {
             revision,
         });
 
-        this.statusBarItem.show();
         this.setStatusBarText(`Fetching log for revision #${revision}`, "loading~spin");
 
-        const result = await this.svn.getLogForRevision(fileName, revision);
-
-        this.statusBarItem.hide();
-        return result;
+        try {
+            const result = await this.svn.getLogForRevision(fileName, revision);
+            this.statusBarItem.hide();
+            return result;
+        } catch (err) {
+            this.statusBarItem.hide();
+            throw err;
+        }
     }
 
     async showBlameForFile(textEditor?: TextEditor, fileName?: string) {
@@ -272,7 +275,7 @@ export class Blamer {
 
         const blame = await this.svn.blameFile(fileName);
 
-        if (!blame.length) {
+        if (!blame?.length) {
             return;
         }
 
