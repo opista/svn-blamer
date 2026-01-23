@@ -1,12 +1,15 @@
 import merge from "lodash.merge";
 import {
     LogOutputChannel,
+    Range,
     StatusBarAlignment,
     StatusBarItem,
     TextDocument,
+    TextDocumentChangeEvent,
     TextEditor,
     TextEditorDecorationType,
     TextEditorSelectionChangeEvent,
+    TextEditorVisibleRangesChangeEvent,
     window,
     workspace,
 } from "vscode";
@@ -78,6 +81,126 @@ export class Blamer {
         return this.clearRecordForFile(fileName);
     }
 
+    handleDocumentChange(event: TextDocumentChangeEvent) {
+        const { document, contentChanges } = event;
+        const { fileName } = document;
+
+        if (contentChanges.length === 0) {
+            return;
+        }
+
+        const record = this.getRecordForFile(fileName);
+        if (!record || !record.blamesByLine || Object.keys(record.blamesByLine).length === 0) {
+            return;
+        }
+
+        // Calculate line delta from content changes
+        // Process changes in reverse order (bottom to top) to handle shifts correctly
+        const sortedChanges = [...contentChanges].sort(
+            (a, b) => b.range.start.line - a.range.start.line,
+        );
+
+        let updatedBlamesByLine = { ...record.blamesByLine };
+        let updatedBlamesByRevision = { ...record.blamesByRevision };
+
+        for (const change of sortedChanges) {
+            const changeEndLine = change.range.end.line + 1; // Convert to 1-indexed
+            const linesInserted = (change.text.match(/\n/g) || []).length;
+
+            // Calculate how many original lines were affected (for multi-line deletions)
+            const originalLinesAffected = change.range.end.line - change.range.start.line;
+            const lineDelta = linesInserted - originalLinesAffected;
+
+            if (lineDelta === 0) {
+                // No line count change
+                continue;
+            }
+
+            const newBlamesByLine: Record<string, (typeof record.blamesByLine)[string]> = {};
+            const newBlamesByRevision: Record<string, (typeof record.blamesByRevision)[string]> =
+                {};
+
+            for (const [lineStr, blame] of Object.entries(updatedBlamesByLine)) {
+                const lineNum = Number(lineStr);
+
+                if (lineNum <= changeEndLine) {
+                    // Lines at or before the change end: keep as-is
+                    newBlamesByLine[lineStr] = blame;
+                } else if (lineDelta < 0 && lineNum <= changeEndLine - lineDelta) {
+                    // Lines that were deleted: skip them
+                    continue;
+                } else {
+                    // Lines after the change: shift by delta
+                    const newLineNum = lineNum + lineDelta;
+                    const shiftedBlame = { ...blame, line: String(newLineNum) };
+                    newBlamesByLine[String(newLineNum)] = shiftedBlame;
+                }
+            }
+
+            // Rebuild blamesByRevision from the updated blamesByLine
+            for (const blame of Object.values(newBlamesByLine)) {
+                if (!newBlamesByRevision[blame.revision]) {
+                    newBlamesByRevision[blame.revision] = [];
+                }
+                newBlamesByRevision[blame.revision].push(blame);
+            }
+
+            updatedBlamesByLine = newBlamesByLine;
+            updatedBlamesByRevision = newBlamesByRevision;
+        }
+
+        // Replace the record fully (not merge) to ensure old line keys are removed
+        const existingRecord = this.getRecordForFile(fileName);
+        if (existingRecord) {
+            this.setRecordForFile(fileName, {
+                ...existingRecord,
+                blamesByLine: updatedBlamesByLine,
+                blamesByRevision: updatedBlamesByRevision,
+            });
+        }
+
+        // Re-apply decorations if we have an active editor for this file
+        const textEditor = window.activeTextEditor;
+        if (textEditor && textEditor.document.fileName === fileName) {
+            const updatedRecord = this.getRecordForFile(fileName);
+            if (updatedRecord) {
+                const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+                this.decorationManager.reApplyDecorations(
+                    textEditor,
+                    updatedRecord,
+                    extendedRanges,
+                );
+            }
+        }
+
+        this.logger.debug("Document changed, updated line positions", { fileName });
+    }
+
+    handleVisibleRangesChange(event: TextEditorVisibleRangesChangeEvent) {
+        const { textEditor } = event;
+        const { fileName } = textEditor.document;
+
+        const record = this.getRecordForFile(fileName);
+        if (!record) {
+            return;
+        }
+
+        const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+        this.decorationManager.reApplyDecorations(textEditor, record, extendedRanges);
+    }
+
+    private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
+        const { viewportBuffer } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        return textEditor.visibleRanges.map((range) => {
+            return new Range(
+                Math.max(0, range.start.line - viewportBuffer),
+                0,
+                Math.min(textEditor.document.lineCount - 1, range.end.line + viewportBuffer),
+                0,
+            );
+        });
+    }
+
     async clearBlameForFile(fileName?: string) {
         if (!fileName) {
             this.logger.debug("No file found, aborting...");
@@ -131,6 +254,15 @@ export class Blamer {
             return;
         }
 
+        // Check if the document has unsaved changes
+        if (textEditor.document.isDirty) {
+            this.logger.info("Document has unsaved changes, cannot blame", { fileName });
+            window.showWarningMessage(
+                `${EXTENSION_NAME}: File has unsaved changes. Please save the file to ensure accurate blame information.`,
+            );
+            return;
+        }
+
         this.logger.info("Blaming file", { fileName });
 
         this.statusBarItem.show();
@@ -147,8 +279,16 @@ export class Blamer {
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
+        const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+
         const { blamesByLine, blamesByRevision, revisionDecorations } =
-            await this.decorationManager.createAndSetDecorationsForBlame(textEditor, blame, icons);
+            await this.decorationManager.createAndSetDecorationsForBlame(
+                textEditor,
+                blame,
+                icons,
+                undefined,
+                extendedRanges,
+            );
 
         const record = mapToDecorationRecord({
             icons,

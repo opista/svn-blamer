@@ -82,7 +82,11 @@ export class DecorationManager {
         });
     }
 
-    private createDecorationOptions(blames: Blame[], logs?: LogHashMap): DecorationOptions[] {
+    private createDecorationOptions(
+        blames: Blame[],
+        logs?: LogHashMap,
+        visibleRanges?: readonly Range[],
+    ): DecorationOptions[] {
         if (!blames.length) {
             return [];
         }
@@ -92,14 +96,27 @@ export class DecorationManager {
         const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
         const hoverMessage = new MarkdownString(hoverMessageText, true);
 
-        return blames.map((blame) => {
+        const options: DecorationOptions[] = [];
+
+        for (const blame of blames) {
             const lineNumber = Number(blame.line) - 1;
 
-            return {
+            if (visibleRanges) {
+                const isVisible = visibleRanges.some(
+                    (range) => lineNumber >= range.start.line && lineNumber <= range.end.line,
+                );
+                if (!isVisible) {
+                    continue;
+                }
+            }
+
+            options.push({
                 hoverMessage,
                 range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
-            };
-        });
+            });
+        }
+
+        return options;
     }
 
     async createGutterImagePathHashMap(revisions: string[]) {
@@ -126,6 +143,7 @@ export class DecorationManager {
         blames: Blame[],
         icons: GutterImagePathHashMap,
         logs?: LogHashMap,
+        visibleRanges?: readonly Range[],
     ): Promise<
         Pick<DecorationRecord, "blamesByLine" | "blamesByRevision" | "revisionDecorations">
     > {
@@ -159,7 +177,7 @@ export class DecorationManager {
             for (const revision of revisions) {
                 revisionDecorations[revision] = decoration;
                 const revisionBlames = blamesByRevision[revision];
-                const options = this.createDecorationOptions(revisionBlames, logs);
+                const options = this.createDecorationOptions(revisionBlames, logs, visibleRanges);
                 allOptions.push(...options);
             }
 
@@ -173,7 +191,11 @@ export class DecorationManager {
         };
     }
 
-    reApplyDecorations(textEditor: TextEditor, record: DecorationRecord) {
+    reApplyDecorations(
+        textEditor: TextEditor,
+        record: DecorationRecord,
+        visibleRanges?: readonly Range[],
+    ) {
         const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
         for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
@@ -187,7 +209,11 @@ export class DecorationManager {
             const allOptions: DecorationOptions[] = [];
             for (const revision of revisions) {
                 const revisionBlames = record.blamesByRevision[revision] || [];
-                const options = this.createDecorationOptions(revisionBlames, record.logs);
+                const options = this.createDecorationOptions(
+                    revisionBlames,
+                    record.logs,
+                    visibleRanges,
+                );
                 allOptions.push(...options);
             }
             textEditor.setDecorations(decoration, allOptions);
