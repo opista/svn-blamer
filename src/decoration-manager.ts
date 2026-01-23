@@ -98,19 +98,16 @@ export class DecorationManager {
         }
 
         const generator = await this.gutterImageGenerator();
+        const hashMap: GutterImagePathHashMap = {};
 
-        return revisions.reduce<GutterImagePathHashMap>((hashMap, revision: string) => {
-            const existingValue = hashMap[revision];
-
-            if (existingValue) {
-                return hashMap;
+        // Bolt: Optimized from reduce with object spread (O(N^2)) to loop with mutation (O(N))
+        for (const revision of revisions) {
+            if (!hashMap[revision]) {
+                hashMap[revision] = generator?.next().value;
             }
+        }
 
-            return {
-                ...hashMap,
-                [revision]: generator?.next().value,
-            };
-        }, {});
+        return hashMap;
     }
 
     async createAndSetDecorationsForBlame(
