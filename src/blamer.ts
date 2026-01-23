@@ -190,12 +190,12 @@ export class Blamer {
     }
 
     private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
-        const buffer = 200; // Lines buffer
+        const { viewportBuffer } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
         return textEditor.visibleRanges.map((range) => {
             return new Range(
-                Math.max(0, range.start.line - buffer),
+                Math.max(0, range.start.line - viewportBuffer),
                 0,
-                Math.min(textEditor.document.lineCount - 1, range.end.line + buffer),
+                Math.min(textEditor.document.lineCount - 1, range.end.line + viewportBuffer),
                 0,
             );
         });

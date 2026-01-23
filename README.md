@@ -65,8 +65,9 @@ This extension contributes the following commands to the Command palette.
 | ---------------------------- | ----------------------------------------------------------------- | ------------- |
 | **Auto Blame**               | Automatically blames files as you open them.                      | `false`       |
 | **Enable Logs**              | Fetches and displays revision log data in the popup.              | `true`        |
-| **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number. | `true`        |
-| **SVN Executable Path**      | Path to svn executable or alternative command.                    | `"svn"`       |
+| **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number.                                                                                                | `true`        |
+| **Viewport Buffer**          | How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Higher values may impact performance. | `200`         |
+| **SVN Executable Path**      | Path to svn executable or alternative command.                                                                                                                   | `"svn"`       |
 
 ## Known Issues
 

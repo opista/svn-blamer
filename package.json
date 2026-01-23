@@ -65,6 +65,13 @@
                     "description": "Enable/Disable visual indicators that sit to the left of the line number.",
                     "type": "boolean"
                 },
+                "svnBlamer.viewportBuffer": {
+                    "default": 200,
+                    "description": "How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Note: Higher values may impact initial load performance.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                },
                 "svnBlamer.svnExecutablePath": {
                     "type": "string",
                     "default": "svn",
