@@ -10,6 +10,12 @@ import { Blame } from "./types/blame.model";
 import { spawnProcess } from "./util/spawn-process";
 
 export class SVN {
+    /**
+     * Cache for in-flight requests to deduplicate concurrent calls.
+     * This is not a persistent cache; entries are removed once the promise settles.
+     */
+    private requestCache = new Map<string, Promise<string | undefined>>();
+
     constructor(private logger: LogOutputChannel) {}
 
     private async command(
@@ -62,18 +68,33 @@ export class SVN {
     }
 
     async getLogForRevision(fileName: string, revision: string) {
-        try {
-            const dir = dirname(fileName);
-            const file = basename(fileName);
+        const key = `${fileName}::${revision}`;
+        if (this.requestCache.has(key)) {
+            return this.requestCache.get(key);
+        }
 
-            const data = await this.command(`log --xml -r ${revision} "${file}"`, {
-                cwd: dir,
-                fileName,
-            });
-            return mapLogOutputToMessage(data);
-        } catch (err: any) {
-            this.logger.error("Failed to get revision log", { err: err?.toString() });
-            throw err;
+        const promise = (async () => {
+            try {
+                const dir = dirname(fileName);
+                const file = basename(fileName);
+
+                const data = await this.command(`log --xml -r ${revision} "${file}"`, {
+                    cwd: dir,
+                    fileName,
+                });
+                return mapLogOutputToMessage(data);
+            } catch (err: any) {
+                this.logger.error("Failed to get revision log", { err: err?.toString() });
+                throw err;
+            }
+        })();
+
+        this.requestCache.set(key, promise);
+
+        try {
+            return await promise;
+        } finally {
+            this.requestCache.delete(key);
         }
     }
 }
