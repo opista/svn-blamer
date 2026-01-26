@@ -49,6 +49,7 @@ jobs:
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           dryRun: ${{ inputs.dry_run }}
+          noDependencies: true
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
@@ -57,6 +58,7 @@ jobs:
           preRelease: ${{ inputs.release_type == 'pre-release' }}
           registryUrl: https://marketplace.visualstudio.com
           dryRun: ${{ inputs.dry_run }}
+          noDependencies: true
 
       - name: Upload Extension Artifact
         if: ${{ inputs.dry_run }} 
