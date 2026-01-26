@@ -117,8 +117,6 @@ export class Blamer {
             }
 
             const newBlamesByLine: Record<string, (typeof record.blamesByLine)[string]> = {};
-            const newBlamesByRevision: Record<string, (typeof record.blamesByRevision)[string]> =
-                {};
 
             for (const [lineStr, blame] of Object.entries(updatedBlamesByLine)) {
                 const lineNum = Number(lineStr);
@@ -137,16 +135,16 @@ export class Blamer {
                 }
             }
 
-            // Rebuild blamesByRevision from the updated blamesByLine
-            for (const blame of Object.values(newBlamesByLine)) {
-                if (!newBlamesByRevision[blame.revision]) {
-                    newBlamesByRevision[blame.revision] = [];
-                }
-                newBlamesByRevision[blame.revision].push(blame);
-            }
-
             updatedBlamesByLine = newBlamesByLine;
-            updatedBlamesByRevision = newBlamesByRevision;
+        }
+
+        // Rebuild blamesByRevision from the updated blamesByLine
+        updatedBlamesByRevision = {};
+        for (const blame of Object.values(updatedBlamesByLine)) {
+            if (!updatedBlamesByRevision[blame.revision]) {
+                updatedBlamesByRevision[blame.revision] = [];
+            }
+            updatedBlamesByRevision[blame.revision].push(blame);
         }
 
         // Replace the record fully (not merge) to ensure old line keys are removed
