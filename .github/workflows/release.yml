@@ -1,4 +1,33 @@
-steps:
+name: Release
+
+on: 
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - pre-release
+      dry_run:
+        description: 'Dry Run? (Validate only, no upload)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  run-release:
+    name: Run release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
