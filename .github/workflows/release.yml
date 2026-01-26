@@ -57,8 +57,8 @@ jobs:
       - name: Upload Extension Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: svn-blamer-${{ steps.version.outputs.prop }}
-          path: "*.vsix"
+          name: ${{ steps.vsix_file.outputs.name }}
+          path: ${{ steps.vsix_file.outputs.name }}
           retention-days: 5
 
       - name: Publish to Open VSX Registry
