@@ -240,14 +240,12 @@ export class Blamer {
         });
 
         this.setStatusBarText(`Fetching log for revision #${revision}`, "loading~spin");
+        this.statusBarItem.show();
 
         try {
-            const result = await this.svn.getLogForRevision(fileName, revision);
+            return await this.svn.getLogForRevision(fileName, revision);
+        } finally {
             this.statusBarItem.hide();
-            return result;
-        } catch (err) {
-            this.statusBarItem.hide();
-            throw err;
         }
     }
 
