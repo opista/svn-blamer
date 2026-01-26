@@ -49,13 +49,25 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 
 <img src="src/img/marketplace/toolbar-toggle.gif" width="700">
 
-#### Secure Authentication
+### Secure Authentication
 
-This extension supports secure credential management for SVN repositories:
+This extension includes a built-in credential manager to handle SVN authentication securely and seamlessly.
 
--   **Per-Repository Credentials**: Store different credentials for different SVN repositories.
--   **Secure Storage**: Credentials are encrypted and stored using VS Code's `SecretStorage`.
--   **Automatic Recovery**: If authentication fails, the extension will automatically check for stored credentials or prompt you for new ones and retry the operation.
+**How it works:**
+
+1.  **Automatic Prompt**: If the extension encounters an authentication error (e.g., when blaming a file in a protected repository), it will automatically prompt you to enter your SVN username and password.
+2.  **Secure Storage**: Your credentials are encrypted and stored securely using VS Code's native `SecretStorage` API. They are **not** saved in plain text or exposed in settings.
+3.  **Per-Repository**: Credentials are stored specifically for each repository root. You can use different credentials for different projects without conflict.
+4.  **Auto-Retry**: Once stored, the extension will automatically use these credentials for future operations. If authentication fails again (e.g., expired password), it will prompt you for new credentials.
+
+**Managing Credentials:**
+
+You can manage your stored credentials at any time using the command palette:
+
+1.  Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`).
+2.  Run the command **SVN Blamer: Clear credentials**.
+3.  You will see a list of repositories for which credentials are stored.
+4.  Select a specific repository to remove its credentials, or choose **Remove All Credentials** to wipe everything.
 
 ## Commands
 
