@@ -50,6 +50,10 @@ jobs:
       - name: Package Extension
         run: pnpm dlx @vscode/vsce package --no-dependencies
 
+      - name: Get VSIX Path
+        id: vsix_file
+        run: echo "name=$(ls *.vsix)" >> $GITHUB_OUTPUT
+
       - name: Upload Extension Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -63,7 +67,7 @@ jobs:
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           dryRun: ${{ inputs.dry_run }}
-          packagePath: "*.vsix"
+          packagePath: ${{ steps.vsix_file.outputs.name }}
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
@@ -72,4 +76,4 @@ jobs:
           preRelease: ${{ inputs.release_type == 'pre-release' }}
           registryUrl: https://marketplace.visualstudio.com
           dryRun: ${{ inputs.dry_run }}
-          packagePath: "*.vsix"
+          packagePath: ${{ steps.vsix_file.outputs.name }}
