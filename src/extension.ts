@@ -2,6 +2,7 @@ import { commands, ExtensionContext, window, workspace } from "vscode";
 
 import { Blamer } from "./blamer";
 import { EXTENSION_NAME } from "./const/extension";
+import { CredentialManager } from "./credential-manager";
 import { DecorationManager } from "./decoration-manager";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
@@ -14,7 +15,8 @@ export async function activate(context: ExtensionContext) {
     });
     const decorationManager = new DecorationManager();
     const storage = new Storage<DecorationRecord>();
-    const svn = new SVN(logger);
+    const credentialManager = new CredentialManager(context, logger);
+    const svn = new SVN(logger, credentialManager);
     const blamer = new Blamer(logger, storage, svn, decorationManager);
 
     logger.clear();
@@ -32,6 +34,10 @@ export async function activate(context: ExtensionContext) {
 
     let toggle = commands.registerCommand("blamer-vs.toggleBlame", () =>
         blamer.toggleBlameForActiveTextEditor(),
+    );
+
+    let clearCredentials = commands.registerCommand("blamer-vs.clearCredentials", () =>
+        credentialManager.manageCredentials(),
     );
 
     let autoBlame = window.onDidChangeActiveTextEditor((textEditor) =>
@@ -62,6 +68,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(updateOnChange);
     context.subscriptions.push(scrollUpdate);
     context.subscriptions.push(autoBlame);
+    context.subscriptions.push(clearCredentials);
 }
 
 export function deactivate() {}

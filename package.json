@@ -44,6 +44,10 @@
                 "command": "blamer-vs.toggleBlame",
                 "icon": "$(git-merge)",
                 "title": "SVN Blamer: Toggle blame"
+            },
+            {
+                "command": "blamer-vs.clearCredentials",
+                "title": "SVN Blamer: Clear stored credentials"
             }
         ],
         "configuration": {
