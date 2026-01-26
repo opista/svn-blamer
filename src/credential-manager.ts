@@ -127,16 +127,37 @@ export class CredentialManager {
             if (confirm === "Yes") {
                 this.logger.info("Removing all stored credentials");
                 try {
-                    await Promise.all(
+                    const results = await Promise.allSettled(
                         repos.map((repo) => this.context.secrets.delete(this.getKey(repo))),
                     );
-                    await this.context.globalState.update(CredentialManager.KNOWN_REPOS_KEY, []);
-                    window.showInformationMessage("All SVN credentials removed.");
-                } catch (err) {
-                    this.logger.error("Failed to remove all credentials", { err });
-                    window.showErrorMessage(
-                        "Failed to remove one or more credentials. Please try again.",
+
+                    const failedRepos = repos.filter(
+                        (_repo, i) => results[i].status === "rejected",
                     );
+
+                    if (failedRepos.length > 0) {
+                        this.logger.error("Failed to remove some credentials", { failedRepos });
+                        await this.context.globalState.update(
+                            CredentialManager.KNOWN_REPOS_KEY,
+                            failedRepos,
+                        );
+                        window.showErrorMessage(
+                            "Failed to remove one or more credentials. Please try again.",
+                        );
+                    } else {
+                        this.logger.info("All stored credentials removed successfully");
+                        await this.context.globalState.update(
+                            CredentialManager.KNOWN_REPOS_KEY,
+                            [],
+                        );
+                        window.showInformationMessage("All SVN credentials removed.");
+                    }
+                } catch (err) {
+                    this.logger.error(
+                        "An unexpected error occurred while removing all credentials",
+                        { err },
+                    );
+                    window.showErrorMessage("An unexpected error occurred. Please try again.");
                 }
             }
             return;
