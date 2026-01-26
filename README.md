@@ -87,3 +87,14 @@ This extension contributes the following commands to the Command palette.
 Please report any bugs, suggestions or documentation requests via [issues](https://github.com/BeauAgst/svn-blamer/issues)
 
 Feel free to submit [pull requests](https://github.com/BeauAgst/svn-blamer/pulls)
+
+## Try the New Features Early!
+
+You can use the official **Pre-Release** version to get the latest features early without downloading any files manually.
+
+### How to switch:
+1. Open the **Extensions** view in VS Code.
+2. Search for this extension.
+3. Click the **"Switch to Pre-Release Version"** button.
+
+_You will be automatically updated to the stable version once we release it._
