@@ -48,7 +48,12 @@ jobs:
         run: echo "prop=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Package Extension
-        run: pnpm dlx @vscode/vsce package --no-dependencies
+        run: |
+          if [ "${{ inputs.release_type }}" == "pre-release" ]; then
+            pnpm dlx @vscode/vsce package --no-dependencies --pre-release
+          else
+            pnpm dlx @vscode/vsce package --no-dependencies
+          fi
 
       - name: Get VSIX Path
         id: vsix_file
