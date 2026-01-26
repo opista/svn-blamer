@@ -126,7 +126,10 @@ export class CredentialManager {
             );
             if (confirm === "Yes") {
                 this.logger.info("Removing all stored credentials");
-                await Promise.all(repos.map((repo) => this.deleteCredentials(repo)));
+                await Promise.all(
+                    repos.map((repo) => this.context.secrets.delete(this.getKey(repo))),
+                );
+                await this.context.globalState.update(CredentialManager.KNOWN_REPOS_KEY, []);
                 window.showInformationMessage("All SVN credentials removed.");
             }
             return;
