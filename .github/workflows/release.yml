@@ -43,12 +43,31 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Get Version
+        id: version
+        run: echo "prop=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Package Extension
+        run: pnpm dlx @vscode/vsce package --no-dependencies
+
+      - name: Get VSIX Path
+        id: vsix_file
+        run: echo "name=$(ls *.vsix)" >> $GITHUB_OUTPUT
+
+      - name: Upload Extension Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vsix_file.outputs.name }}
+          path: ${{ steps.vsix_file.outputs.name }}
+          retention-days: 5
+
       - name: Publish to Open VSX Registry
         if: ${{ inputs.release_type == 'stable' }}
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           dryRun: ${{ inputs.dry_run }}
+          extensionFile: ${{ steps.vsix_file.outputs.name }}
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
@@ -57,11 +76,4 @@ jobs:
           preRelease: ${{ inputs.release_type == 'pre-release' }}
           registryUrl: https://marketplace.visualstudio.com
           dryRun: ${{ inputs.dry_run }}
-
-      - name: Upload Extension Artifact
-        if: ${{ inputs.dry_run }} 
-        uses: actions/upload-artifact@v4
-        with:
-          name: svn-blamer
-          path: "*.vsix"
-          retention-days: 5
+          extensionFile: ${{ steps.vsix_file.outputs.name }}

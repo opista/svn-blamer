@@ -93,6 +93,7 @@ Feel free to submit [pull requests](https://github.com/BeauAgst/svn-blamer/pulls
 You can use the official **Pre-Release** version to get the latest features early without downloading any files manually.
 
 ### How to switch:
+
 1. Open the **Extensions** view in VS Code.
 2. Search for this extension.
 3. Click the **"Switch to Pre-Release Version"** button.
