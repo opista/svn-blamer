@@ -1,33 +1,4 @@
-name: Release
-
-on: 
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Release Type'
-        required: true
-        default: 'stable'
-        type: choice
-        options:
-          - stable
-          - pre-release
-      dry_run:
-        description: 'Dry Run? (Validate only, no upload)'
-        required: false
-        default: false
-        type: boolean
-
-permissions:
-  contents: read
-
-jobs:
-  run-release:
-    name: Run release
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
-    steps:
+steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
@@ -43,13 +14,27 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Get Version
+        id: version
+        run: echo "prop=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Package Extension
+        run: pnpm dlx @vscode/vsce package --no-dependencies
+
+      - name: Upload Extension Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: svn-blamer-${{ steps.version.outputs.prop }}
+          path: "*.vsix"
+          retention-days: 5
+
       - name: Publish to Open VSX Registry
         if: ${{ inputs.release_type == 'stable' }}
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           dryRun: ${{ inputs.dry_run }}
-          dependencies: false
+          packagePath: "*.vsix"
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
@@ -58,12 +43,4 @@ jobs:
           preRelease: ${{ inputs.release_type == 'pre-release' }}
           registryUrl: https://marketplace.visualstudio.com
           dryRun: ${{ inputs.dry_run }}
-          dependencies: false
-
-      - name: Upload Extension Artifact
-        if: ${{ inputs.dry_run }} 
-        uses: actions/upload-artifact@v4
-        with:
-          name: svn-blamer
-          path: "*.vsix"
-          retention-days: 5
+          packagePath: "*.vsix"
