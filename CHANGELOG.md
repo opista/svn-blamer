@@ -6,23 +6,23 @@ All notable changes to the "blamer-vs" extension will be documented in this file
 
 ### Changed
 
-- Replaces PNG indicators with SVG to reduce file size
-- Cache gutter image file names to improve performance
-- Optimises blame fetching by only adding indicators to lines that are currently visible in the viewport
-- Optimises hover decoration creation and disposal
-- Improves consumption of spawned process data
-- Various other performance optimisations
-- Various dependency bumps
+-   Replaces PNG indicators with SVG to reduce file size
+-   Cache gutter image file names to improve performance
+-   Optimises blame fetching by only adding indicators to lines that are currently visible in the viewport
+-   Optimises hover decoration creation and disposal
+-   Improves consumption of spawned process data
+-   Various other performance optimisations
+-   Various dependency bumps
 
 ## Added
 
-- Repository-scoped authentication, which stores the user's credentials using Secure Storage
+-   Repository-scoped authentication, which stores the user's credentials using Secure Storage
 
 ## Fixed
 
-- Authentication issues caused by lack of credential management
-- Errors caused by single blame results when array is expected
-- Performance issues caused by blaming large files
+-   Authentication issues caused by lack of credential management
+-   Errors caused by single blame results when array is expected
+-   Performance issues caused by blaming large files
 
 ## [0.7.3] - 2025-02-10
 
