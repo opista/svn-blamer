@@ -196,6 +196,50 @@ export class DecorationManager {
         record: DecorationRecord,
         visibleRanges?: readonly Range[],
     ) {
+        if (visibleRanges) {
+            const optionsByDecoration = new Map<TextEditorDecorationType, DecorationOptions[]>();
+            const activeDecorations = new Set(Object.values(record.revisionDecorations));
+
+            for (const decoration of activeDecorations) {
+                optionsByDecoration.set(decoration, []);
+            }
+
+            const hoverCache = new Map<string, MarkdownString>();
+
+            for (const range of visibleRanges) {
+                for (let i = range.start.line; i <= range.end.line; i++) {
+                    const lineStr = String(i + 1);
+                    const blame = record.blamesByLine[lineStr];
+                    if (!blame) {
+                        continue;
+                    }
+
+                    const decoration = record.revisionDecorations[blame.revision];
+                    if (!decoration) {
+                        continue;
+                    }
+
+                    let hoverMessage = hoverCache.get(blame.revision);
+                    if (!hoverMessage) {
+                        const log = record.logs[blame.revision];
+                        const hoverMessageText = mapBlameToHoverMessage(blame, log);
+                        hoverMessage = new MarkdownString(hoverMessageText, true);
+                        hoverCache.set(blame.revision, hoverMessage);
+                    }
+
+                    optionsByDecoration.get(decoration)?.push({
+                        hoverMessage,
+                        range: new Range(i, MAX_NUMBER, i, MAX_NUMBER),
+                    });
+                }
+            }
+
+            for (const [decoration, options] of optionsByDecoration) {
+                textEditor.setDecorations(decoration, options);
+            }
+            return;
+        }
+
         const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
         for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
