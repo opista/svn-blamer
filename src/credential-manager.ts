@@ -85,14 +85,14 @@ export class CredentialManager {
             placeHolder: "Password",
             password: true,
             ignoreFocusOut: true,
-            validateInput: (value) => (value.trim() ? null : "Password is required"),
+            validateInput: (value) => (value ? null : "Password is required"),
         });
 
-        if (!pass) {
+        if (pass === undefined) {
             return undefined;
         }
 
-        return { user, pass };
+        return { user: user.trim(), pass };
     }
     async manageCredentials() {
         const repos = this.getKnownRepositories();
