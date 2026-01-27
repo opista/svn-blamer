@@ -82,6 +82,49 @@ export class DecorationManager {
         });
     }
 
+    private getOptionsForVisibleRanges(
+        visibleRanges: readonly Range[],
+        blamesByLine: Record<string, Blame>,
+        revisionDecorations: Record<string, TextEditorDecorationType>,
+        logs?: LogHashMap,
+    ): Map<TextEditorDecorationType, DecorationOptions[]> {
+        const optionsByDecoration = new Map<TextEditorDecorationType, DecorationOptions[]>();
+        const hoverCache = new Map<string, MarkdownString>();
+
+        for (const range of visibleRanges) {
+            for (let i = range.start.line; i <= range.end.line; i++) {
+                const line = (i + 1).toString();
+                const blame = blamesByLine[line];
+                if (!blame) {
+                    continue;
+                }
+
+                const decoration = revisionDecorations[blame.revision];
+                if (!decoration) {
+                    continue;
+                }
+
+                let hoverMessage = hoverCache.get(blame.revision);
+                if (!hoverMessage) {
+                    const log = logs?.[blame.revision];
+                    const text = mapBlameToHoverMessage(blame, log);
+                    hoverMessage = new MarkdownString(text, true);
+                    hoverCache.set(blame.revision, hoverMessage);
+                }
+
+                if (!optionsByDecoration.has(decoration)) {
+                    optionsByDecoration.set(decoration, []);
+                }
+
+                optionsByDecoration.get(decoration)!.push({
+                    hoverMessage,
+                    range: new Range(i, MAX_NUMBER, i, MAX_NUMBER),
+                });
+            }
+        }
+        return optionsByDecoration;
+    }
+
     private createDecorationOptions(
         blames: Blame[],
         logs?: LogHashMap,
@@ -170,18 +213,39 @@ export class DecorationManager {
             revisionsByIcon.get(icon)!.push(revision);
         }
 
+        const decorationsByIcon = new Map<string, TextEditorDecorationType>();
+
         for (const [icon, revisions] of revisionsByIcon) {
             const decoration = this.createGutterDecorationType(icon || undefined);
-            const allOptions: DecorationOptions[] = [];
-
+            decorationsByIcon.set(icon, decoration);
             for (const revision of revisions) {
                 revisionDecorations[revision] = decoration;
-                const revisionBlames = blamesByRevision[revision];
-                const options = this.createDecorationOptions(revisionBlames, logs, visibleRanges);
-                allOptions.push(...options);
             }
+        }
 
-            textEditor.setDecorations(decoration, allOptions);
+        if (visibleRanges) {
+            const optionsByDecoration = this.getOptionsForVisibleRanges(
+                visibleRanges,
+                blamesByLine,
+                revisionDecorations,
+                logs,
+            );
+            for (const decoration of decorationsByIcon.values()) {
+                textEditor.setDecorations(decoration, optionsByDecoration.get(decoration) || []);
+            }
+        } else {
+            for (const [icon, revisions] of revisionsByIcon) {
+                const decoration = decorationsByIcon.get(icon)!;
+                const allOptions: DecorationOptions[] = [];
+
+                for (const revision of revisions) {
+                    const revisionBlames = blamesByRevision[revision];
+                    const options = this.createDecorationOptions(revisionBlames, logs);
+                    allOptions.push(...options);
+                }
+
+                textEditor.setDecorations(decoration, allOptions);
+            }
         }
 
         return {
@@ -196,27 +260,37 @@ export class DecorationManager {
         record: DecorationRecord,
         visibleRanges?: readonly Range[],
     ) {
-        const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
+        if (visibleRanges) {
+            const optionsByDecoration = this.getOptionsForVisibleRanges(
+                visibleRanges,
+                record.blamesByLine,
+                record.revisionDecorations,
+                record.logs,
+            );
 
-        for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
-            if (!decorationToRevisions.has(decoration)) {
-                decorationToRevisions.set(decoration, []);
+            const uniqueDecorations = new Set(Object.values(record.revisionDecorations));
+            for (const decoration of uniqueDecorations) {
+                textEditor.setDecorations(decoration, optionsByDecoration.get(decoration) || []);
             }
-            decorationToRevisions.get(decoration)!.push(revision);
-        }
+        } else {
+            const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
-        for (const [decoration, revisions] of decorationToRevisions) {
-            const allOptions: DecorationOptions[] = [];
-            for (const revision of revisions) {
-                const revisionBlames = record.blamesByRevision[revision] || [];
-                const options = this.createDecorationOptions(
-                    revisionBlames,
-                    record.logs,
-                    visibleRanges,
-                );
-                allOptions.push(...options);
+            for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
+                if (!decorationToRevisions.has(decoration)) {
+                    decorationToRevisions.set(decoration, []);
+                }
+                decorationToRevisions.get(decoration)!.push(revision);
             }
-            textEditor.setDecorations(decoration, allOptions);
+
+            for (const [decoration, revisions] of decorationToRevisions) {
+                const allOptions: DecorationOptions[] = [];
+                for (const revision of revisions) {
+                    const revisionBlames = record.blamesByRevision[revision] || [];
+                    const options = this.createDecorationOptions(revisionBlames, record.logs);
+                    allOptions.push(...options);
+                }
+                textEditor.setDecorations(decoration, allOptions);
+            }
         }
     }
 
