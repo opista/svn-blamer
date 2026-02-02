@@ -33,8 +33,8 @@ importers:
                 specifier: ^10.0.6
                 version: 10.0.10
             "@types/node":
-                specifier: 18.x
-                version: 18.19.130
+                specifier: 25.x
+                version: 25.2.0
             "@types/vscode":
                 specifier: ^1.63.0
                 version: 1.108.1
@@ -82,7 +82,7 @@ importers:
                 version: 9.5.4(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.2))
             ts-node:
                 specifier: ^10.9.2
-                version: 10.9.2(@types/node@18.19.130)(typescript@5.9.3)
+                version: 10.9.2(@types/node@25.2.0)(typescript@5.9.3)
             typescript:
                 specifier: ^5.4.3
                 version: 5.9.3
@@ -615,10 +615,10 @@ packages:
                 integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==,
             }
 
-    "@types/node@18.19.130":
+    "@types/node@25.2.0":
         resolution:
             {
-                integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==,
+                integrity: sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==,
             }
 
     "@types/vscode@1.108.1":
@@ -3040,10 +3040,10 @@ packages:
         engines: { node: ">=14.17" }
         hasBin: true
 
-    undici-types@5.26.5:
+    undici-types@7.16.0:
         resolution:
             {
-                integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==,
+                integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==,
             }
 
     universalify@2.0.1:
@@ -3492,9 +3492,9 @@ snapshots:
 
     "@types/mocha@10.0.10": {}
 
-    "@types/node@18.19.130":
+    "@types/node@25.2.0":
         dependencies:
-            undici-types: 5.26.5
+            undici-types: 7.16.0
 
     "@types/vscode@1.108.1": {}
 
@@ -4404,7 +4404,7 @@ snapshots:
 
     jest-worker@27.5.1:
         dependencies:
-            "@types/node": 18.19.130
+            "@types/node": 25.2.0
             merge-stream: 2.0.0
             supports-color: 8.1.1
 
@@ -4938,14 +4938,14 @@ snapshots:
             typescript: 5.9.3
             webpack: 5.104.1(esbuild@0.27.2)
 
-    ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3):
+    ts-node@10.9.2(@types/node@25.2.0)(typescript@5.9.3):
         dependencies:
             "@cspotcode/source-map-support": 0.8.1
             "@tsconfig/node10": 1.0.12
             "@tsconfig/node12": 1.0.11
             "@tsconfig/node14": 1.0.3
             "@tsconfig/node16": 1.0.4
-            "@types/node": 18.19.130
+            "@types/node": 25.2.0
             acorn: 8.15.0
             acorn-walk: 8.3.4
             arg: 4.1.3
@@ -4968,7 +4968,7 @@ snapshots:
 
     typescript@5.9.3: {}
 
-    undici-types@5.26.5: {}
+    undici-types@7.16.0: {}
 
     universalify@2.0.1: {}
 
