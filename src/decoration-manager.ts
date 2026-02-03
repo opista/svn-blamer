@@ -27,7 +27,11 @@ export class DecorationManager {
     private gutterImageFileNames?: string[];
 
     constructor() {
-        const extensionPath = extensions.getExtension(EXTENSION_ID)!.extensionPath;
+        const extension = extensions.getExtension(EXTENSION_ID);
+        if (!extension) {
+            throw new Error(`Extension ${EXTENSION_ID} not found`);
+        }
+        const extensionPath = extension.extensionPath;
         this.imageDir = path.join(extensionPath, "dist", "img", "indicators");
     }
 
