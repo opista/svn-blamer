@@ -2,6 +2,18 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.6] - 2026-02-03
+
+### Fixed
+
+-   Type error where generator could return void
+-   Gutter icon generator reshuffles on exhaustion
+
+### Changed
+
+-   Improve process validation
+-   Various dependency updates
+
 ## [0.7.5] - 2026-01-26
 
 ### Changed
