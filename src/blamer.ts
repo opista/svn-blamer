@@ -90,7 +90,12 @@ export class Blamer {
         }
 
         const record = this.getRecordForFile(fileName);
-        if (!record || !record.blamesByLine || Object.keys(record.blamesByLine).length === 0) {
+        if (
+            !record ||
+            !record.blamesByLine ||
+            !record.blamesByRevision ||
+            Object.keys(record.blamesByLine).length === 0
+        ) {
             return;
         }
 
