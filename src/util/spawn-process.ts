@@ -19,8 +19,8 @@ export const spawnProcess = (
             err.push(chunk);
         });
 
-        child.stdout.on("close", (code: number) => {
-            if (err.length > 0 || code) {
+        child.on("close", (code: number | null) => {
+            if (code !== 0 || err.length > 0) {
                 const errorString = Buffer.concat(err).toString();
                 reject(errorString);
             } else {
