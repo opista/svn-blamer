@@ -85,7 +85,7 @@ export class CredentialManager {
             placeHolder: "Password",
             password: true,
             ignoreFocusOut: true,
-            validateInput: (value) => (value ? null : "Password is required"),
+            validateInput: (value) => (value.trim() ? null : "Password is required"),
         });
 
         if (pass === undefined) {

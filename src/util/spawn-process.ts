@@ -20,7 +20,7 @@ export const spawnProcess = (
         });
 
         child.on("close", (code: number | null) => {
-            if (code !== 0 || err.length > 0) {
+            if (code !== 0) {
                 const errorString = Buffer.concat(err).toString();
                 reject(errorString);
             } else {
