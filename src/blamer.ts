@@ -377,7 +377,7 @@ export class Blamer {
             return await this.showBlameForFile(textEditor, fileName);
         } catch (err: any) {
             this.statusBarItem.hide();
-            this.logger.debug("Blame attemped via auto-blame, silently failing");
+            this.logger.debug("Blame attempted via auto-blame, silently failing");
 
             if (err instanceof NotWorkingCopyError) {
                 this.setRecordForFile(err.fileName, mapToDecorationRecord({ workingCopy: false }));

@@ -101,23 +101,25 @@ export class SVN {
         try {
             return await this.execSvn(args, params.cwd);
         } catch (err: any) {
-            if (typeof err === "string") {
-                if (err.includes("E155007")) {
+            const errorString = typeof err === "string" ? err : err?.message ?? "";
+
+            if (errorString) {
+                if (errorString.includes("E155007")) {
                     this.logger.warn("File is not a working copy, cannot complete action");
                     throw new NotWorkingCopyError(params.fileName);
                 }
 
                 const isAuthError =
-                    err.includes("No more credentials") ||
-                    err.includes("Authentication failed") ||
-                    err.includes("E170001") ||
-                    err.includes("E215004");
+                    errorString.includes("No more credentials") ||
+                    errorString.includes("Authentication failed") ||
+                    errorString.includes("E170001") ||
+                    errorString.includes("E215004");
 
                 if (isAuthError) {
                     return await this.handleAuthFailure(args, params);
                 }
 
-                throw new Error(err);
+                throw new Error(errorString);
             }
 
             throw err;
