@@ -3,7 +3,7 @@ export const truncateString = (str?: string) => {
         return "";
     }
 
-    if (str.length > 15) {
+    if (str.length > 17) {
         return `${str.substring(0, 20).trim()}...`;
     }
 

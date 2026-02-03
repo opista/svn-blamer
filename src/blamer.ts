@@ -214,9 +214,14 @@ export class Blamer {
 
         this.logger.info("Clearing blame for file", { fileName });
 
-        await disposeDecorations([...new Set(Object.values(record.revisionDecorations))]);
+        disposeDecorations([...new Set(Object.values(record.revisionDecorations))]);
 
         this.clearRecordForFile(fileName);
+    }
+
+    dispose() {
+        this.activeLineDecoration?.dispose();
+        this.statusBarItem.dispose();
     }
 
     async clearBlameForActiveTextEditor() {
@@ -470,7 +475,6 @@ export class Blamer {
         }
 
         this.logger.debug("Setting new line decoration", {
-            beauROCKS: true,
             fileName,
             line,
         });

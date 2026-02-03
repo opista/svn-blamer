@@ -24,39 +24,39 @@ export async function activate(context: ExtensionContext) {
 
     logger.info("Blamer initialised");
 
-    let clear = commands.registerCommand("blamer-vs.clearBlame", () =>
+    const clear = commands.registerCommand("blamer-vs.clearBlame", () =>
         blamer.clearBlameForActiveTextEditor(),
     );
 
-    let show = commands.registerCommand("blamer-vs.showBlame", () =>
+    const show = commands.registerCommand("blamer-vs.showBlame", () =>
         blamer.showBlameForActiveTextEditor(),
     );
 
-    let toggle = commands.registerCommand("blamer-vs.toggleBlame", () =>
+    const toggle = commands.registerCommand("blamer-vs.toggleBlame", () =>
         blamer.toggleBlameForActiveTextEditor(),
     );
 
-    let clearCredentials = commands.registerCommand("blamer-vs.clearCredentials", () =>
+    const clearCredentials = commands.registerCommand("blamer-vs.clearCredentials", () =>
         credentialManager.manageCredentials(),
     );
 
-    let autoBlame = window.onDidChangeActiveTextEditor((textEditor) =>
+    const autoBlame = window.onDidChangeActiveTextEditor((textEditor) =>
         blamer.autoBlame(textEditor),
     );
 
-    let clearOnClose = workspace.onDidCloseTextDocument((textDocument) =>
+    const clearOnClose = workspace.onDidCloseTextDocument((textDocument) =>
         blamer.handleClosedDocument(textDocument),
     );
 
-    let updateOnChange = workspace.onDidChangeTextDocument((event) =>
+    const updateOnChange = workspace.onDidChangeTextDocument((event) =>
         blamer.handleDocumentChange(event),
     );
 
-    let scrollUpdate = window.onDidChangeTextEditorVisibleRanges(
+    const scrollUpdate = window.onDidChangeTextEditorVisibleRanges(
         debounce((event) => blamer.handleVisibleRangesChange(event), 50),
     );
 
-    let trackLine = window.onDidChangeTextEditorSelection(
+    const trackLine = window.onDidChangeTextEditorSelection(
         debounce((event) => blamer.trackLine(event)),
     );
 
@@ -69,6 +69,8 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(scrollUpdate);
     context.subscriptions.push(autoBlame);
     context.subscriptions.push(clearCredentials);
+    context.subscriptions.push(logger);
+    context.subscriptions.push(blamer);
 }
 
 export function deactivate() {}

@@ -28,5 +28,7 @@ export const spawnProcess = (
                 resolve(dataString);
             }
         });
+
+        child.on("error", (err) => reject(err));
     });
 };
