@@ -78,7 +78,7 @@ export class Blamer {
     handleClosedDocument(textDocument: TextDocument) {
         const { fileName } = textDocument;
         this.logger.debug("Document closed, clearing blame", { fileName });
-        return this.clearRecordForFile(fileName);
+        return this.clearBlameForFile(fileName);
     }
 
     handleDocumentChange(event: TextDocumentChangeEvent) {

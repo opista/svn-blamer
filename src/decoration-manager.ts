@@ -44,11 +44,18 @@ export class DecorationManager {
     }
 
     private *createGutterIconImageGenerator(files: string[]) {
-        for (const file of files) {
-            yield file;
+        if (files.length === 0) {
+            return;
         }
 
-        return undefined;
+        const currentFiles = [...files];
+
+        while (true) {
+            for (const file of currentFiles) {
+                yield file;
+            }
+            this.shuffle(currentFiles);
+        }
     }
 
     private async gutterImageGenerator() {
@@ -135,7 +142,7 @@ export class DecorationManager {
 
         for (const revision of revisions) {
             if (!hashMap[revision]) {
-                hashMap[revision] = generator?.next().value;
+                hashMap[revision] = generator?.next().value || undefined;
             }
         }
 
