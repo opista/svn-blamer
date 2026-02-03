@@ -227,6 +227,7 @@ export class Blamer {
     dispose() {
         this.activeLineDecoration?.dispose();
         this.statusBarItem.dispose();
+        this.clearRecordsForAllFiles();
     }
 
     async clearBlameForActiveTextEditor() {
