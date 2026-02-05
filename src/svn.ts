@@ -101,7 +101,7 @@ export class SVN {
         try {
             return await this.execSvn(args, params.cwd);
         } catch (err: any) {
-            const errorString = typeof err === "string" ? err : err?.message ?? "";
+            const errorString = typeof err === "string" ? err : (err?.message ?? "");
 
             if (errorString) {
                 if (errorString.includes("E155007")) {
