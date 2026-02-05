@@ -92,7 +92,7 @@ This extension contributes the following commands to the Command palette.
 
 ## Known Issues
 
--   None known currently. Please report any issues you find!
+- None known currently. Please report any issues you find!
 
 ## Feedback & Contributing
 
