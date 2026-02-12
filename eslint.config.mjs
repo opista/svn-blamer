@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import stylistic from "@stylistic/eslint-plugin";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
@@ -24,6 +25,7 @@ export default defineConfig([
 
         plugins: {
             "@typescript-eslint": typescriptEslint,
+            "@stylistic": stylistic,
             "simple-import-sort": simpleImportSort,
             "unused-imports": unusedImports,
         },
@@ -43,7 +45,7 @@ export default defineConfig([
                 },
             ],
 
-            "@typescript-eslint/semi": "warn",
+            "@stylistic/semi": "warn",
             curly: "warn",
             eqeqeq: "warn",
             "no-throw-literal": "warn",
