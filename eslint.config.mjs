@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import stylistic from "@stylistic/eslint-plugin";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import { defineConfig, globalIgnores } from "eslint/config";
@@ -24,6 +25,7 @@ export default defineConfig([
 
         plugins: {
             "@typescript-eslint": typescriptEslint,
+            "@stylistic": stylistic,
             "simple-import-sort": simpleImportSort,
             "unused-imports": unusedImports,
         },
@@ -43,7 +45,7 @@ export default defineConfig([
                 },
             ],
 
-            "@typescript-eslint/semi": "warn",
+            "@stylistic/semi": "warn",
             curly: "warn",
             eqeqeq: "warn",
             "no-throw-literal": "warn",
