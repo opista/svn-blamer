@@ -36,13 +36,20 @@ export class SVN {
         const allArgs = [...args];
 
         if (credentials) {
-            allArgs.push(
+            const authArgs = [
                 "--non-interactive",
                 "--username",
                 credentials.user,
                 "--password",
                 credentials.pass,
-            );
+            ];
+
+            const dashDashIndex = allArgs.indexOf("--");
+            if (dashDashIndex >= 0) {
+                allArgs.splice(dashDashIndex, 0, ...authArgs);
+            } else {
+                allArgs.push(...authArgs);
+            }
         }
 
         return await spawnProcess(svnExecutablePath, allArgs, { cwd });
@@ -131,7 +138,7 @@ export class SVN {
             const dir = dirname(fileName);
             // "svn info --xml" gives us the repo info. We want <repository><root>
             // We use the file name to target the specific file's repo
-            const data = await this.execSvn(["info", "--xml", basename(fileName)], dir);
+            const data = await this.execSvn(["info", "--xml", "--", basename(fileName)], dir);
 
             return mapInfoOutputToRepoRoot(data);
         } catch (err) {
@@ -147,7 +154,7 @@ export class SVN {
             const file = basename(fileName);
 
             const data = await this.command(
-                ["blame", "--xml", "-x", "-w --ignore-eol-style", file],
+                ["blame", "--xml", "-x", "-w --ignore-eol-style", "--", file],
                 {
                     cwd: dir,
                     fileName,
@@ -168,7 +175,7 @@ export class SVN {
             const dir = dirname(fileName);
             const file = basename(fileName);
 
-            const data = await this.command(["log", "--xml", "-r", revision, file], {
+            const data = await this.command(["log", "--xml", "-r", revision, "--", file], {
                 cwd: dir,
                 fileName,
             });
