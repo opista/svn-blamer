@@ -109,22 +109,53 @@ export class DecorationManager {
 
         const options: DecorationOptions[] = [];
 
-        for (const blame of blames) {
-            const lineNumber = Number(blame.line) - 1;
+        if (visibleRanges) {
+            const addedLines = new Set<number>();
+            for (const range of visibleRanges) {
+                let startIndex = 0;
+                let endIndex = blames.length - 1;
+                let foundIndex = -1;
 
-            if (visibleRanges) {
-                const isVisible = visibleRanges.some(
-                    (range) => lineNumber >= range.start.line && lineNumber <= range.end.line,
-                );
-                if (!isVisible) {
-                    continue;
+                while (startIndex <= endIndex) {
+                    const mid = Math.floor((startIndex + endIndex) / 2);
+                    const line = Number(blames[mid].line) - 1;
+
+                    if (line >= range.start.line) {
+                        foundIndex = mid;
+                        endIndex = mid - 1;
+                    } else {
+                        startIndex = mid + 1;
+                    }
+                }
+
+                if (foundIndex !== -1) {
+                    for (let i = foundIndex; i < blames.length; i++) {
+                        const blame = blames[i];
+                        const lineNumber = Number(blame.line) - 1;
+
+                        if (lineNumber > range.end.line) {
+                            break;
+                        }
+
+                        if (!addedLines.has(lineNumber)) {
+                            options.push({
+                                hoverMessage,
+                                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                            });
+                            addedLines.add(lineNumber);
+                        }
+                    }
                 }
             }
+        } else {
+            for (const blame of blames) {
+                const lineNumber = Number(blame.line) - 1;
 
-            options.push({
-                hoverMessage,
-                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
-            });
+                options.push({
+                    hoverMessage,
+                    range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                });
+            }
         }
 
         return options;
