@@ -85,9 +85,9 @@ export class SVN {
 
                 return result;
             }
-        } catch (retryErr) {
+        } catch (retryErr: unknown) {
             this.logger.warn("Retry with credentials failed", {
-                err: retryErr?.toString(),
+                err: String(retryErr),
             });
         }
 
@@ -100,8 +100,8 @@ export class SVN {
     ): Promise<string> {
         try {
             return await this.execSvn(args, params.cwd);
-        } catch (err: any) {
-            const errorString = typeof err === "string" ? err : (err?.message ?? "");
+        } catch (err: unknown) {
+            const errorString = typeof err === "string" ? err : (err instanceof Error ? err.message : "");
 
             if (errorString) {
                 if (errorString.includes("E155007")) {
@@ -134,8 +134,8 @@ export class SVN {
             const data = await this.execSvn(["info", "--xml", basename(fileName)], dir);
 
             return mapInfoOutputToRepoRoot(data);
-        } catch (err) {
-            this.logger.warn("Failed to get repository root", { err: err?.toString() });
+        } catch (err: unknown) {
+            this.logger.warn("Failed to get repository root", { err: String(err) });
             return undefined;
         }
     }
@@ -157,8 +157,8 @@ export class SVN {
             this.logger.debug("Blame child process successful");
 
             return mapBlameOutputToBlameModel(data);
-        } catch (err: any) {
-            this.logger.error("Failed to blame file", { err: err?.toString() });
+        } catch (err: unknown) {
+            this.logger.error("Failed to blame file", { err: String(err) });
             throw err;
         }
     }
@@ -173,8 +173,8 @@ export class SVN {
                 fileName,
             });
             return mapLogOutputToMessage(data);
-        } catch (err: any) {
-            this.logger.error("Failed to get revision log", { err: err?.toString() });
+        } catch (err: unknown) {
+            this.logger.error("Failed to get revision log", { err: String(err) });
             throw err;
         }
     }
