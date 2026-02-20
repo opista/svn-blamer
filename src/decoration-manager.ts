@@ -93,6 +93,26 @@ export class DecorationManager {
         });
     }
 
+    private findFirstVisibleIndex(blames: Blame[], startLine: number): number {
+        let low = 0;
+        let high = blames.length - 1;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const midLine = Number(blames[mid].line) - 1;
+
+            if (midLine < startLine) {
+                low = mid + 1;
+            } else if (midLine > startLine) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+
+        return low;
+    }
+
     private createDecorationOptions(
         blames: Blame[],
         logs?: LogHashMap,
@@ -109,22 +129,37 @@ export class DecorationManager {
 
         const options: DecorationOptions[] = [];
 
-        for (const blame of blames) {
-            const lineNumber = Number(blame.line) - 1;
+        if (visibleRanges) {
+            const addedLines = new Set<number>();
+            for (const range of visibleRanges) {
+                let i = this.findFirstVisibleIndex(blames, range.start.line);
+                while (i < blames.length) {
+                    const blame = blames[i];
+                    const lineNumber = Number(blame.line) - 1;
 
-            if (visibleRanges) {
-                const isVisible = visibleRanges.some(
-                    (range) => lineNumber >= range.start.line && lineNumber <= range.end.line,
-                );
-                if (!isVisible) {
-                    continue;
+                    if (lineNumber > range.end.line) {
+                        break;
+                    }
+
+                    if (!addedLines.has(lineNumber)) {
+                        options.push({
+                            hoverMessage,
+                            range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                        });
+                        addedLines.add(lineNumber);
+                    }
+                    i++;
                 }
             }
+        } else {
+            for (const blame of blames) {
+                const lineNumber = Number(blame.line) - 1;
 
-            options.push({
-                hoverMessage,
-                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
-            });
+                options.push({
+                    hoverMessage,
+                    range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                });
+            }
         }
 
         return options;
