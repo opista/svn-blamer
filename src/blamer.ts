@@ -319,8 +319,8 @@ export class Blamer {
             return await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
             this.statusBarItem.hide();
-            this.logger.error("Blame action failed", { err: String(err) });
-            const message = err instanceof Error ? err.message : String(err);
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error("Blame action failed", { err: message });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
@@ -335,8 +335,8 @@ export class Blamer {
         } catch (err: unknown) {
             const blameAction = fileData ? "hide" : "show";
             this.statusBarItem.hide();
-            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: String(err) });
-            const message = err instanceof Error ? err.message : String(err);
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: message });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
