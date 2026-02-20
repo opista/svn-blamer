@@ -122,14 +122,27 @@ export class DecorationManager {
             return [];
         }
 
-        const [firstBlame] = blames;
-        const log = logs?.[firstBlame.revision];
-        const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
-        const hoverMessage = new MarkdownString(hoverMessageText, true);
-
         const options: DecorationOptions[] = [];
+        let hoverMessage: MarkdownString | undefined;
+
+        const getHoverMessage = () => {
+            if (!hoverMessage) {
+                const [firstBlame] = blames;
+                const log = logs?.[firstBlame.revision];
+                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+                hoverMessage = new MarkdownString(hoverMessageText, true);
+            }
+            return hoverMessage;
+        };
 
         if (visibleRanges) {
+            const firstLine = Number(blames[0].line) - 1;
+            const lastLine = Number(blames[blames.length - 1].line) - 1;
+
+            if (!visibleRanges.some((r) => firstLine <= r.end.line && lastLine >= r.start.line)) {
+                return [];
+            }
+
             const addedLines = new Set<number>();
             for (const range of visibleRanges) {
                 let i = this.findFirstVisibleIndex(blames, range.start.line);
@@ -143,7 +156,7 @@ export class DecorationManager {
 
                     if (!addedLines.has(lineNumber)) {
                         options.push({
-                            hoverMessage,
+                            hoverMessage: getHoverMessage(),
                             range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
                         });
                         addedLines.add(lineNumber);
@@ -156,7 +169,7 @@ export class DecorationManager {
                 const lineNumber = Number(blame.line) - 1;
 
                 options.push({
-                    hoverMessage,
+                    hoverMessage: getHoverMessage(),
                     range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
                 });
             }
