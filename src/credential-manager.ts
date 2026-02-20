@@ -43,8 +43,11 @@ export class CredentialManager {
         if (stored) {
             try {
                 return JSON.parse(stored);
-            } catch (err) {
-                this.logger.error("Failed to parse stored credentials", { err, repoUrl });
+            } catch (err: unknown) {
+                this.logger.error("Failed to parse stored credentials", {
+                    err: String(err),
+                    repoUrl,
+                });
                 await this.deleteCredentials(repoUrl);
             }
         }
@@ -152,10 +155,10 @@ export class CredentialManager {
                         );
                         window.showInformationMessage("All SVN credentials removed.");
                     }
-                } catch (err) {
+                } catch (err: unknown) {
                     this.logger.error(
                         "An unexpected error occurred while removing all credentials",
-                        { err },
+                        { err: String(err) },
                     );
                     window.showErrorMessage("An unexpected error occurred. Please try again.");
                 }

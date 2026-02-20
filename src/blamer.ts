@@ -320,7 +320,7 @@ export class Blamer {
         } catch (err: unknown) {
             this.statusBarItem.hide();
             const message = (err as { message?: string })?.message ?? String(err);
-            this.logger.error("Blame action failed", { err: message });
+            this.logger.error("Blame action failed", { err: String(err) });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
@@ -336,7 +336,7 @@ export class Blamer {
             const blameAction = fileData ? "hide" : "show";
             this.statusBarItem.hide();
             const message = (err as { message?: string })?.message ?? String(err);
-            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: message });
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: String(err) });
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
