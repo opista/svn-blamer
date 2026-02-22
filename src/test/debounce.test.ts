@@ -86,6 +86,6 @@ suite("Debounce Utility Test Suite", () => {
 
         clock.tick(50);
         assert.strictEqual(capturedThis, context);
-        assert.strictEqual(capturedThis?.value, 123);
+        assert.strictEqual(capturedThis.value, 123);
     });
 });

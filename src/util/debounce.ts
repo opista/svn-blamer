@@ -4,6 +4,6 @@ export const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 200) => 
         if (timer !== undefined) {
             clearTimeout(timer);
         }
-        timer = setTimeout(() => fn.apply(this, args), ms);
+        timer = setTimeout(fn.bind(this, ...args), ms);
     };
 };
