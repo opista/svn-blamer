@@ -63,15 +63,9 @@ export const mapBlameOutputToBlameModel = (data: string): Blame[] => {
         json?.blame?.target?.entry?.map((entry: XmlEntry) => ({
             author: getText(entry.commit?.author),
             date: getText(entry.commit?.date),
-            line: entry.attributes?.["line-number"] ?? "", // Ensure line is string, though Blame.line is string, it might be undefined in XML?
-            revision: entry.commit?.attributes?.revision ?? "", // Same for revision
+            line: entry.attributes?.["line-number"] ?? "",
+            revision: entry.commit?.attributes?.revision ?? "",
         })) || [];
 
-    // Filter out invalid revisions
-    return blamed.filter((item) => {
-        // Ensure strictly required fields if any (Blame type says line and revision are string, not optional)
-        // But the original code relied on implicit types.
-        // The filter removes items where revision is falsy or "-".
-        return item.revision && item.revision !== "-";
-    });
+    return blamed.filter((item) => item.revision && item.revision !== "-");
 };
