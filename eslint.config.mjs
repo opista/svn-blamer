@@ -21,6 +21,7 @@ const compat = new FlatCompat({
 export default defineConfig([
     globalIgnores(["**/out", "**/dist", "**/*.d.ts", "**/.github"]),
     {
+        files: ["**/*.{js,mjs,cjs,ts,tsx}"],
         extends: compat.extends("prettier"),
 
         plugins: {
