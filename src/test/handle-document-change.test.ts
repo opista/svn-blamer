@@ -1,4 +1,5 @@
 import * as assert from "assert";
+
 import { Blame } from "../types/blame.model";
 import { BlamesByLine } from "../types/decoration-record.model";
 import { Change, handleDocumentChangeLogic } from "../util/handle-document-change";
@@ -31,10 +32,12 @@ suite("Handle Document Change Logic Test Suite", () => {
         // Insert 1 line after line 1.
         // Range(1,0) to Range(1,0). Text "\n".
         // start=1, end=1. changeEndLine=2.
-        const changes: Change[] = [{
-            range: { start: { line: 1 }, end: { line: 1 } },
-            text: "\n",
-        }];
+        const changes: Change[] = [
+            {
+                range: { start: { line: 1 }, end: { line: 1 } },
+                text: "\n",
+            },
+        ];
 
         const result = handleDocumentChangeLogic(blames, changes);
 
@@ -43,7 +46,11 @@ suite("Handle Document Change Logic Test Suite", () => {
         assert.ok(result.blamesByLine["1"], "Blame for line 1 should exist");
         assert.strictEqual(result.blamesByLine["1"].line, "1");
 
-        assert.strictEqual(result.blamesByLine["2"], undefined, "There should be no blame on line 2");
+        assert.strictEqual(
+            result.blamesByLine["2"],
+            undefined,
+            "There should be no blame on line 2",
+        );
 
         assert.ok(result.blamesByLine["3"], "Blame for line 3 should exist (shifted from line 2)");
         assert.strictEqual(result.blamesByLine["3"].line, "3");
@@ -115,7 +122,6 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         // If I assume `handleDocumentChange` works correctly in the extension, I should replicate its behavior.
         // So if the logic says "keep", I assert "keep".
-
     });
 
     test("should handle deletion of lines (shift up)", () => {
@@ -128,10 +134,12 @@ suite("Handle Document Change Logic Test Suite", () => {
         // Delete line 2.
         // Range(1,0) to Range(2,0). Text "".
         // start=1, end=2. changeEndLine=3.
-        const changes: Change[] = [{
-            range: { start: { line: 1 }, end: { line: 2 } },
-            text: "",
-        }];
+        const changes: Change[] = [
+            {
+                range: { start: { line: 1 }, end: { line: 2 } },
+                text: "",
+            },
+        ];
 
         const result2 = handleDocumentChangeLogic(blames, changes);
 
