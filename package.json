@@ -111,7 +111,7 @@
         "esbuild": "node ./esbuild.config.mjs",
         "format": "prettier --write --ignore-unknown .",
         "lint:fix": "pnpm lint --fix",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint src",
         "prepare": "husky",
         "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
@@ -153,11 +153,5 @@
         "fast-xml-parser": "^5.3.6",
         "lodash.merge": "^4.6.2",
         "luxon": "^3.4.4"
-    },
-    "lint-staged": {
-        "**/*.{js,ts}": [
-            "eslint src --ext ts --fix",
-            "prettier --cache --write --ignore-unknown"
-        ]
     }
 }
