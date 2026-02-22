@@ -144,24 +144,7 @@ suite("Map Blame to Inline Message Test Suite", () => {
             line: "1",
             revision: "123",
         };
-        // missing author, missing date.
         const result = mapBlameToInlineMessage(blame);
-        // authorAndTime = [undefined, undefined] -> ""
-        // prefix = "123: "
-        // log is undefined -> truncateString(undefined) -> ""
-        // [prefix, ""].filter(Boolean) -> ["123: "] -> "123: "
-
-        // Wait, prefix is "123: " (trailing space) if authorAndTime is empty string.
-        // Let's check logic:
-        // const authorAndTime = [author, timeRelative].filter(Boolean).join(", ");
-        // if author and timeRelative are undefined, authorAndTime is "".
-        // const prefix = `${revision}: ${authorAndTime}`; -> "123: "
-
-        // const truncatedLog = truncateString(log); -> ""
-
-        // return [prefix, truncatedLog].filter(Boolean).join(" • ");
-        // ["123: ", ""].filter(Boolean) -> ["123: "] -> "123: "
-
         assert.strictEqual(result, "123: ");
     });
 });
