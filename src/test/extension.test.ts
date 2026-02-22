@@ -3,8 +3,6 @@ import * as vscode from "vscode";
 
 import { EXTENSION_ID } from "../const/extension";
 
-// import * as myExtension from '../../extension';
-
 suite("Extension Test Suite", () => {
     vscode.window.showInformationMessage("Start all tests.");
 
