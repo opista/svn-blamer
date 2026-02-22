@@ -115,6 +115,7 @@
         "prepare": "husky",
         "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
+        "test:unit": "mocha --ui tdd out/test/*.test.js --exclude out/test/extension.test.js",
         "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
         "watch": "pnpm run esbuild -- --sourcemap --watch"
@@ -142,6 +143,7 @@
         "eslint-plugin-unused-imports": "^4.4.1",
         "husky": "^9.0.11",
         "lint-staged": "^16.2.7",
+        "mocha": "^11.7.5",
         "prettier": "3.8.1",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
