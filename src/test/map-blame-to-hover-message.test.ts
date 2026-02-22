@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { DateTime, Settings } from "luxon";
+import { DateTime, Settings, Zone } from "luxon";
 import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
 import { Blame } from "../types/blame.model";
 
@@ -7,7 +7,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
     // Save original settings to restore after tests
     let originalNow: () => number;
     let originalDefaultLocale: string;
-    let originalDefaultZone: any;
+    let originalDefaultZone: string | Zone;
 
     suiteSetup(() => {
         originalNow = Settings.now;
