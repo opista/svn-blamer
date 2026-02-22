@@ -67,4 +67,38 @@ suite("Blame Mapping Test Suite", () => {
         assert.strictEqual(result.length, 1);
         assert.strictEqual(result[0].author, "sally");
     });
+
+    test("should filter out entries with missing revision", () => {
+        const xml = `
+<blame>
+<target path="readme.txt">
+<entry line-number="1">
+<commit>
+<author>sally</author>
+</commit>
+</entry>
+</target>
+</blame>`;
+
+        const result = mapBlameOutputToBlameModel(xml);
+        assert.strictEqual(result.length, 0);
+    });
+
+    test("should handle entries with missing line number (empty string)", () => {
+        const xml = `
+<blame>
+<target path="readme.txt">
+<entry>
+<commit revision="3">
+<author>sally</author>
+</commit>
+</entry>
+</target>
+</blame>`;
+
+        const result = mapBlameOutputToBlameModel(xml);
+        assert.strictEqual(result.length, 1);
+        assert.strictEqual(result[0].line, "");
+        assert.strictEqual(result[0].revision, "3");
+    });
 });
