@@ -191,6 +191,7 @@ export class SVN {
             });
             return mapLogOutputToMessage(data);
         } catch (err: unknown) {
+            // Log the error to ensure visibility before re-throwing
             this.logger.error("Failed to get revision log", { err: String(err) });
             throw err;
         }
