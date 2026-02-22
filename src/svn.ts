@@ -108,8 +108,17 @@ export class SVN {
         try {
             return await this.execSvn(args, params.cwd);
         } catch (err: unknown) {
-            const errorString =
-                (err as { message?: string })?.message ?? (typeof err === "string" ? err : "");
+            let errorString = "";
+
+            if (typeof err === "string") {
+                errorString = err;
+            } else if (err instanceof Error) {
+                errorString = err.message;
+            } else if (typeof err === "object" && err !== null && "message" in err) {
+                if (typeof err.message === "string") {
+                    errorString = err.message;
+                }
+            }
 
             if (errorString) {
                 if (errorString.includes("E155007")) {
