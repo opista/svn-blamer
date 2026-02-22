@@ -93,6 +93,11 @@ export class DecorationManager {
         });
     }
 
+    /**
+     * Uses binary search to find the first index in the blames array that has a line number
+     * greater than or equal to the given startLine.
+     * Assumes blames array is sorted by line number.
+     */
     private findFirstVisibleIndex(blames: Blame[], startLine: number): number {
         let low = 0;
         let high = blames.length - 1;
@@ -139,6 +144,7 @@ export class DecorationManager {
             const firstLine = Number(blames[0].line) - 1;
             const lastLine = Number(blames[blames.length - 1].line) - 1;
 
+            // Early skip: check if the entire revision range is outside all visible ranges
             if (!visibleRanges.some((r) => firstLine <= r.end.line && lastLine >= r.start.line)) {
                 return [];
             }
