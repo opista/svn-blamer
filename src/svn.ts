@@ -115,9 +115,8 @@ export class SVN {
             } else if (err instanceof Error) {
                 errorString = err.message;
             } else if (typeof err === "object" && err !== null && "message" in err) {
-                const message = (err as { message: unknown }).message;
-                if (typeof message === "string") {
-                    errorString = message;
+                if (typeof err.message === "string") {
+                    errorString = err.message;
                 }
             }
 
