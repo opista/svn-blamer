@@ -1,9 +1,9 @@
-export const debounce = <F extends (...args: any[]) => void>(fn: F, ms = 200): F => {
+export const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 200) => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    return function (this: any, ...args: any[]) {
+    return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
         if (timer !== undefined) {
             clearTimeout(timer);
         }
         timer = setTimeout(fn.bind(this, ...args), ms);
-    } as F;
+    };
 };

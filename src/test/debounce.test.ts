@@ -59,9 +59,9 @@ suite("Debounce Utility Test Suite", () => {
     });
 
     test("should pass arguments correctly", () => {
-        let lastArgs: any[] = [];
-        const fn = debounce((...args: any[]) => {
-            lastArgs = args;
+        let lastArgs: [number, string, boolean] | undefined;
+        const fn = debounce((a: number, b: string, c: boolean) => {
+            lastArgs = [a, b, c];
         }, 50);
 
         fn(1, "test", true);
@@ -75,12 +75,13 @@ suite("Debounce Utility Test Suite", () => {
             public value = 42;
         }
 
-        let capturedThis: any;
-        const fn = debounce(function (this: any) {
+        let capturedThis: TestClass | undefined;
+        const fn = debounce(function (this: TestClass) {
             capturedThis = this;
         }, 50);
 
-        const context = { value: 123 };
+        const context = new TestClass();
+        context.value = 123;
         fn.call(context);
 
         clock.tick(50);
