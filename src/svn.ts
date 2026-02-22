@@ -166,7 +166,7 @@ export class SVN {
 
             return mapBlameOutputToBlameModel(data);
         } catch (err: unknown) {
-            this.logger.error("Failed to blame file", { err: String(err) });
+            this.logger.error("Failed to blame file", { err: String(err), fileName });
             throw err;
         }
     }
