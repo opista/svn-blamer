@@ -23,6 +23,9 @@ importers:
             "@eslint/js":
                 specifier: ^9.39.2
                 version: 9.39.2
+            "@sinonjs/fake-timers":
+                specifier: ^15.1.0
+                version: 15.1.0
             "@stylistic/eslint-plugin":
                 specifier: ^5.8.0
                 version: 5.8.0(eslint@9.39.2)
@@ -38,6 +41,9 @@ importers:
             "@types/node":
                 specifier: 25.x
                 version: 25.2.3
+            "@types/sinonjs__fake-timers":
+                specifier: ^15.0.1
+                version: 15.0.1
             "@types/vscode":
                 specifier: ^1.109.0
                 version: 1.109.0
@@ -511,6 +517,18 @@ packages:
             }
         engines: { node: ">=14" }
 
+    "@sinonjs/commons@3.0.1":
+        resolution:
+            {
+                integrity: sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==,
+            }
+
+    "@sinonjs/fake-timers@15.1.0":
+        resolution:
+            {
+                integrity: sha512-cqfapCxwTGsrR80FEgOoPsTonoefMBY7dnUEbQ+GRcved0jvkJLzvX6F4WtN+HBqbPX/SiFsIRUp+IrCW/2I2w==,
+            }
+
     "@stylistic/eslint-plugin@5.8.0":
         resolution:
             {
@@ -608,6 +626,12 @@ packages:
         resolution:
             {
                 integrity: sha512-4K3bqJpXpqfg2XKGK9bpDTc6xO/xoUP/RBWS7AtRMug6zZFaRekiLzjVtAoZMquxoAbzBvy5nxQ7veS5eYzf8A==,
+            }
+
+    "@types/sinonjs__fake-timers@15.0.1":
+        resolution:
+            {
+                integrity: sha512-Ko2tjWJq8oozHzHV+reuvS5KYIRAokHnGbDwGh/J64LntgpbuylF74ipEL24HCyRjf9FOlBiBHWBR1RlVKsI1w==,
             }
 
     "@types/vscode@1.109.0":
@@ -2664,6 +2688,13 @@ packages:
             }
         engines: { node: ">= 0.8.0" }
 
+    type-detect@4.0.8:
+        resolution:
+            {
+                integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==,
+            }
+        engines: { node: ">=4" }
+
     typescript@5.9.3:
         resolution:
             {
@@ -3036,6 +3067,14 @@ snapshots:
     "@pkgjs/parseargs@0.11.0":
         optional: true
 
+    "@sinonjs/commons@3.0.1":
+        dependencies:
+            type-detect: 4.0.8
+
+    "@sinonjs/fake-timers@15.1.0":
+        dependencies:
+            "@sinonjs/commons": 3.0.1
+
     "@stylistic/eslint-plugin@5.8.0(eslint@9.39.2)":
         dependencies:
             "@eslint-community/eslint-utils": 4.9.1(eslint@9.39.2)
@@ -3087,6 +3126,8 @@ snapshots:
     "@types/node@25.3.0":
         dependencies:
             undici-types: 7.18.2
+
+    "@types/sinonjs__fake-timers@15.0.1": {}
 
     "@types/vscode@1.109.0": {}
 
@@ -4319,6 +4360,8 @@ snapshots:
     type-check@0.4.0:
         dependencies:
             prelude-ls: 1.2.1
+
+    type-detect@4.0.8: {}
 
     typescript@5.9.3: {}
 
