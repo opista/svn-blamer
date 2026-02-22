@@ -27,4 +27,4 @@ jobs:
     - run: pnpm install
     - run: pnpm run compile-tests
     # Run unit tests only, excluding integration tests that require VS Code
-    - run: npx mocha --ui tdd out/test/*.test.js --exclude out/test/extension.test.js
+    - run: pnpm exec mocha --ui tdd out/test/*.test.js --exclude out/test/extension.test.js
