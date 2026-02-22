@@ -83,6 +83,9 @@ importers:
             lint-staged:
                 specifier: ^16.2.7
                 version: 16.2.7
+            mocha:
+                specifier: ^11.7.5
+                version: 11.7.5
             prettier:
                 specifier: 3.8.1
                 version: 3.8.1

@@ -9,5 +9,12 @@ const parser = new XMLParser({
 export const mapInfoOutputToRepoRoot = (data: string): string | undefined => {
     const json = parser.parse(data);
     const entry = Array.isArray(json?.info?.entry) ? json.info.entry[0] : json?.info?.entry;
-    return entry?.repository?.root?.text ?? entry?.repository?.root;
+    const root = entry?.repository?.root;
+    if (typeof root === "string" && root) {
+        return root;
+    }
+    if (typeof root?.text === "string" && root.text) {
+        return root.text;
+    }
+    return undefined;
 };
