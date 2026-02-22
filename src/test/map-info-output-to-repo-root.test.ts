@@ -110,4 +110,32 @@ suite("Map Info Output To Repo Root Test Suite", () => {
         const result = mapInfoOutputToRepoRoot("not xml");
         assert.strictEqual(result, undefined);
     });
+
+    test("should return undefined for root with attributes but no text", () => {
+        const xml =
+            '<?xml version="1.0" encoding="UTF-8"?>\n' +
+            "<info>\n" +
+            "<entry>\n" +
+            "<repository>\n" +
+            '<root some-attr="some-value"></root>\n' +
+            "</repository>\n" +
+            "</entry>\n" +
+            "</info>";
+        const result = mapInfoOutputToRepoRoot(xml);
+        assert.strictEqual(result, undefined);
+    });
+
+    test("should return undefined for empty root tag", () => {
+        const xml =
+            '<?xml version="1.0" encoding="UTF-8"?>\n' +
+            "<info>\n" +
+            "<entry>\n" +
+            "<repository>\n" +
+            "<root></root>\n" +
+            "</repository>\n" +
+            "</entry>\n" +
+            "</info>";
+        const result = mapInfoOutputToRepoRoot(xml);
+        assert.strictEqual(result, undefined);
+    });
 });
