@@ -1,5 +1,5 @@
-import * as assert from "assert";
 import * as FakeTimers from "@sinonjs/fake-timers";
+import * as assert from "assert";
 
 import { debounce } from "../util/debounce";
 

@@ -1,5 +1,6 @@
 import * as assert from "assert";
-import { DateTime, Settings, Zone } from "luxon";
+import { Settings } from "luxon";
+
 import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
 import { Blame } from "../types/blame.model";
 
@@ -37,7 +38,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
             author: "John Doe",
             date: "2020-12-31T12:00:00.000Z", // 1 day ago
             revision: "123456",
-            line: "10"
+            line: "10",
         };
         const log = "Commit message";
 
@@ -67,7 +68,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
             author: "Jane Doe",
             date: "2020-12-31T12:00:00.000Z",
             revision: "789012",
-            line: "20"
+            line: "20",
         };
 
         const result = mapBlameToHoverMessage(blame);
@@ -87,7 +88,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
     test("should format blame with missing optional fields", () => {
         const blame: Blame = {
             line: "30",
-            revision: "111111"
+            revision: "111111",
         };
         const log = "Partial info";
 
@@ -104,7 +105,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
     test("should format blame with only date", () => {
         const blame = {
             line: "40",
-            date: "2020-12-31T12:00:00.000Z"
+            date: "2020-12-31T12:00:00.000Z",
         } as Blame;
         const log = "Date only";
 
@@ -120,7 +121,7 @@ suite("Map Blame to Hover Message Test Suite", () => {
     test("should format blame with only author", () => {
         const blame = {
             line: "50",
-            author: "Author Only"
+            author: "Author Only",
         } as Blame;
         const log = "Author only";
 
