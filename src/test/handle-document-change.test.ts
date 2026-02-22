@@ -38,13 +38,15 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         const result = handleDocumentChangeLogic(blames, changes);
 
-        // Line 1. 1 <= 2. Kept.
+        // After inserting a line at the start of line 2, the original line 2 becomes line 3.
+        // The blame for original line 2 should now be associated with line 3.
+        assert.ok(result.blamesByLine["1"], "Blame for line 1 should exist");
         assert.strictEqual(result.blamesByLine["1"].line, "1");
-        // Line 2. 2 <= 2. Kept.
-        // Wait, changeEndLine = 1 + 1 = 2.
-        // Line 2 <= 2.
-        // So Line 2 is kept as 2?
-        assert.strictEqual(result.blamesByLine["2"].line, "2");
+
+        assert.strictEqual(result.blamesByLine["2"], undefined, "There should be no blame on line 2");
+
+        assert.ok(result.blamesByLine["3"], "Blame for line 3 should exist (shifted from line 2)");
+        assert.strictEqual(result.blamesByLine["3"].line, "3");
 
         // This implies that if I insert at line 1 (between line 1 and 2), both line 1 and 2 stay?
         // That means the inserted line is effectively line 3? No.
