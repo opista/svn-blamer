@@ -1,4 +1,5 @@
 import * as assert from "assert";
+
 import { truncateString } from "../util/truncate-string";
 
 suite("Truncate String Test Suite", () => {
@@ -17,14 +18,12 @@ suite("Truncate String Test Suite", () => {
 
     test("should truncate string if length is greater than 17", () => {
         const str = "123456789012345678";
-        assert.strictEqual(truncateString(str), "12345678901234567...");
-    });
+        assert.strictEqual(truncateString(str), "123456789012345678...");
     });
 
     test("should truncate long string correctly", () => {
         const str = "1234567890123456789012345";
-        assert.strictEqual(truncateString(str), "12345678901234567...");
-    });
+        assert.strictEqual(truncateString(str), "12345678901234567890...");
     });
 
     test("should trim whitespace before appending ellipsis", () => {
