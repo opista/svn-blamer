@@ -27,11 +27,6 @@ suite("Map Blame to Inline Message Test Suite", () => {
         const log = "commit message";
         const result = mapBlameToInlineMessage(blame, log);
 
-        // "2 hours ago" might vary slightly based on locale but usually consistent in test env.
-        // Re-checking luxon behavior: toRelative() default locale is system's.
-        // It should be "2 hours ago".
-
-        // Since we can't be 100% sure about locale, let's just check the structure.
         assert.strictEqual(result, "123: author-name, 2 hours ago • commit message");
     });
 
@@ -54,8 +49,6 @@ suite("Map Blame to Inline Message Test Suite", () => {
         };
         const log = "commit message";
         const result = mapBlameToInlineMessage(blame, log);
-        // "author" is undefined.
-        // authorAndTime = [undefined, "2 hours ago"].filter(Boolean).join(", ") -> "2 hours ago"
         assert.strictEqual(result, "123: 2 hours ago • commit message");
     });
 
@@ -67,9 +60,6 @@ suite("Map Blame to Inline Message Test Suite", () => {
         };
         const log = "commit message";
         const result = mapBlameToInlineMessage(blame, log);
-        // date is undefined.
-        // timeRelative = undefined && ... -> undefined
-        // authorAndTime = ["author-name", undefined].filter(Boolean).join(", ") -> "author-name"
         assert.strictEqual(result, "123: author-name • commit message");
     });
 
@@ -82,11 +72,6 @@ suite("Map Blame to Inline Message Test Suite", () => {
         };
         const log = "commit message";
         const result = mapBlameToInlineMessage(blame, log);
-
-        // DateTime.fromISO("invalid-date") returns invalid DateTime.
-        // toRelative() on invalid DateTime returns null.
-        // timeRelative = null.
-        // authorAndTime = ["author-name", null].filter(Boolean) -> "author-name"
 
         assert.strictEqual(result, "123: author-name • commit message");
     });
@@ -101,18 +86,11 @@ suite("Map Blame to Inline Message Test Suite", () => {
         const log = "This is a very long log message that should be truncated";
         const result = mapBlameToInlineMessage(blame, log);
 
-        // truncateString behavior:
-        // length > 17 -> substring(0, 20).trim() + "..."
-        // "This is a very long log message that should be truncated" (length 56)
-        // substring(0, 20) -> "This is a very long "
-        // trim() -> "This is a very long"
-        // + "..." -> "This is a very long..."
-
         assert.strictEqual(result, "123: author-name, 2 hours ago • This is a very long...");
     });
 
     test("should handle log length exactly 17", () => {
-         const blame: Blame = {
+        const blame: Blame = {
             author: "author-name",
             date: "2021-01-01T10:00:00.000Z",
             line: "1",
@@ -124,17 +102,13 @@ suite("Map Blame to Inline Message Test Suite", () => {
     });
 
     test("should handle log length exactly 18", () => {
-         const blame: Blame = {
+        const blame: Blame = {
             author: "author-name",
             date: "2021-01-01T10:00:00.000Z",
             line: "1",
             revision: "123",
         };
         const log = "123456789012345678"; // length 18
-        // > 17 so truncates.
-        // substring(0, 20) is "123456789012345678"
-        // trim() is same
-        // + "..." -> "123456789012345678..."
         const result = mapBlameToInlineMessage(blame, log);
         assert.strictEqual(result, "123: author-name, 2 hours ago • 123456789012345678...");
     });
