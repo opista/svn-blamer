@@ -317,10 +317,11 @@ export class Blamer {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
         try {
             return await this.showBlameForFile(textEditor, fileName);
-        } catch (err: any) {
+        } catch (err: unknown) {
             this.statusBarItem.hide();
-            this.logger.error("Blame action failed", { err: err?.toString() });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error("Blame action failed", { err: String(err) });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
 
@@ -331,11 +332,12 @@ export class Blamer {
             return fileData
                 ? await this.clearBlameForFile(fileName)
                 : await this.showBlameForFile(textEditor, fileName);
-        } catch (err: any) {
+        } catch (err: unknown) {
             const blameAction = fileData ? "hide" : "show";
             this.statusBarItem.hide();
-            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: err?.toString() });
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${err?.message}`);
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: String(err) });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
 
@@ -376,7 +378,7 @@ export class Blamer {
             }
 
             return await this.showBlameForFile(textEditor, fileName);
-        } catch (err: any) {
+        } catch (err: unknown) {
             this.statusBarItem.hide();
             this.logger.debug("Blame attempted via auto-blame, silently failing");
 
@@ -403,9 +405,9 @@ export class Blamer {
             const line = (textEditor.selection.active.line + 1).toString();
             this.activeLineDecoration?.dispose();
             await this.setUpdatedDecoration(textEditor, fileName, line);
-        } catch (err) {
+        } catch (err: unknown) {
             this.statusBarItem.hide();
-            this.logger.error("Failed to track line", { err: err?.toString() });
+            this.logger.error("Failed to track line", { err: String(err) });
         }
     }
 
@@ -466,9 +468,9 @@ export class Blamer {
                 log,
                 updatedRecord?.icons[blame.revision],
             );
-        } catch (err) {
+        } catch (err: unknown) {
             this.statusBarItem.hide();
-            this.logger.error("Failed to get log for line", { err, fileName, line });
+            this.logger.error("Failed to get log for line", { err: String(err), fileName, line });
         }
     }
 
