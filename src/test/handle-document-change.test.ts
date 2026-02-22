@@ -1,5 +1,4 @@
 import * as assert from "assert";
-
 import { Blame } from "../types/blame.model";
 import { BlamesByLine } from "../types/decoration-record.model";
 import { Change, handleDocumentChangeLogic } from "../util/handle-document-change";
@@ -31,12 +30,10 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         // Prepend newline to line 1.
         // Range(0, 0) to (0, 0). Text "\n".
-        const changes: Change[] = [
-            {
-                range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
-                text: "\n",
-            },
-        ];
+        const changes: Change[] = [{
+            range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+            text: "\n",
+        }];
 
         const result = handleDocumentChangeLogic(blames, changes);
 
@@ -54,12 +51,10 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         // Append newline to line 1 (e.g., press Enter at end of line).
         // Range(0, 10) to (0, 10). Text "\n".
-        const changes: Change[] = [
-            {
-                range: { start: { line: 0, character: 10 }, end: { line: 0, character: 10 } },
-                text: "\n",
-            },
-        ];
+        const changes: Change[] = [{
+            range: { start: { line: 0, character: 10 }, end: { line: 0, character: 10 } },
+            text: "\n",
+        }];
 
         const result = handleDocumentChangeLogic(blames, changes);
 
@@ -79,12 +74,10 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         // Delete line 2.
         // Range(1, 0) to (2, 0). Text "".
-        const changes: Change[] = [
-            {
-                range: { start: { line: 1, character: 0 }, end: { line: 2, character: 0 } },
-                text: "",
-            },
-        ];
+        const changes: Change[] = [{
+            range: { start: { line: 1, character: 0 }, end: { line: 2, character: 0 } },
+            text: "",
+        }];
 
         const result = handleDocumentChangeLogic(blames, changes);
 
@@ -105,12 +98,10 @@ suite("Handle Document Change Logic Test Suite", () => {
 
         // Delete from mid line 2 to start of line 3 (merging 3 into 2).
         // Range(1, 5) to (2, 0). Text "".
-        const changes: Change[] = [
-            {
-                range: { start: { line: 1, character: 5 }, end: { line: 2, character: 0 } },
-                text: "",
-            },
-        ];
+        const changes: Change[] = [{
+            range: { start: { line: 1, character: 5 }, end: { line: 2, character: 0 } },
+            text: "",
+        }];
 
         const result = handleDocumentChangeLogic(blames, changes);
 

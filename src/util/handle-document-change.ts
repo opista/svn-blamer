@@ -52,33 +52,33 @@ export function handleDocumentChangeLogic(
                 // Lines strictly before the change boundary: keep as-is
                 newBlamesByLine[lineStr] = blame;
             } else if (lineDelta < 0 && lineNum <= boundaryLine - lineDelta) {
-                // Lines that were within the deleted range: skip them
-                // For deletion, if char==0, boundary=start.line.
-                // Affected lines: start.line + 1 ... start.line + deleted.
-                // Limit: boundary + deleted.
-                // If char>0, boundary=start.line+1.
-                // Affected lines: start.line + 2 ... start.line + 1 + deleted.
+                 // Lines that were within the deleted range: skip them
+                 // For deletion, if char==0, boundary=start.line.
+                 // Affected lines: start.line + 1 ... start.line + deleted.
+                 // Limit: boundary + deleted.
+                 // If char>0, boundary=start.line+1.
+                 // Affected lines: start.line + 2 ... start.line + 1 + deleted.
 
-                // Wait, for deletion:
-                // Start line is always kept if char > 0? Yes, it becomes shorter but stays as line X.
-                // If char == 0, start line is removed/merged?
-                // If I delete line 2 fully (at char 0). It's gone.
-                // If I delete from line 2 char 5 to line 3 char 0.
-                // Line 2 stays. Line 3 merges into 2.
-                // So line 2 is kept. Line 3 is gone.
-                // boundary = 2 + 1 = 3? No start line is 1 (index 1 = line 2).
-                // char=5 > 0. boundary = 1 + 1 = 2.
-                // Line 2 (2) <= 2. Kept. Correct.
-                // Line 3 (3) > 2.
-                // lineDelta = -1. limit = 2 - (-1) = 3.
-                // Line 3 <= 3. Deleted/Skipped. Correct.
+                 // Wait, for deletion:
+                 // Start line is always kept if char > 0? Yes, it becomes shorter but stays as line X.
+                 // If char == 0, start line is removed/merged?
+                 // If I delete line 2 fully (at char 0). It's gone.
+                 // If I delete from line 2 char 5 to line 3 char 0.
+                 // Line 2 stays. Line 3 merges into 2.
+                 // So line 2 is kept. Line 3 is gone.
+                 // boundary = 2 + 1 = 3? No start line is 1 (index 1 = line 2).
+                 // char=5 > 0. boundary = 1 + 1 = 2.
+                 // Line 2 (2) <= 2. Kept. Correct.
+                 // Line 3 (3) > 2.
+                 // lineDelta = -1. limit = 2 - (-1) = 3.
+                 // Line 3 <= 3. Deleted/Skipped. Correct.
 
-                // If deletion at char 0.
-                // Line 2 (index 1). Start line 1. Char 0.
-                // boundary = 1.
-                // Line 2 (2) > 1.
-                // limit = 1 - (-1) = 2.
-                // Line 2 <= 2. Deleted. Correct.
+                 // If deletion at char 0.
+                 // Line 2 (index 1). Start line 1. Char 0.
+                 // boundary = 1.
+                 // Line 2 (2) > 1.
+                 // limit = 1 - (-1) = 2.
+                 // Line 2 <= 2. Deleted. Correct.
 
                 continue;
             } else {
