@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { Settings } from "luxon";
+import { Settings, Zone } from "luxon";
 
 import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
 import { Blame } from "../types/blame.model";
