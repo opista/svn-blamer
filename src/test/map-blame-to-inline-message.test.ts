@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { Settings } from "luxon";
+
 import { mapBlameToInlineMessage } from "../mapping/map-blame-to-inline-message";
 import { Blame } from "../types/blame.model";
 
