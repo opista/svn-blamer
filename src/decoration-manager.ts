@@ -93,6 +93,31 @@ export class DecorationManager {
         });
     }
 
+    /**
+     * Uses binary search to find the first index in the blames array that has a line number
+     * greater than or equal to the given startLine.
+     * Assumes blames array is sorted by line number.
+     */
+    private findFirstVisibleIndex(blames: Blame[], startLine: number): number {
+        let low = 0;
+        let high = blames.length - 1;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const midLine = Number(blames[mid].line) - 1;
+
+            if (midLine < startLine) {
+                low = mid + 1;
+            } else if (midLine > startLine) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+
+        return low;
+    }
+
     private createDecorationOptions(
         blames: Blame[],
         logs?: LogHashMap,
@@ -102,29 +127,58 @@ export class DecorationManager {
             return [];
         }
 
-        const [firstBlame] = blames;
-        const log = logs?.[firstBlame.revision];
-        const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
-        const hoverMessage = new MarkdownString(hoverMessageText, true);
-
         const options: DecorationOptions[] = [];
+        let hoverMessage: MarkdownString | undefined;
 
-        for (const blame of blames) {
-            const lineNumber = Number(blame.line) - 1;
+        const getHoverMessage = () => {
+            if (!hoverMessage) {
+                const [firstBlame] = blames;
+                const log = logs?.[firstBlame.revision];
+                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+                hoverMessage = new MarkdownString(hoverMessageText, true);
+            }
+            return hoverMessage;
+        };
 
-            if (visibleRanges) {
-                const isVisible = visibleRanges.some(
-                    (range) => lineNumber >= range.start.line && lineNumber <= range.end.line,
-                );
-                if (!isVisible) {
-                    continue;
-                }
+        if (visibleRanges) {
+            const firstLine = Number(blames[0].line) - 1;
+            const lastLine = Number(blames[blames.length - 1].line) - 1;
+
+            // Early skip: check if the entire revision range is outside all visible ranges
+            if (!visibleRanges.some((r) => firstLine <= r.end.line && lastLine >= r.start.line)) {
+                return [];
             }
 
-            options.push({
-                hoverMessage,
-                range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
-            });
+            const addedLines = new Set<number>();
+            for (const range of visibleRanges) {
+                let i = this.findFirstVisibleIndex(blames, range.start.line);
+                while (i < blames.length) {
+                    const blame = blames[i];
+                    const lineNumber = Number(blame.line) - 1;
+
+                    if (lineNumber > range.end.line) {
+                        break;
+                    }
+
+                    if (!addedLines.has(lineNumber)) {
+                        options.push({
+                            hoverMessage: getHoverMessage(),
+                            range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                        });
+                        addedLines.add(lineNumber);
+                    }
+                    i++;
+                }
+            }
+        } else {
+            for (const blame of blames) {
+                const lineNumber = Number(blame.line) - 1;
+
+                options.push({
+                    hoverMessage: getHoverMessage(),
+                    range: new Range(lineNumber, MAX_NUMBER, lineNumber, MAX_NUMBER),
+                });
+            }
         }
 
         return options;
