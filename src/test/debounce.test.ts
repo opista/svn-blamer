@@ -1,11 +1,20 @@
 import * as assert from "assert";
+import * as FakeTimers from "@sinonjs/fake-timers";
 
 import { debounce } from "../util/debounce";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 suite("Debounce Utility Test Suite", () => {
-    test("should execute function after delay", async () => {
+    let clock: FakeTimers.InstalledClock;
+
+    setup(() => {
+        clock = FakeTimers.install();
+    });
+
+    teardown(() => {
+        clock.uninstall();
+    });
+
+    test("should execute function after delay", () => {
         let called = false;
         const fn = debounce(() => {
             called = true;
@@ -13,11 +22,12 @@ suite("Debounce Utility Test Suite", () => {
 
         fn();
         assert.strictEqual(called, false);
-        await sleep(60);
+
+        clock.tick(50);
         assert.strictEqual(called, true);
     });
 
-    test("should not execute function immediately", async () => {
+    test("should not execute function immediately", () => {
         let called = false;
         const fn = debounce(() => {
             called = true;
@@ -25,53 +35,45 @@ suite("Debounce Utility Test Suite", () => {
 
         fn();
         assert.strictEqual(called, false);
-        await sleep(10);
+
+        clock.tick(10);
         assert.strictEqual(called, false);
     });
 
-    test("should execute only once if called multiple times within delay", async () => {
+    test("should execute only once if called multiple times within delay", () => {
         let callCount = 0;
         const fn = debounce(() => {
             callCount++;
         }, 50);
 
         fn();
-        await sleep(10);
+        clock.tick(10);
         fn();
-        await sleep(10);
+        clock.tick(10);
         fn();
 
         assert.strictEqual(callCount, 0);
 
-        await sleep(60);
+        clock.tick(50);
         assert.strictEqual(callCount, 1);
     });
 
-    test("should pass arguments correctly", async () => {
+    test("should pass arguments correctly", () => {
         let lastArgs: any[] = [];
         const fn = debounce((...args: any[]) => {
             lastArgs = args;
         }, 50);
 
         fn(1, "test", true);
-        await sleep(60);
+        clock.tick(50);
 
         assert.deepStrictEqual(lastArgs, [1, "test", true]);
     });
 
-    test("should preserve context", async () => {
+    test("should preserve context", () => {
         class TestClass {
             public value = 42;
-            public method = debounce(function (this: TestClass) {
-                return this.value;
-            }, 50);
         }
-
-        const instance = new TestClass();
-        // Since debounce returns void (implied), we can't easily check return value directly here without wrapping
-        // The implementation says: return function (this: any, ...args: any[]) { ... } as F;
-        // But the return type F is inferred as void-returning usually.
-        // Let's modify the test to capture 'this'.
 
         let capturedThis: any;
         const fn = debounce(function (this: any) {
@@ -81,7 +83,7 @@ suite("Debounce Utility Test Suite", () => {
         const context = { value: 123 };
         fn.call(context);
 
-        await sleep(60);
+        clock.tick(50);
         assert.strictEqual(capturedThis, context);
         assert.strictEqual(capturedThis.value, 123);
     });
