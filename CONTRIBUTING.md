@@ -72,7 +72,7 @@ We use **Husky** and **lint-staged**. On every commit, the following will run au
 
 * **TypeScript**: Use strict typing. Avoid `any` where possible.
 * **Formatting**: Handled by Prettier. Do not fight the formatter; let it do its job.
-* **Logging**: Use the `logger` provided in the classes. Avoid `console.log`.
+* **Logging**: Use the `logger` provided in the classes. Avoid `console.log` for better control over log levels and production readiness.
 
 ### Pull Request Process
 
