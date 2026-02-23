@@ -1,9 +1,3 @@
-Since your project uses a modern **pnpm** workspace, **esbuild** for bundling, and a custom **SVG indicator generator**, a contribution guide is essential to ensure new developers don't break the build pipeline.
-
-Here is a `CONTRIBUTING.md` template tailored specifically to your project's architecture (like the `_scripts` folder and `husky` integration).
-
----
-
 ## Contributing to SVN Blamer
 
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create.
