@@ -12,7 +12,7 @@ A clear and concise description of what the bug is.
 
 ## 🛠 Steps to Reproduce
 1. Open a file in a repository managed by SVN.
-2. Run command `SVN Blamer: Show blame` (or use shortcut `Ctrl+Alt+D`).
+2. Run command `SVN Blamer: Show blame` (or use shortcut `Ctrl+Alt+D` on Windows/Linux, `Ctrl+Cmd+X` on macOS).
 3. See error...
 
 ## 📋 Expected Behavior
@@ -45,6 +45,8 @@ Are you using any custom configurations?
 * `svnBlamer.svnExecutablePath`:
 * `svnBlamer.autoBlame`:
 * `svnBlamer.enableLogs`:
+* `svnBlamer.enableVisualIndicators`:
+* `svnBlamer.viewportBuffer`:
 
 ## 💡 Additional Context
 
