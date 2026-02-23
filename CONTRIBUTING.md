@@ -22,7 +22,7 @@ pnpm install
 
 
 3. **Generate Assets:**
-The project uses a script to generate 3,000 distinct SVG indicators for the gutter. This runs automatically during the build, but you can trigger it via:
+The project uses a script to generate 3,000 distinct SVG indicators for the gutter. This runs automatically as part of the build process, which you can trigger via:
 ```bash
 pnpm run esbuild
 
