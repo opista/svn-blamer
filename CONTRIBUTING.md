@@ -7,54 +7,53 @@ First off, thanks for taking the time to contribute! Contributions are what make
 This project uses **pnpm** as a package manager. Please ensure you have it installed before starting.
 
 1. **Clone the repository:**
+
 ```bash
 git clone https://github.com/BeauAgst/blamer-vs.git
 cd blamer-vs
 
 ```
 
-
 2. **Install dependencies:**
+
 ```bash
 pnpm install
 
 ```
 
-
 3. **Generate Assets:**
-The project uses a script to generate 3,000 distinct SVG indicators for the gutter. This runs automatically as part of the build process, which you can trigger via:
+   The project uses a script to generate 3,000 distinct SVG indicators for the gutter. This runs automatically as part of the build process, which you can trigger via:
+
 ```bash
 pnpm run esbuild
 
 ```
 
-
 4. **Run in VS Code:**
-* Press `F5` in VS Code to open a new **Extension Development Host** window.
-* The extension will be active in that window for testing.
 
-
+- Press `F5` in VS Code to open a new **Extension Development Host** window.
+- The extension will be active in that window for testing.
 
 ---
 
 ## 🚀 Available Scripts
 
-| Script | Description |
-| --- | --- |
-| `pnpm run watch` | Starts esbuild in watch mode for rapid development. |
-| `pnpm run lint` | Runs ESLint and Prettier checks. |
-| `pnpm run test` | Runs the full VS Code extension test suite. |
-| `pnpm run test:unit` | Runs mocha unit tests (faster for logic-only changes). |
-| `pnpm run compile-tests` | Compiles TypeScript test files into JavaScript. |
+| Script                   | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| `pnpm run watch`         | Starts esbuild in watch mode for rapid development.    |
+| `pnpm run lint`          | Runs ESLint and Prettier checks.                       |
+| `pnpm run test`          | Runs the full VS Code extension test suite.            |
+| `pnpm run test:unit`     | Runs mocha unit tests (faster for logic-only changes). |
+| `pnpm run compile-tests` | Compiles TypeScript test files into JavaScript.        |
 
 ---
 
 ## 🛠 Project Architecture
 
-* **`src/svn.ts`**: The core wrapper for the SVN CLI.
-* **`src/blamer.ts`**: The orchestrator that manages state and VS Code events.
-* **`src/decoration-manager.ts`**: Handles all visual aspects (gutter icons, inline text, hovers).
-* **`_scripts/`**: Contains the SVG generator logic.
+- **`src/svn.ts`**: The core wrapper for the SVN CLI.
+- **`src/blamer.ts`**: The orchestrator that manages state and VS Code events.
+- **`src/decoration-manager.ts`**: Handles all visual aspects (gutter icons, inline text, hovers).
+- **`_scripts/`**: Contains the SVG generator logic.
 
 ---
 
@@ -64,15 +63,15 @@ pnpm run esbuild
 
 We use **Husky** and **lint-staged**. On every commit, the following will run automatically:
 
-* ESLint (with auto-fix)
-* Prettier formatting
-* TypeScript type-checking (`tsc --noEmit`)
+- ESLint (with auto-fix)
+- Prettier formatting
+- TypeScript type-checking (`tsc --noEmit`)
 
 ### Code Style
 
-* **TypeScript**: Use strict typing. Avoid `any` where possible.
-* **Formatting**: Handled by Prettier. Do not fight the formatter; let it do its job.
-* **Logging**: Use the `logger` provided in the classes. Avoid `console.log` for better control over log levels and production readiness.
+- **TypeScript**: Use strict typing. Avoid `any` where possible.
+- **Formatting**: Handled by Prettier. Do not fight the formatter; let it do its job.
+- **Logging**: Use the `logger` provided in the classes. Avoid `console.log` for better control over log levels and production readiness.
 
 ### Pull Request Process
 
