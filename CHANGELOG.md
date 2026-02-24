@@ -2,6 +2,13 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.7.8] - 2026-02-24
+
+### Fixed
+
+- Fixes bug where tooltip would not display when visual indicators were disabled
+- Fixes command argument injection via filename
+
 ## [0.7.6] - 2026-02-03
 
 ### Fixed
