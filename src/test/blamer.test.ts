@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import sinon from "sinon";
-import { LogOutputChannel, TextEditor } from "vscode";
+import { LogOutputChannel, StatusBarItem, TextEditor, window } from "vscode";
 
 import { Blamer } from "../blamer";
 import { DecorationManager } from "../decoration-manager";
@@ -55,14 +55,12 @@ suite("Blamer", () => {
             setActiveLineDecoration: sandbox.stub(),
         } as unknown as sinon.SinonStubbedInstance<DecorationManager>;
 
-        // Mock window.createStatusBarItem
-        const vscode = require("vscode");
-        sandbox.stub(vscode.window, "createStatusBarItem").returns({
+        sandbox.stub(window, "createStatusBarItem").returns({
             text: "",
             show: sandbox.stub(),
             hide: sandbox.stub(),
             dispose: sandbox.stub(),
-        });
+        } as unknown as StatusBarItem);
 
         blamer = new Blamer(
             loggerMock,
