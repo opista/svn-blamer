@@ -501,6 +501,9 @@ export class Blamer {
         if (!log) {
             // Don't await this, we don't want it blocking
             this.fetchLogAndUpdateDecoration(textEditor, record, fileName, line);
+        } else {
+            // Re-apply background decorations to fix rendering overlap issues
+            this.decorationManager.updateRevisionHoverMessages(textEditor, record, blame.revision);
         }
     }
 }

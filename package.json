@@ -115,7 +115,7 @@
         "prepare": "husky",
         "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
-        "test:unit": "mocha --ui tdd out/test/*.test.js --exclude out/test/extension.test.js",
+        "test:unit": "mocha --ui tdd --require out/test/mock-vscode.js out/test/*.test.js --exclude out/test/extension.test.js",
         "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
         "watch": "pnpm run esbuild -- --sourcemap --watch"
@@ -129,6 +129,7 @@
         "@types/luxon": "^3.4.2",
         "@types/mocha": "^10.0.6",
         "@types/node": "25.x",
+        "@types/sinon": "^21.0.0",
         "@types/sinonjs__fake-timers": "^15.0.1",
         "@types/vscode": "^1.109.0",
         "@typescript-eslint/eslint-plugin": "^8.54.0",
@@ -145,6 +146,7 @@
         "lint-staged": "^16.2.7",
         "mocha": "^11.7.5",
         "prettier": "3.8.1",
+        "sinon": "^21.0.1",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.4.3"
