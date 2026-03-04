@@ -163,7 +163,7 @@
         "typescript": "^5.4.3"
     },
     "dependencies": {
-        "fast-xml-parser": "^5.4.1",
+        "fast-xml-parser": "^5.4.2",
         "lodash.merge": "^4.6.2",
         "luxon": "^3.4.4"
     }
