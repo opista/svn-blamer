@@ -3,6 +3,7 @@ import sinon from "sinon";
 import { LogOutputChannel, StatusBarItem, TextEditor, window } from "vscode";
 
 import { Blamer } from "../blamer";
+import { ConfigurationManager } from "../configuration-manager";
 import { DecorationManager } from "../decoration-manager";
 import { Storage } from "../storage";
 import { SVN } from "../svn";
@@ -14,6 +15,7 @@ suite("Blamer", () => {
     let storageMock: sinon.SinonStubbedInstance<Storage<DecorationRecord>>;
     let svnMock: sinon.SinonStubbedInstance<SVN>;
     let decorationManagerMock: sinon.SinonStubbedInstance<DecorationManager>;
+    let configurationManagerMock: sinon.SinonStubbedInstance<ConfigurationManager>;
     const sandbox = sinon.createSandbox();
 
     setup(() => {
@@ -55,6 +57,17 @@ suite("Blamer", () => {
             setActiveLineDecoration: sandbox.stub(),
         } as unknown as sinon.SinonStubbedInstance<DecorationManager>;
 
+        configurationManagerMock = {
+            config: {
+                autoBlame: false,
+                enableLogs: true,
+                enableVisualIndicators: true,
+                viewportBuffer: 200,
+                svnExecutablePath: "svn",
+            },
+            dispose: sandbox.stub(),
+        } as unknown as sinon.SinonStubbedInstance<ConfigurationManager>;
+
         sandbox.stub(window, "createStatusBarItem").returns({
             text: "",
             show: sandbox.stub(),
@@ -67,6 +80,7 @@ suite("Blamer", () => {
             storageMock as any,
             svnMock as any,
             decorationManagerMock as any,
+            configurationManagerMock as any,
         );
     });
 

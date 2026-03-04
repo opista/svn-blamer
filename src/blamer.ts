@@ -11,10 +11,10 @@ import {
     TextEditorSelectionChangeEvent,
     TextEditorVisibleRangesChangeEvent,
     window,
-    workspace,
 } from "vscode";
 
-import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
+import { ConfigurationManager } from "./configuration-manager";
+import { EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapToDecorationRecord } from "./mapping/map-to-decoration-record";
@@ -35,6 +35,7 @@ export class Blamer {
         private storage: Storage<DecorationRecord>,
         private svn: SVN,
         private decorationManager: DecorationManager,
+        private configurationManager: ConfigurationManager,
     ) {
         this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 0);
     }
@@ -193,7 +194,7 @@ export class Blamer {
     }
 
     private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
-        const { viewportBuffer } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        const { viewportBuffer } = this.configurationManager.config;
         return textEditor.visibleRanges.map((range) => {
             return new Range(
                 Math.max(0, range.start.line - viewportBuffer),
@@ -236,7 +237,7 @@ export class Blamer {
     }
 
     async getLogForRevision(fileName: string, revision: string) {
-        const { enableLogs } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        const { enableLogs } = this.configurationManager.config;
 
         if (!enableLogs) {
             this.logger.debug("Logging disabled, will run not log child process");
@@ -371,7 +372,7 @@ export class Blamer {
                 return;
             }
 
-            const { autoBlame } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+            const { autoBlame } = this.configurationManager.config;
 
             if (!autoBlame) {
                 return;

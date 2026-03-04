@@ -3,6 +3,7 @@ import sinon from "sinon";
 import { Range, TextEditor, TextEditorDecorationType } from "vscode";
 
 import { MAX_NUMBER } from "../const/number";
+import { ConfigurationManager } from "../configuration-manager";
 import { DecorationManager } from "../decoration-manager";
 import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
 import { Blame } from "../types/blame.model";
@@ -15,11 +16,19 @@ suite("DecorationManager", () => {
         // Stub extensions and workspace so constructor doesn't fail
         const vscode = require("vscode");
         sandbox.stub(vscode.extensions, "getExtension").returns({ extensionPath: "/test/path" });
-        sandbox
-            .stub(vscode.workspace, "getConfiguration")
-            .returns({ enableVisualIndicators: true });
 
-        decorationManager = new DecorationManager();
+        const configurationManagerMock = {
+            config: {
+                autoBlame: false,
+                enableLogs: true,
+                enableVisualIndicators: true,
+                viewportBuffer: 200,
+                svnExecutablePath: "svn",
+            },
+            dispose: sandbox.stub(),
+        } as unknown as ConfigurationManager;
+
+        decorationManager = new DecorationManager(configurationManagerMock);
     });
 
     teardown(() => {

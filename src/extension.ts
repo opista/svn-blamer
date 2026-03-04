@@ -1,6 +1,7 @@
 import { commands, ExtensionContext, window, workspace } from "vscode";
 
 import { Blamer } from "./blamer";
+import { ConfigurationManager } from "./configuration-manager";
 import { EXTENSION_NAME } from "./const/extension";
 import { CredentialManager } from "./credential-manager";
 import { DecorationManager } from "./decoration-manager";
@@ -13,11 +14,12 @@ export async function activate(context: ExtensionContext) {
     const logger = window.createOutputChannel(EXTENSION_NAME, {
         log: true,
     });
-    const decorationManager = new DecorationManager();
+    const configurationManager = new ConfigurationManager();
+    const decorationManager = new DecorationManager(configurationManager);
     const storage = new Storage<DecorationRecord>();
     const credentialManager = new CredentialManager(context, logger);
-    const svn = new SVN(logger, credentialManager);
-    const blamer = new Blamer(logger, storage, svn, decorationManager);
+    const svn = new SVN(logger, credentialManager, configurationManager);
+    const blamer = new Blamer(logger, storage, svn, decorationManager, configurationManager);
 
     logger.clear();
     blamer.clearRecordsForAllFiles();
@@ -71,6 +73,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(clearCredentials);
     context.subscriptions.push(logger);
     context.subscriptions.push(blamer);
+    context.subscriptions.push(configurationManager);
 }
 
 export function deactivate() {}

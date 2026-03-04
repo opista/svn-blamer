@@ -1,6 +1,7 @@
 import { basename, dirname } from "path";
-import { LogOutputChannel, workspace } from "vscode";
+import { LogOutputChannel } from "vscode";
 
+import { ConfigurationManager } from "./configuration-manager";
 import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
@@ -17,6 +18,7 @@ export class SVN {
     constructor(
         private logger: LogOutputChannel,
         private credentialManager: CredentialManager,
+        private configurationManager: ConfigurationManager,
     ) {}
 
     private async execSvn(
@@ -24,7 +26,7 @@ export class SVN {
         cwd: string,
         credentials?: ICredentials,
     ): Promise<string> {
-        const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        const { svnExecutablePath } = this.configurationManager.config;
 
         if (!svnExecutablePath) {
             throw new ConfigurationError(

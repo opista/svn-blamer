@@ -10,10 +10,10 @@ import {
     TextEditor,
     TextEditorDecorationType,
     window,
-    workspace,
 } from "vscode";
 
-import { EXTENSION_CONFIGURATION, EXTENSION_ID } from "./const/extension";
+import { ConfigurationManager } from "./configuration-manager";
+import { EXTENSION_ID } from "./const/extension";
 import { MAX_NUMBER } from "./const/number";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
@@ -26,7 +26,7 @@ export class DecorationManager {
     private imageDir: string;
     private gutterImageFileNames?: string[];
 
-    constructor() {
+    constructor(private configurationManager: ConfigurationManager) {
         const extension = extensions.getExtension(EXTENSION_ID);
         if (!extension) {
             throw new Error(`Extension ${EXTENSION_ID} not found`);
@@ -185,7 +185,7 @@ export class DecorationManager {
     }
 
     async createGutterImagePathHashMap(revisions: string[]) {
-        const { enableVisualIndicators } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+        const { enableVisualIndicators } = this.configurationManager.config;
 
         if (!enableVisualIndicators) {
             return {};
