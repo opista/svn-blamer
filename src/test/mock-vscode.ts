@@ -23,6 +23,9 @@ const vscodeMock = {
             get: () => {},
         }),
     },
+    commands: {
+        executeCommand: () => Promise.resolve(),
+    },
     Range: class Range {
         constructor(
             public startLine: number,
