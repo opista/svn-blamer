@@ -82,7 +82,9 @@ export class DecorationManager {
     ): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             after: {
-                color: "rgba(153, 153, 153, 0.35)",
+                color: {
+                    id: "git.blame.editorDecorationForeground",
+                },
                 contentText: mapBlameToInlineMessage(blame, log),
                 margin: "0 0 0 3em",
                 textDecoration: "none",
