@@ -5,3 +5,4 @@ coverage
 dist
 img
 out
+pnpm-lock.yaml
