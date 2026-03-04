@@ -2,6 +2,17 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.8.0] - 2026-03-04
+
+### Added
+
+- Add deprecation warning for workspace-level `svnExecutablePath`
+
+### Changed
+
+- Use theme color for inline blame text instead of hardcoded RGBA
+- Various dependency updates (fast-xml-parser, eslint plugins, node types, minimatch)
+
 ## [0.7.8] - 2026-02-24
 
 ### Fixed
