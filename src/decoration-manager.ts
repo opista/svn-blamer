@@ -83,7 +83,7 @@ export class DecorationManager {
     ): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             after: {
-                color: new ThemeColor("svn.blame.editorDecorationForeground"),
+                color: new ThemeColor("svnBlamer.blame.editorDecorationForeground"),
                 contentText: mapBlameToInlineMessage(blame, log),
                 margin: "0 0 0 3em",
                 textDecoration: "none",

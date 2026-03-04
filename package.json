@@ -33,7 +33,7 @@
     "contributes": {
         "colors": [
             {
-                "id": "svn.blame.editorDecorationForeground",
+                "id": "svnBlamer.blame.editorDecorationForeground",
                 "description": "Foreground color for the SVN blame annotation shown at end of line.",
                 "defaults": {
                     "dark": "editorCodeLens.foreground",
