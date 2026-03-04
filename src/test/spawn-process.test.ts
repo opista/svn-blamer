@@ -4,9 +4,6 @@ import * as spawnProcessModule from "../util/spawn-process";
 
 suite("spawnProcess Utility Test Suite", () => {
     test("should resolve with stdout when process exits with code 0", async () => {
-        // Here we test actual spawn behavior for simple commands since stubbing `node:child_process`
-        // requires rewriting how `spawn` is imported in `spawn-process.ts`.
-        // We will execute standard cross-platform echo and see if it captures stdout.
         const promise = spawnProcessModule.spawnProcess("node", ["-e", "console.log('hello world')"]);
         const result = await promise;
         assert.strictEqual(result.trim(), "hello world");
