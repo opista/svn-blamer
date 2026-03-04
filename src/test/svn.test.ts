@@ -45,12 +45,13 @@ suite("SVN Test Suite", () => {
         credentialManagerMock = sandbox.createStubInstance(CredentialManager);
 
         // Mock workspace configuration
+        const configGetStub = sandbox.stub();
+        configGetStub.withArgs("svnExecutablePath").returns("svn");
         sandbox.stub(workspace, "getConfiguration").returns({
-            get: sandbox.stub(),
-            has: sandbox.stub(),
+            get: configGetStub,
+            has: sandbox.stub().returns(true),
             inspect: sandbox.stub(),
             update: sandbox.stub(),
-            svnExecutablePath: "svn",
         } as any);
 
         svn = new SVN(loggerMock, credentialManagerMock as any);
