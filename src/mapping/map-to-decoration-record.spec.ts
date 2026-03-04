@@ -1,7 +1,7 @@
 import * as assert from "assert";
 
-import { mapToDecorationRecord } from "../mapping/map-to-decoration-record";
 import { DecorationRecord } from "../types/decoration-record.model";
+import { mapToDecorationRecord } from "./map-to-decoration-record";
 
 suite("Map To Decoration Record Test Suite", () => {
     test("should return default record when input is empty", () => {

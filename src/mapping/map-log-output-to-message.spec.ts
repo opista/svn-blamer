@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { mapLogOutputToMessage } from "../mapping/map-log-output-to-message";
+import { mapLogOutputToMessage } from "./map-log-output-to-message";
 
 suite("Log Mapping Test Suite", () => {
     test("should map log message correctly", () => {

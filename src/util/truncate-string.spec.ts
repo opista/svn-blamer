@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { truncateString } from "../util/truncate-string";
+import { truncateString } from "./truncate-string";
 
 suite("Truncate String Test Suite", () => {
     test("should return empty string for undefined input", () => {

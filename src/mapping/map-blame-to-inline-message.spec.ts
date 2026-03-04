@@ -1,8 +1,8 @@
 import * as assert from "assert";
 import { Settings } from "luxon";
 
-import { mapBlameToInlineMessage } from "../mapping/map-blame-to-inline-message";
 import { Blame } from "../types/blame.model";
+import { mapBlameToInlineMessage } from "./map-blame-to-inline-message";
 
 suite("Map Blame to Inline Message Test Suite", () => {
     // Mock current time to 2021-01-01T12:00:00.000Z

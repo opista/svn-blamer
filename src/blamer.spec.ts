@@ -2,11 +2,11 @@ import * as assert from "assert";
 import sinon from "sinon";
 import { LogOutputChannel, StatusBarItem, TextEditor, window } from "vscode";
 
-import { Blamer } from "../blamer";
-import { DecorationManager } from "../decoration-manager";
-import { Storage } from "../storage";
-import { SVN } from "../svn";
-import { DecorationRecord } from "../types/decoration-record.model";
+import { Blamer } from "./blamer";
+import { DecorationManager } from "./decoration-manager";
+import { Storage } from "./storage";
+import { SVN } from "./svn";
+import { DecorationRecord } from "./types/decoration-record.model";
 
 suite("Blamer", () => {
     let blamer: Blamer;
