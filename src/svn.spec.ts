@@ -76,7 +76,7 @@ suite("SVN Test Suite", () => {
             assert.deepStrictEqual(spawnProcessStub.firstCall.args, [
                 "svn",
                 ["arg1", "arg2"],
-                { cwd: "/mock/cwd" }
+                { cwd: "/mock/cwd" },
             ]);
         });
 
@@ -111,14 +111,17 @@ suite("SVN Test Suite", () => {
                 "--username",
                 "u",
                 "--password",
-                "p"
+                "p",
             ]);
         });
 
         test("should insert auth arguments before '--' if it exists", async () => {
             spawnProcessStub.resolves("success output");
 
-            await (svn as any).execSvn(["arg1", "--", "file.txt"], "/mock/cwd", { user: "u", pass: "p" });
+            await (svn as any).execSvn(["arg1", "--", "file.txt"], "/mock/cwd", {
+                user: "u",
+                pass: "p",
+            });
 
             assert.ok(spawnProcessStub.calledOnce);
             assert.deepStrictEqual(spawnProcessStub.firstCall.args[1], [
@@ -129,7 +132,7 @@ suite("SVN Test Suite", () => {
                 "--password",
                 "p",
                 "--",
-                "file.txt"
+                "file.txt",
             ]);
         });
     });
@@ -198,7 +201,7 @@ suite("SVN Test Suite", () => {
                 async () => {
                     await svn.blameFile("/mock/path/file.txt");
                 },
-                (err: any) => err.message === "Generic error"
+                (err: any) => err.message === "Generic error",
             );
 
             assert.ok(loggerMock.error.calledWith("Failed to blame file"));
@@ -232,7 +235,7 @@ suite("SVN Test Suite", () => {
                 async () => {
                     await svn.getLogForRevision("/mock/path/file.txt", "123");
                 },
-                (err: any) => err.message === "Log error"
+                (err: any) => err.message === "Log error",
             );
 
             assert.ok(loggerMock.error.calledWith("Failed to get revision log"));
@@ -277,7 +280,11 @@ suite("SVN Test Suite", () => {
                 execSvnStub.onFirstCall().rejects(new Error("Authentication failed"));
 
                 // 2nd call to execSvn (from getRepositoryRoot) succeeds
-                execSvnStub.onSecondCall().resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
+                execSvnStub
+                    .onSecondCall()
+                    .resolves(
+                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    );
 
                 // 3rd call to execSvn (retry with stored credentials) succeeds
                 execSvnStub.onThirdCall().resolves("blame output success");
@@ -285,7 +292,10 @@ suite("SVN Test Suite", () => {
                 credentialManagerMock.getCredentials.resolves({ user: "u", pass: "p" });
 
                 // Try blame file
-                const promise = (svn as any).command(["blame", "file.txt"], { cwd: "/cwd", fileName: "/cwd/file.txt" });
+                const promise = (svn as any).command(["blame", "file.txt"], {
+                    cwd: "/cwd",
+                    fileName: "/cwd/file.txt",
+                });
 
                 const result = await promise;
                 assert.strictEqual(result, "blame output success");
@@ -297,35 +307,52 @@ suite("SVN Test Suite", () => {
             test("should prompt for credentials if no stored credentials and save on success", async () => {
                 const repoRoot = "https://svn.example.com/repo";
 
-                execSvnStub.onFirstCall().rejects(new Error("Authentication failed"));
-                execSvnStub.onSecondCall().resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
-                execSvnStub.onThirdCall().resolves("blame output success");
+                execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
+                execSvnStub
+                    .onCall(1)
+                    .resolves(
+                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    );
+                execSvnStub.onCall(2).resolves("blame output success");
 
                 credentialManagerMock.getCredentials.resolves(undefined);
                 credentialManagerMock.promptForCredentials.resolves({ user: "newU", pass: "newP" });
 
-                const promise = (svn as any).command(["blame", "file.txt"], { cwd: "/cwd", fileName: "/cwd/file.txt" });
+                const promise = (svn as any).command(["blame", "file.txt"], {
+                    cwd: "/cwd",
+                    fileName: "/cwd/file.txt",
+                });
                 const result = await promise;
 
                 assert.strictEqual(result, "blame output success");
                 assert.ok(credentialManagerMock.promptForCredentials.calledWith(repoRoot));
-                assert.ok(credentialManagerMock.storeCredentials.calledWith(repoRoot, "newU", "newP"));
+                assert.ok(
+                    credentialManagerMock.storeCredentials.calledWith(repoRoot, "newU", "newP"),
+                );
             });
 
             test("should throw AuthenticationError if prompts return undefined", async () => {
                 const repoRoot = "https://svn.example.com/repo";
 
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub.onCall(1).resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
+                execSvnStub
+                    .onCall(1)
+                    .resolves(
+                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    );
 
                 credentialManagerMock.getCredentials.resolves(undefined);
                 credentialManagerMock.promptForCredentials.resolves(undefined);
 
                 await assert.rejects(
                     async () => {
-                        await (svn as any).command(["blame", "file.txt"], { cwd: "/cwd", fileName: "/cwd/file.txt" });
+                        await (svn as any).command(["blame", "file.txt"], {
+                            cwd: "/cwd",
+                            fileName: "/cwd/file.txt",
+                        });
                     },
-                    (err: any) => err instanceof AuthenticationError && err.fileName === "/cwd/file.txt"
+                    (err: any) =>
+                        err instanceof AuthenticationError && err.fileName === "/cwd/file.txt",
                 );
             });
 
@@ -335,9 +362,13 @@ suite("SVN Test Suite", () => {
 
                 await assert.rejects(
                     async () => {
-                        await (svn as any).command(["blame", "file.txt"], { cwd: "/cwd", fileName: "/cwd/file.txt" });
+                        await (svn as any).command(["blame", "file.txt"], {
+                            cwd: "/cwd",
+                            fileName: "/cwd/file.txt",
+                        });
                     },
-                    (err: any) => err instanceof AuthenticationError && err.fileName === "/cwd/file.txt"
+                    (err: any) =>
+                        err instanceof AuthenticationError && err.fileName === "/cwd/file.txt",
                 );
             });
 
@@ -345,7 +376,11 @@ suite("SVN Test Suite", () => {
                 const repoRoot = "https://svn.example.com/repo";
 
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub.onCall(1).resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
+                execSvnStub
+                    .onCall(1)
+                    .resolves(
+                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    );
 
                 // Retry also fails
                 execSvnStub.onCall(2).rejects(new Error("Auth failed again"));
@@ -354,9 +389,13 @@ suite("SVN Test Suite", () => {
 
                 await assert.rejects(
                     async () => {
-                        await (svn as any).command(["blame", "file.txt"], { cwd: "/cwd", fileName: "/cwd/file.txt" });
+                        await (svn as any).command(["blame", "file.txt"], {
+                            cwd: "/cwd",
+                            fileName: "/cwd/file.txt",
+                        });
                     },
-                    (err: any) => err instanceof AuthenticationError && err.fileName === "/cwd/file.txt"
+                    (err: any) =>
+                        err instanceof AuthenticationError && err.fileName === "/cwd/file.txt",
                 );
             });
         });
