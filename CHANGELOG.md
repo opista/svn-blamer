@@ -2,6 +2,32 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [0.9.0](https://github.com/opista/svn-blamer/compare/blamer-vs-v0.8.0...blamer-vs-v0.9.0) (2026-03-04)
+
+
+### Added
+
+* Add deprecation warning for workspace-level `svnExecutablePath` ([#599](https://github.com/opista/svn-blamer/issues/599)) ([9337d60](https://github.com/opista/svn-blamer/commit/9337d60e8f58b0eec338dce411447a1b4ff76c9b))
+* Adds blame toggle button to toolbar, configuration of SVN path ([#490](https://github.com/opista/svn-blamer/issues/490)) ([a38ea1d](https://github.com/opista/svn-blamer/commit/a38ea1d5fe72cea53076e4580a1b78ea7c347138))
+* Cache gutter image file names to improve performance ([#512](https://github.com/opista/svn-blamer/issues/512)) ([9cdb287](https://github.com/opista/svn-blamer/commit/9cdb28708e704311cc5e6a5b6d23a2ecfb6663b1))
+* Dynamic blame tracking & High-performance viewport rendering ([#527](https://github.com/opista/svn-blamer/issues/527)) ([2014009](https://github.com/opista/svn-blamer/commit/2014009dedc6bf4a1551f6f8b34fe7714e3fe210))
+* Fetch log per-revision rather than on blame ([#488](https://github.com/opista/svn-blamer/issues/488)) ([5aa65c1](https://github.com/opista/svn-blamer/commit/5aa65c153bc11702b6432cf0e885132547527fbb))
+
+
+### Fixed
+
+* **#580:** re-apply background hover messages to fix tooltip disappearing ([#583](https://github.com/opista/svn-blamer/issues/583)) ([2543725](https://github.com/opista/svn-blamer/commit/254372508932a475cf655a1edd2caefed00db9d8))
+* Duplicate hover messages in line tracker due to untracked decoration ([#487](https://github.com/opista/svn-blamer/issues/487)) ([37b6f29](https://github.com/opista/svn-blamer/commit/37b6f29258861ae6fa796fe906dfa163c3892b67))
+* improves error handling ([35b58e3](https://github.com/opista/svn-blamer/commit/35b58e3741d854e11b86f6cde2469fb7c2b523c5))
+* Replace inefficient array shuffling algorithm ([#523](https://github.com/opista/svn-blamer/issues/523)) ([c337ced](https://github.com/opista/svn-blamer/commit/c337ced3fc29d631d9e6a6f757b77b8d6546ba62))
+* resolve type mismatch and improve gutter icon shuffling ([39d1daf](https://github.com/opista/svn-blamer/commit/39d1daf7128501b468aec211f47d76778d28db80))
+* **svn:** Trigger process from working directory ([#501](https://github.com/opista/svn-blamer/issues/501)) ([9fd22da](https://github.com/opista/svn-blamer/commit/9fd22dacdfcbb00a8c72292a2f04cc97ca6bfd71))
+
+
+### Changed
+
+* re-architect decoration management for O(1) lookups and shared types ([#515](https://github.com/opista/svn-blamer/issues/515)) ([401f400](https://github.com/opista/svn-blamer/commit/401f400f2c44fa8f884798d5f7321a1537cc231a))
+
 ## [0.8.0] - 2026-03-04
 
 ### Added
