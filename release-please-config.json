@@ -1,0 +1,8 @@
+{
+    "packages": {
+        ".": {
+            "changelog-path": "CHANGELOG.md",
+            "release-type": "node"
+        }
+    }
+}
