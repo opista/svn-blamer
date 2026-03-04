@@ -6,3 +6,7 @@ dist
 img
 out
 pnpm-lock.yaml
+
+# Ignore changelogs for release bots
+CHANGELOG.md
+CHANGE LOG.md
