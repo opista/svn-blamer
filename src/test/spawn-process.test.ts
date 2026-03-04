@@ -15,7 +15,9 @@ suite("spawnProcess Utility Test Suite", () => {
     test("should reject with stderr when process exits with non-zero code", async () => {
         const promise = spawnProcessModule.spawnProcess("node", ["-e", "console.error('some error'); process.exit(1)"]);
         await assert.rejects(promise, (err: unknown) => {
-            return typeof err === "string" && err.includes("some error");
+            assert.strictEqual(typeof err, "string", "The rejection value should be a string.");
+            assert.strictEqual((err as string).trim(), "some error");
+            return true;
         });
     });
 
