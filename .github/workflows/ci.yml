@@ -12,19 +12,72 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10.25.0
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: 'pnpm'
+
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm exec prettier --check --ignore-unknown .
+    - run: pnpm run lint
+    - run: pnpm exec tsc --noEmit
+
   test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: pnpm/action-setup@v3
+
+    - uses: pnpm/action-setup@v4
       with:
-        version: 9
+        version: 10.25.0
+
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: 24
         cache: 'pnpm'
-    - run: pnpm install
+
+    - run: pnpm install --frozen-lockfile
+
     - run: pnpm run compile-tests
-    # Run unit tests only, excluding integration tests that require VS Code
+
     - run: pnpm run test:unit
+
+  package:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10.25.0
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: 'pnpm'
+
+    - run: pnpm install --frozen-lockfile
+
+    - run: pnpm dlx @vscode/vsce package --no-dependencies
+
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: svn-blamer-vsix-${{ github.sha }}
+        path: "*.vsix"
+        retention-days: 5

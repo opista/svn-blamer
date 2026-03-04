@@ -1,6 +1,9 @@
 name: Release
 
-on: 
+on:
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       release_type:
@@ -11,11 +14,6 @@ on:
         options:
           - stable
           - pre-release
-      dry_run:
-        description: 'Dry Run? (Validate only, no upload)'
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -26,13 +24,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [24]
+
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.25.0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -41,15 +42,35 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Get Version
-        id: version
-        run: echo "prop=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Resolve release metadata
+        id: release_meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "release" ] && [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "type=pre-release" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=${{ inputs.release_type || 'stable' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate release tag matches package version
+        if: ${{ github.event_name == 'release' }}
+        shell: bash
+        run: |
+          package_version="$(node -p "require('./package.json').version")"
+          release_tag="${{ github.event.release.tag_name }}"
+          release_version="${release_tag#v}"
+
+          if [ "$release_version" != "$package_version" ]; then
+            echo "Release tag ($release_tag) does not match package version ($package_version)." >&2
+            exit 1
+          fi
 
       - name: Package Extension
+        shell: bash
         run: |
-          if [ "${{ inputs.release_type }}" == "pre-release" ]; then
+          if [ "${{ steps.release_meta.outputs.type }}" = "pre-release" ]; then
             pnpm dlx @vscode/vsce package --no-dependencies --pre-release
           else
             pnpm dlx @vscode/vsce package --no-dependencies
@@ -67,18 +88,17 @@ jobs:
           retention-days: 5
 
       - name: Publish to Open VSX Registry
-        if: ${{ inputs.release_type == 'stable' }}
+        if: ${{ github.event_name == 'release' && steps.release_meta.outputs.type == 'stable' }}
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
-          dryRun: ${{ inputs.dry_run }}
           extensionFile: ${{ steps.vsix_file.outputs.name }}
 
       - name: Publish to Visual Studio Marketplace
+        if: ${{ github.event_name == 'release' }}
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-          preRelease: ${{ inputs.release_type == 'pre-release' }}
+          preRelease: ${{ steps.release_meta.outputs.type == 'pre-release' }}
           registryUrl: https://marketplace.visualstudio.com
-          dryRun: ${{ inputs.dry_run }}
           extensionFile: ${{ steps.vsix_file.outputs.name }}

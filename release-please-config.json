@@ -1,0 +1,30 @@
+{
+    "packages": {
+        ".": {
+            "changelog-path": "CHANGELOG.md",
+            "release-type": "node",
+            "changelog-sections": [
+                {
+                    "type": "feat",
+                    "section": "Added"
+                },
+                {
+                    "type": "fix",
+                    "section": "Fixed"
+                },
+                {
+                    "type": "perf",
+                    "section": "Changed"
+                },
+                {
+                    "type": "refactor",
+                    "section": "Changed"
+                },
+                {
+                    "type": "deps",
+                    "section": "Changed"
+                }
+            ]
+        }
+    }
+}
