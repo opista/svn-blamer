@@ -157,7 +157,7 @@
         "lint-staged": "^16.2.7",
         "mocha": "^11.7.5",
         "prettier": "3.8.1",
-        "sinon": "^21.0.1",
+        "sinon": "^21.0.2",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.4.3"
