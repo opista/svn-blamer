@@ -31,6 +31,17 @@
         "onStartupFinished"
     ],
     "contributes": {
+        "colors": [
+            {
+                "id": "svn.blame.editorDecorationForeground",
+                "description": "Foreground color for the SVN blame annotation shown at end of line.",
+                "defaults": {
+                    "dark": "editorCodeLens.foreground",
+                    "light": "editorCodeLens.foreground",
+                    "highContrast": "editorCodeLens.foreground"
+                }
+            }
+        ],
         "commands": [
             {
                 "command": "blamer-vs.clearBlame",

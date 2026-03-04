@@ -9,6 +9,7 @@ import {
     Range,
     TextEditor,
     TextEditorDecorationType,
+    ThemeColor,
     window,
     workspace,
 } from "vscode";
@@ -82,9 +83,7 @@ export class DecorationManager {
     ): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             after: {
-                color: {
-                    id: "git.blame.editorDecorationForeground",
-                },
+                color: new ThemeColor("svn.blame.editorDecorationForeground"),
                 contentText: mapBlameToInlineMessage(blame, log),
                 margin: "0 0 0 3em",
                 textDecoration: "none",
