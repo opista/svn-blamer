@@ -87,31 +87,31 @@ suite("Map Blame to Inline Message Test Suite", () => {
         const log = "This is a very long log message that should be truncated";
         const result = mapBlameToInlineMessage(blame, log);
 
-        assert.strictEqual(result, "123: author-name, 2 hours ago • This is a very long...");
+        assert.strictEqual(result, "123: author-name, 2 hours ago • This is a very lo...");
     });
 
-    test("should handle log length exactly 17", () => {
+    test("should handle log length exactly 20", () => {
         const blame: Blame = {
             author: "author-name",
             date: "2021-01-01T10:00:00.000Z",
             line: "1",
             revision: "123",
         };
-        const log = "12345678901234567"; // length 17
+        const log = "12345678901234567890"; // length 20
         const result = mapBlameToInlineMessage(blame, log);
-        assert.strictEqual(result, "123: author-name, 2 hours ago • 12345678901234567");
+        assert.strictEqual(result, "123: author-name, 2 hours ago • 12345678901234567890");
     });
 
-    test("should handle log length exactly 18", () => {
+    test("should handle log length exactly 21", () => {
         const blame: Blame = {
             author: "author-name",
             date: "2021-01-01T10:00:00.000Z",
             line: "1",
             revision: "123",
         };
-        const log = "123456789012345678"; // length 18
+        const log = "123456789012345678901"; // length 21
         const result = mapBlameToInlineMessage(blame, log);
-        assert.strictEqual(result, "123: author-name, 2 hours ago • 123456789012345678...");
+        assert.strictEqual(result, "123: author-name, 2 hours ago • 12345678901234567...");
     });
 
     test("should handle empty fields", () => {
