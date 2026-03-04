@@ -14,25 +14,13 @@ suite("spawnProcess Utility Test Suite", () => {
 
     test("should reject with stderr when process exits with non-zero code", async () => {
         const promise = spawnProcessModule.spawnProcess("node", ["-e", "console.error('some error'); process.exit(1)"]);
-        let rejected = false;
-        try {
-            await promise;
-        } catch (err) {
-            rejected = true;
-            assert.strictEqual(typeof err === "string" && err.includes("some error"), true);
-        }
-        assert.ok(rejected, "Should have rejected");
+        await assert.rejects(promise, (err: unknown) => {
+            return typeof err === "string" && err.includes("some error");
+        });
     });
 
     test("should reject with error when process emits error", async () => {
         const promise = spawnProcessModule.spawnProcess("some-non-existent-command-that-will-fail", []);
-        let rejected = false;
-        try {
-            await promise;
-        } catch (err: any) {
-            rejected = true;
-            assert.strictEqual(err.code, "ENOENT");
-        }
-        assert.ok(rejected, "Should have rejected");
+        await assert.rejects(promise, { code: "ENOENT" });
     });
 });
