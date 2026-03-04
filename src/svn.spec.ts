@@ -297,9 +297,9 @@ suite("SVN Test Suite", () => {
             test("should prompt for credentials if no stored credentials and save on success", async () => {
                 const repoRoot = "https://svn.example.com/repo";
 
-                execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub.onCall(1).resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
-                execSvnStub.onCall(2).resolves("blame output success");
+                execSvnStub.onFirstCall().rejects(new Error("Authentication failed"));
+                execSvnStub.onSecondCall().resolves(`<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`);
+                execSvnStub.onThirdCall().resolves("blame output success");
 
                 credentialManagerMock.getCredentials.resolves(undefined);
                 credentialManagerMock.promptForCredentials.resolves({ user: "newU", pass: "newP" });
