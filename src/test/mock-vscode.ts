@@ -13,6 +13,9 @@ const vscodeMock = {
         activeTextEditor: undefined,
         showWarningMessage: () => {},
         showErrorMessage: () => {},
+        showInformationMessage: () => {},
+        showInputBox: () => {},
+        showQuickPick: () => {},
     },
     workspace: {
         getConfiguration: () => ({
