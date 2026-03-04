@@ -32,7 +32,9 @@ suite("SVN Test Suite", () => {
     const sandbox = sinon.createSandbox();
 
     setup(() => {
-        loggerMock = sandbox.createStubInstance(DummyLogOutputChannel) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
+        loggerMock = sandbox.createStubInstance(
+            DummyLogOutputChannel,
+        ) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
         Object.defineProperty(loggerMock, "name", { value: "mock-logger", writable: true });
         Object.defineProperty(loggerMock, "logLevel", { value: 1, writable: true });
 
@@ -56,7 +58,8 @@ suite("SVN Test Suite", () => {
 
     suite("Error Handling", () => {
         test("should throw NotWorkingCopyError when svn command encounters E155007", async () => {
-            const errorString = "svn: warning: W155007: '/mock/path/to/file' is not a working copy\nsvn: E155007: '/mock/path/to/file' is not a working copy";
+            const errorString =
+                "svn: warning: W155007: '/mock/path/to/file' is not a working copy\nsvn: E155007: '/mock/path/to/file' is not a working copy";
             // Mock execSvn instead of the module export to bypass import issues
             sandbox.stub(svn as any, "execSvn").rejects(new Error(errorString));
 
@@ -67,10 +70,7 @@ suite("SVN Test Suite", () => {
                     await svn.blameFile(testFileName);
                 },
                 (err: unknown) => {
-                    return (
-                        err instanceof NotWorkingCopyError &&
-                        err.fileName === testFileName
-                    );
+                    return err instanceof NotWorkingCopyError && err.fileName === testFileName;
                 },
                 "Expected blameFile to throw NotWorkingCopyError",
             );
