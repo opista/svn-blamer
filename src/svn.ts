@@ -24,8 +24,7 @@ export class SVN {
         cwd: string,
         credentials?: ICredentials,
     ): Promise<string> {
-        const config = workspace.getConfiguration(EXTENSION_CONFIGURATION);
-        const svnExecutablePath = config.get<string>("svnExecutablePath");
+        const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
         if (!svnExecutablePath) {
             throw new ConfigurationError(

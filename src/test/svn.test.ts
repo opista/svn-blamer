@@ -6,6 +6,25 @@ import { CredentialManager } from "../credential-manager";
 import { NotWorkingCopyError } from "../errors/not-working-copy-error";
 import { SVN } from "../svn";
 
+// Dummy class to allow `createStubInstance` on the `LogOutputChannel` interface.
+class DummyLogOutputChannel {
+    name = "mock-logger";
+    logLevel = 1;
+    trace() {}
+    debug() {}
+    info() {}
+    warn() {}
+    error() {}
+    append() {}
+    appendLine() {}
+    clear() {}
+    show() {}
+    hide() {}
+    dispose() {}
+    replace() {}
+    onDidChangeLogLevel() {}
+}
+
 suite("SVN Test Suite", () => {
     let svn: SVN;
     let loggerMock: sinon.SinonStubbedInstance<LogOutputChannel>;
@@ -13,31 +32,6 @@ suite("SVN Test Suite", () => {
     const sandbox = sinon.createSandbox();
 
     setup(() => {
-        // LogOutputChannel is an interface in VS Code API, we cannot use createStubInstance.
-        // We will cast a generic object but with explicitly typed stubs for clarity if needed,
-        // however the PR comment specifically requests using createStubInstance which is technically
-        // impossible for interfaces in Sinon unless we provide a class. Let's create a dummy class
-        // or just supply an object with the properties.
-
-        // As a workaround to satisfy the request while keeping TypeScript happy:
-        class DummyLogOutputChannel {
-            name = "mock-logger";
-            logLevel = 1;
-            trace() {}
-            debug() {}
-            info() {}
-            warn() {}
-            error() {}
-            append() {}
-            appendLine() {}
-            clear() {}
-            show() {}
-            hide() {}
-            dispose() {}
-            replace() {}
-            onDidChangeLogLevel() {}
-        }
-
         loggerMock = sandbox.createStubInstance(DummyLogOutputChannel) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
         Object.defineProperty(loggerMock, "name", { value: "mock-logger", writable: true });
         Object.defineProperty(loggerMock, "logLevel", { value: 1, writable: true });
@@ -45,13 +39,12 @@ suite("SVN Test Suite", () => {
         credentialManagerMock = sandbox.createStubInstance(CredentialManager);
 
         // Mock workspace configuration
-        const configGetStub = sandbox.stub();
-        configGetStub.withArgs("svnExecutablePath").returns("svn");
         sandbox.stub(workspace, "getConfiguration").returns({
-            get: configGetStub,
-            has: sandbox.stub().returns(true),
+            get: sandbox.stub(),
+            has: sandbox.stub(),
             inspect: sandbox.stub(),
             update: sandbox.stub(),
+            svnExecutablePath: "svn",
         } as any);
 
         svn = new SVN(loggerMock, credentialManagerMock as any);
@@ -74,17 +67,10 @@ suite("SVN Test Suite", () => {
                     await svn.blameFile(testFileName);
                 },
                 (err: unknown) => {
-                    assert.strictEqual(
-                        err instanceof NotWorkingCopyError,
-                        true,
-                        `Error thrown should be instance of NotWorkingCopyError, but got ${err}`,
+                    return (
+                        err instanceof NotWorkingCopyError &&
+                        err.fileName === testFileName
                     );
-                    assert.strictEqual(
-                        (err as NotWorkingCopyError).fileName,
-                        testFileName,
-                        "Error should contain correct fileName",
-                    );
-                    return true;
                 },
                 "Expected blameFile to throw NotWorkingCopyError",
             );
