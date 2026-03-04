@@ -13,30 +13,36 @@ suite("SVN Test Suite", () => {
     const sandbox = sinon.createSandbox();
 
     setup(() => {
-        loggerMock = {
-            trace: sandbox.stub(),
-            debug: sandbox.stub(),
-            info: sandbox.stub(),
-            warn: sandbox.stub(),
-            error: sandbox.stub(),
-            name: "mock-logger",
-            append: sandbox.stub(),
-            appendLine: sandbox.stub(),
-            clear: sandbox.stub(),
-            show: sandbox.stub(),
-            hide: sandbox.stub(),
-            dispose: sandbox.stub(),
-            replace: sandbox.stub(),
-            logLevel: 1,
-            onDidChangeLogLevel: sandbox.stub(),
-        } as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
+        // LogOutputChannel is an interface in VS Code API, we cannot use createStubInstance.
+        // We will cast a generic object but with explicitly typed stubs for clarity if needed,
+        // however the PR comment specifically requests using createStubInstance which is technically
+        // impossible for interfaces in Sinon unless we provide a class. Let's create a dummy class
+        // or just supply an object with the properties.
 
-        credentialManagerMock = {
-            getCredentials: sandbox.stub(),
-            storeCredentials: sandbox.stub(),
-            promptForCredentials: sandbox.stub(),
-            deleteCredentials: sandbox.stub(),
-        } as unknown as sinon.SinonStubbedInstance<CredentialManager>;
+        // As a workaround to satisfy the request while keeping TypeScript happy:
+        class DummyLogOutputChannel {
+            name = "mock-logger";
+            logLevel = 1;
+            trace() {}
+            debug() {}
+            info() {}
+            warn() {}
+            error() {}
+            append() {}
+            appendLine() {}
+            clear() {}
+            show() {}
+            hide() {}
+            dispose() {}
+            replace() {}
+            onDidChangeLogLevel() {}
+        }
+
+        loggerMock = sandbox.createStubInstance(DummyLogOutputChannel) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
+        Object.defineProperty(loggerMock, "name", { value: "mock-logger", writable: true });
+        Object.defineProperty(loggerMock, "logLevel", { value: 1, writable: true });
+
+        credentialManagerMock = sandbox.createStubInstance(CredentialManager);
 
         // Mock workspace configuration
         sandbox.stub(workspace, "getConfiguration").returns({
