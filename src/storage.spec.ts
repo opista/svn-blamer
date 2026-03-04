@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { Storage } from "../storage";
+import { Storage } from "./storage";
 
 suite("Storage Test Suite", () => {
     let storage: Storage<string>;

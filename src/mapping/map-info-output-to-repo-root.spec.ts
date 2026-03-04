@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { mapInfoOutputToRepoRoot } from "../mapping/map-info-output-to-repo-root";
+import { mapInfoOutputToRepoRoot } from "./map-info-output-to-repo-root";
 
 suite("Map Info Output To Repo Root Test Suite", () => {
     test("should parse correct xml", () => {

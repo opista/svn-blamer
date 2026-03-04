@@ -2,10 +2,10 @@ import * as assert from "assert";
 import sinon from "sinon";
 import { Range, TextEditor, TextEditorDecorationType } from "vscode";
 
-import { MAX_NUMBER } from "../const/number";
-import { DecorationManager } from "../decoration-manager";
-import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
-import { Blame } from "../types/blame.model";
+import { MAX_NUMBER } from "./const/number";
+import { DecorationManager } from "./decoration-manager";
+import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
+import { Blame } from "./types/blame.model";
 
 suite("DecorationManager", () => {
     let decorationManager: DecorationManager;

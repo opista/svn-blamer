@@ -2,9 +2,9 @@ import * as assert from "assert";
 import sinon from "sinon";
 import { LogOutputChannel, workspace } from "vscode";
 
-import { CredentialManager } from "../credential-manager";
-import { NotWorkingCopyError } from "../errors/not-working-copy-error";
-import { SVN } from "../svn";
+import { CredentialManager } from "./credential-manager";
+import { NotWorkingCopyError } from "./errors/not-working-copy-error";
+import { SVN } from "./svn";
 
 // Dummy class to allow `createStubInstance` on the `LogOutputChannel` interface.
 class DummyLogOutputChannel {

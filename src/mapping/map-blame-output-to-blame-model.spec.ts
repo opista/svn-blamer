@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import { mapBlameOutputToBlameModel } from "../mapping/map-blame-output-to-blame-model";
+import { mapBlameOutputToBlameModel } from "./map-blame-output-to-blame-model";
 
 suite("Blame Mapping Test Suite", () => {
     test("should map single entry correctly", () => {

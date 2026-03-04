@@ -1,8 +1,8 @@
 import * as assert from "assert";
 import { Settings, Zone } from "luxon";
 
-import { mapBlameToHoverMessage } from "../mapping/map-blame-to-hover-message";
 import { Blame } from "../types/blame.model";
+import { mapBlameToHoverMessage } from "./map-blame-to-hover-message";
 
 suite("Map Blame to Hover Message Test Suite", () => {
     // Save original settings to restore after tests

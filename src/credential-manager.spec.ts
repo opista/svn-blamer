@@ -2,7 +2,7 @@ import * as assert from "assert";
 import sinon from "sinon";
 import { ExtensionContext, LogOutputChannel, window } from "vscode";
 
-import { CredentialManager } from "../credential-manager";
+import { CredentialManager } from "./credential-manager";
 
 suite("CredentialManager Test Suite", () => {
     let contextMock: ExtensionContext;

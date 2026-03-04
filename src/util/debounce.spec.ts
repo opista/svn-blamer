@@ -1,7 +1,7 @@
 import * as FakeTimers from "@sinonjs/fake-timers";
 import * as assert from "assert";
 
-import { debounce } from "../util/debounce";
+import { debounce } from "./debounce";
 
 suite("Debounce Utility Test Suite", () => {
     let clock: FakeTimers.InstalledClock;

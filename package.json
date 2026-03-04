@@ -128,7 +128,7 @@
         "prepare": "husky",
         "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
-        "test:unit": "mocha --ui tdd --require out/test/mock-vscode.js out/test/*.test.js --exclude out/test/extension.test.js",
+        "test:unit": "mocha --ui tdd --require out/test/mock-vscode.js \"out/**/*.spec.js\" --exclude \"out/test/**/*.spec.js\"",
         "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
         "watch": "pnpm run esbuild -- --sourcemap --watch"

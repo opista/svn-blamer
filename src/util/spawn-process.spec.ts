@@ -1,6 +1,6 @@
 import * as assert from "assert";
 
-import * as spawnProcessModule from "../util/spawn-process";
+import * as spawnProcessModule from "./spawn-process";
 
 suite("spawnProcess Utility Test Suite", () => {
     test("should resolve with stdout when process exits with code 0", async () => {

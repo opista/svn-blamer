@@ -2,8 +2,8 @@ import * as assert from "assert";
 import sinon from "sinon";
 import { commands, window, workspace } from "vscode";
 
-import { EXTENSION_CONFIGURATION, SVN_EXECUTABLE_PATH_KEY } from "../const/extension";
-import { resetWarningState, warnWorkspaceExecutablePath } from "../warn-workspace-executable-path";
+import { EXTENSION_CONFIGURATION, SVN_EXECUTABLE_PATH_KEY } from "./const/extension";
+import { resetWarningState, warnWorkspaceExecutablePath } from "./warn-workspace-executable-path";
 
 suite("warnWorkspaceExecutablePath Test Suite", () => {
     const sandbox = sinon.createSandbox();
