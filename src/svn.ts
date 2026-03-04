@@ -93,9 +93,7 @@ export class SVN {
                 return result;
             }
         } catch (retryErr: unknown) {
-            this.logger.warn("Retry with credentials failed", {
-                err: String(retryErr),
-            });
+            this.logger.warn("Retry with credentials failed");
         }
 
         throw new AuthenticationError(params.fileName);
