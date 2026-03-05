@@ -11,23 +11,23 @@ suite("Truncate String Test Suite", () => {
         assert.strictEqual(truncateString(""), "");
     });
 
-    test("should return original string if length is less than or equal to 17", () => {
-        const str = "12345678901234567";
+    test("should return original string if length is less than or equal to 20", () => {
+        const str = "12345678901234567890";
         assert.strictEqual(truncateString(str), str);
     });
 
-    test("should truncate string if length is greater than 17", () => {
-        const str = "123456789012345678";
-        assert.strictEqual(truncateString(str), "123456789012345678...");
+    test("should truncate string if length is greater than 20", () => {
+        const str = "123456789012345678901";
+        assert.strictEqual(truncateString(str), "12345678901234567...");
     });
 
     test("should truncate long string correctly", () => {
         const str = "1234567890123456789012345";
-        assert.strictEqual(truncateString(str), "12345678901234567890...");
+        assert.strictEqual(truncateString(str), "12345678901234567...");
     });
 
     test("should trim whitespace before appending ellipsis", () => {
-        const str = "12345678901234567   ";
-        assert.strictEqual(truncateString(str), "12345678901234567...");
+        const str = "123456789012345  8901";
+        assert.strictEqual(truncateString(str), "123456789012345...");
     });
 });

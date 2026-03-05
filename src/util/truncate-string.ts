@@ -3,8 +3,12 @@ export const truncateString = (str?: string) => {
         return "";
     }
 
-    if (str.length > 17) {
-        return `${str.substring(0, 20).trim()}...`;
+    const MAX_LENGTH = 20;
+    const SUFFIX = "...";
+
+    if (str.length > MAX_LENGTH) {
+        const TRUNCATE_INDEX = MAX_LENGTH - SUFFIX.length;
+        return `${str.substring(0, TRUNCATE_INDEX).trim()}${SUFFIX}`;
     }
 
     return str;
