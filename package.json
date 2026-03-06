@@ -4,7 +4,6 @@
     "description": "Visually blame SVN-stored code line-by-line",
     "version": "0.8.0",
     "publisher": "beaugust",
-    "packageManager": "pnpm@10.25.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BeauAgst/blamer-vs.git"
