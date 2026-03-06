@@ -80,6 +80,7 @@ suite("Blamer", () => {
                     ],
                 },
                 revisionDecorations: {},
+                revisionsByDecoration: {},
                 logs: {
                     [revision]: "existing log message",
                 },
@@ -130,6 +131,7 @@ suite("Blamer", () => {
                     ],
                 },
                 revisionDecorations: {},
+                revisionsByDecoration: {},
                 logs: {}, // Empty logs
             };
 

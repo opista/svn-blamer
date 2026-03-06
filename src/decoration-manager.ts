@@ -211,7 +211,10 @@ export class DecorationManager {
         logs?: LogHashMap,
         visibleRanges?: readonly Range[],
     ): Promise<
-        Pick<DecorationRecord, "blamesByLine" | "blamesByRevision" | "revisionDecorations">
+        Pick<
+            DecorationRecord,
+            "blamesByLine" | "blamesByRevision" | "revisionDecorations" | "revisionsByDecoration"
+        >
     > {
         const blamesByLine: Record<string, Blame> = {};
         const blamesByRevision: Record<string, Blame[]> = {};
@@ -226,6 +229,7 @@ export class DecorationManager {
         }
 
         const revisionDecorations: Record<string, TextEditorDecorationType> = {};
+        const revisionsByDecoration: Record<string, string[]> = {};
         const revisionsByIcon = new Map<string, string[]>();
 
         for (const revision of Object.keys(blamesByRevision)) {
@@ -238,6 +242,7 @@ export class DecorationManager {
 
         for (const [icon, revisions] of revisionsByIcon) {
             const decoration = this.createGutterDecorationType(icon || undefined);
+            revisionsByDecoration[decoration.key] = revisions;
             const allOptions: DecorationOptions[] = [];
 
             for (const revision of revisions) {
@@ -254,6 +259,7 @@ export class DecorationManager {
             blamesByLine,
             blamesByRevision,
             revisionDecorations,
+            revisionsByDecoration,
         };
     }
 
@@ -296,12 +302,7 @@ export class DecorationManager {
             return;
         }
 
-        const revisionsSharingDecoration: string[] = [];
-        for (const [rev, dec] of Object.entries(record.revisionDecorations)) {
-            if (dec === decoration) {
-                revisionsSharingDecoration.push(rev);
-            }
-        }
+        const revisionsSharingDecoration = record.revisionsByDecoration[decoration.key] || [];
 
         const allOptions: DecorationOptions[] = [];
         for (const rev of revisionsSharingDecoration) {

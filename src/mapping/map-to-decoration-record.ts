@@ -7,6 +7,7 @@ const defaultRecord: DecorationRecord = {
     blamesByLine: {},
     blamesByRevision: {},
     revisionDecorations: {},
+    revisionsByDecoration: {},
     logs: {},
     workingCopy: true,
 };

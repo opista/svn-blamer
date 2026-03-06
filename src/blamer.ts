@@ -290,7 +290,7 @@ export class Blamer {
 
         const extendedRanges = this.getExtendedVisibleRanges(textEditor);
 
-        const { blamesByLine, blamesByRevision, revisionDecorations } =
+        const { blamesByLine, blamesByRevision, revisionDecorations, revisionsByDecoration } =
             await this.decorationManager.createAndSetDecorationsForBlame(
                 textEditor,
                 blame,
@@ -304,6 +304,7 @@ export class Blamer {
             blamesByLine,
             blamesByRevision,
             revisionDecorations,
+            revisionsByDecoration,
         });
 
         this.statusBarItem.hide();

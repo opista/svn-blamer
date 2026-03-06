@@ -19,6 +19,7 @@ export type DecorationRecord = {
     revisionDecorations: {
         [revision: string]: TextEditorDecorationType;
     };
+    revisionsByDecoration: Record<string, string[]>;
     logs: LogHashMap;
     workingCopy: boolean;
 };
