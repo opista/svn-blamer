@@ -6,6 +6,7 @@ import { Blamer } from "./blamer";
 import { DecorationManager } from "./decoration-manager";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
+import { DummyLogOutputChannel } from "./test/mock-vscode";
 import { DecorationRecord } from "./types/decoration-record.model";
 
 suite("Blamer", () => {
@@ -17,23 +18,11 @@ suite("Blamer", () => {
     const sandbox = sinon.createSandbox();
 
     setup(() => {
-        loggerMock = {
-            trace: sandbox.stub(),
-            debug: sandbox.stub(),
-            info: sandbox.stub(),
-            warn: sandbox.stub(),
-            error: sandbox.stub(),
-            name: "mock-logger",
-            append: sandbox.stub(),
-            appendLine: sandbox.stub(),
-            clear: sandbox.stub(),
-            show: sandbox.stub(),
-            hide: sandbox.stub(),
-            dispose: sandbox.stub(),
-            replace: sandbox.stub(),
-            logLevel: 1,
-            onDidChangeLogLevel: sandbox.stub(),
-        } as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
+        loggerMock = sandbox.createStubInstance(
+            DummyLogOutputChannel,
+        ) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
+        Object.defineProperty(loggerMock, "name", { value: "mock-logger", writable: true });
+        Object.defineProperty(loggerMock, "logLevel", { value: 1, writable: true });
 
         storageMock = {
             get: sandbox.stub(),
