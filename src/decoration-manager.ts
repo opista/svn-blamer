@@ -270,7 +270,11 @@ export class DecorationManager {
     ) {
         const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
-        for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
+        for (const revision in record.revisionDecorations) {
+            if (!Object.prototype.hasOwnProperty.call(record.revisionDecorations, revision)) {
+                continue;
+            }
+            const decoration = record.revisionDecorations[revision];
             if (!decorationToRevisions.has(decoration)) {
                 decorationToRevisions.set(decoration, []);
             }
