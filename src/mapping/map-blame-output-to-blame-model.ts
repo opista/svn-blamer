@@ -59,13 +59,18 @@ const getText = (node: XmlValue | undefined): string | undefined => {
 export const mapBlameOutputToBlameModel = (data: string): Blame[] => {
     const json = parser.parse(data) as XmlBlame;
 
-    const blamed: Blame[] =
-        json?.blame?.target?.entry?.map((entry: XmlEntry) => ({
-            author: getText(entry.commit?.author),
-            date: getText(entry.commit?.date),
-            line: entry.attributes?.["line-number"] ?? "",
-            revision: entry.commit?.attributes?.revision ?? "",
-        })) || [];
-
-    return blamed.filter((item) => item.revision && item.revision !== "-");
+    return (
+        json?.blame?.target?.entry?.reduce((acc: Blame[], entry: XmlEntry) => {
+            const revision = entry.commit?.attributes?.revision ?? "";
+            if (revision && revision !== "-") {
+                acc.push({
+                    author: getText(entry.commit?.author),
+                    date: getText(entry.commit?.date),
+                    line: entry.attributes?.["line-number"] ?? "",
+                    revision,
+                });
+            }
+            return acc;
+        }, []) || []
+    );
 };
