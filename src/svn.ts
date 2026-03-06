@@ -55,7 +55,18 @@ export class SVN {
             }
         }
 
-        return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
+        try {
+            return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
+        } catch (err: unknown) {
+            const errorString = String(err);
+            if (errorString.includes("password-from-stdin")) {
+                throw new Error(
+                    "Your SVN client version may be incompatible. This feature requires SVN v1.15 or newer for secure password handling. Please upgrade your SVN client. Original error: " +
+                        errorString,
+                );
+            }
+            throw err;
+        }
     }
 
     private async handleAuthFailure(
