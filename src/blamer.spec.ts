@@ -18,11 +18,10 @@ suite("Blamer", () => {
     const sandbox = sinon.createSandbox();
 
     setup(() => {
-        loggerMock = sandbox.createStubInstance(
-            DummyLogOutputChannel,
-        ) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
-        Object.defineProperty(loggerMock, "name", { value: "mock-logger", writable: true });
-        Object.defineProperty(loggerMock, "logLevel", { value: 1, writable: true });
+        loggerMock = sandbox.createStubInstance(DummyLogOutputChannel, {
+            name: "mock-logger",
+            logLevel: 1,
+        }) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
 
         storageMock = {
             get: sandbox.stub(),

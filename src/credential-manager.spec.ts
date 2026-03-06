@@ -43,10 +43,9 @@ suite("CredentialManager Test Suite", () => {
             // Other properties can be mocked as necessary, but these are all that are needed for `CredentialManager` right now.
         } as unknown as ExtensionContext;
 
-        loggerMock = sandbox.createStubInstance(
-            DummyLogOutputChannel,
-        ) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
-        Object.defineProperty(loggerMock, "name", { value: "TestLogger", writable: true });
+        loggerMock = sandbox.createStubInstance(DummyLogOutputChannel, {
+            name: "TestLogger",
+        }) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
 
         credentialManager = new CredentialManager(contextMock, loggerMock as any);
     });
