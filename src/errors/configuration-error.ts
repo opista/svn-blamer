@@ -6,5 +6,6 @@ export class ConfigurationError extends Error {
         super(
             `Setting: ${property} is not configured correctly. Value is "${typeof value === "object" && value !== null ? JSON.stringify(value) : value}"`,
         );
+        this.name = "ConfigurationError";
     }
 }
