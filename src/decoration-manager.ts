@@ -302,7 +302,7 @@ export class DecorationManager {
             return;
         }
 
-        const revisionsSharingDecoration = record.revisionsByDecoration[decoration.key] || [];
+        const revisionsSharingDecoration = record.revisionsByDecoration?.[decoration.key] || [];
 
         const allOptions: DecorationOptions[] = [];
         for (const rev of revisionsSharingDecoration) {
