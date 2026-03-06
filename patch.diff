@@ -1,8 +1,0 @@
---- src/blamer.ts
-+++ src/blamer.ts
-@@ -41,5 +41,4 @@
-     setStatusBarText(message: string, icon?: string) {
--        const text = [icon ? `$(${icon})` : "", `${EXTENSION_NAME}:`, message];
--        this.statusBarItem.text = text.filter(Boolean).join(" ");
-+        this.statusBarItem.text = `${icon ? `$(${icon}) ` : ""}${EXTENSION_NAME}: ${message}`;
-     }
