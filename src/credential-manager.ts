@@ -42,7 +42,9 @@ export class CredentialManager {
 
         if (stored) {
             try {
-                return JSON.parse(stored);
+                const credentials: ICredentials = JSON.parse(stored);
+                await this.addKnownRepository(repoUrl);
+                return credentials;
             } catch (err: unknown) {
                 this.logger.error("Failed to parse stored credentials", {
                     err: String(err),
@@ -99,8 +101,12 @@ export class CredentialManager {
     }
     async manageCredentials() {
         const repos = this.getKnownRepositories();
+        this.logger.debug("Loaded known credential repositories", {
+            count: repos.length,
+        });
 
         if (!repos.length) {
+            this.logger.info("No stored SVN credentials found in known repository index");
             window.showInformationMessage("No stored SVN credentials found.");
             return;
         }

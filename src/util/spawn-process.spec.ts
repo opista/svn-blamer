@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import * as assert from "node:assert";
 
 import * as spawnProcessModule from "./spawn-process";
 
@@ -30,5 +30,48 @@ suite("spawnProcess Utility Test Suite", () => {
             [],
         );
         await assert.rejects(promise, { code: "ENOENT" });
+    });
+
+    test("should write input to stdin if provided", async () => {
+        const inputData = "this is some input data";
+        // Cross-platform equivalent of `cat` using Node.js
+        const promise = spawnProcessModule.spawnProcess(
+            "node",
+            ["-e", "process.stdin.pipe(process.stdout)"],
+            { input: inputData },
+        );
+        const result = await promise;
+        assert.strictEqual(result, inputData);
+    });
+
+    test("should reject when stdin is not writable", async () => {
+        const promise = spawnProcessModule.spawnProcess(
+            "node",
+            ["-e", "setInterval(() => {}, 1000)"],
+            { input: "input data", stdio: ["ignore", "pipe", "pipe"] as any },
+        );
+
+        await assert.rejects(promise, (err: unknown) => {
+            assert.strictEqual(typeof err, "string", "The rejection value should be a string.");
+            assert.match(
+                err as string,
+                /Cannot write input to child process: stdin is not writable/,
+            );
+            return true;
+        });
+    });
+
+    test("should reject with stdin write errors emitted by the stream", async () => {
+        const promise = spawnProcessModule.spawnProcess(
+            "node",
+            ["-e", "process.stdin.destroy(); setTimeout(() => {}, 200)"],
+            { input: "x".repeat(1024 * 1024) },
+        );
+
+        await assert.rejects(promise, (err: unknown) => {
+            assert.strictEqual(typeof err, "string", "The rejection value should be a string.");
+            assert.match(err as string, /Failed to write input to stdin:/);
+            return true;
+        });
     });
 });

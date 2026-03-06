@@ -35,14 +35,17 @@ export class SVN {
 
         const allArgs = [...args];
 
+        let input: string | undefined;
+
         if (credentials) {
             const authArgs = [
                 "--non-interactive",
                 "--username",
                 credentials.user,
-                "--password",
-                credentials.pass,
+                "--password-from-stdin",
             ];
+
+            input = credentials.pass;
 
             const dashDashIndex = allArgs.indexOf("--");
             if (dashDashIndex >= 0) {
@@ -52,7 +55,17 @@ export class SVN {
             }
         }
 
-        return await spawnProcess(svnExecutablePath, allArgs, { cwd });
+        try {
+            return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
+        } catch (err: unknown) {
+            const errorString = String(err);
+            if (errorString.includes("password-from-stdin")) {
+                throw new Error(
+                    `Your SVN client version may be incompatible. This feature requires SVN v1.10 or newer for secure password handling. Please upgrade your SVN client. Original error: ${errorString}`,
+                );
+            }
+            throw err;
+        }
     }
 
     private async handleAuthFailure(
