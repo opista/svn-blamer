@@ -264,7 +264,11 @@ export class DecorationManager {
     ) {
         const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
-        for (const [revision, decoration] of Object.entries(record.revisionDecorations)) {
+        for (const revision in record.revisionDecorations) {
+            if (!Object.prototype.hasOwnProperty.call(record.revisionDecorations, revision)) {
+                continue;
+            }
+            const decoration = record.revisionDecorations[revision];
             if (!decorationToRevisions.has(decoration)) {
                 decorationToRevisions.set(decoration, []);
             }
@@ -297,7 +301,11 @@ export class DecorationManager {
         }
 
         const revisionsSharingDecoration: string[] = [];
-        for (const [rev, dec] of Object.entries(record.revisionDecorations)) {
+        for (const rev in record.revisionDecorations) {
+            if (!Object.prototype.hasOwnProperty.call(record.revisionDecorations, rev)) {
+                continue;
+            }
+            const dec = record.revisionDecorations[rev];
             if (dec === decoration) {
                 revisionsSharingDecoration.push(rev);
             }
