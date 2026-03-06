@@ -7,26 +7,8 @@ import { AuthenticationError } from "./errors/authentication-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { SVN } from "./svn";
+import { DummyLogOutputChannel } from "./test/mock-vscode";
 import * as spawnProcessModule from "./util/spawn-process";
-
-// Dummy class to allow `createStubInstance` on the `LogOutputChannel` interface.
-class DummyLogOutputChannel {
-    name = "mock-logger";
-    logLevel = 1;
-    trace() {}
-    debug() {}
-    info() {}
-    warn() {}
-    error() {}
-    append() {}
-    appendLine() {}
-    clear() {}
-    show() {}
-    hide() {}
-    dispose() {}
-    replace() {}
-    onDidChangeLogLevel() {}
-}
 
 suite("SVN Test Suite", () => {
     let svn: SVN;

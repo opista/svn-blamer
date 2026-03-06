@@ -3,10 +3,11 @@ import sinon from "sinon";
 import { ExtensionContext, LogOutputChannel, window } from "vscode";
 
 import { CredentialManager } from "./credential-manager";
+import { DummyLogOutputChannel } from "./test/mock-vscode";
 
 suite("CredentialManager Test Suite", () => {
     let contextMock: ExtensionContext;
-    let loggerMock: LogOutputChannel;
+    let loggerMock: sinon.SinonStubbedInstance<LogOutputChannel>;
     let credentialManager: CredentialManager;
     let sandbox: sinon.SinonSandbox;
 
@@ -42,23 +43,11 @@ suite("CredentialManager Test Suite", () => {
             // Other properties can be mocked as necessary, but these are all that are needed for `CredentialManager` right now.
         } as unknown as ExtensionContext;
 
-        loggerMock = {
-            info: sandbox.stub(),
-            warn: sandbox.stub(),
-            error: sandbox.stub(),
-            debug: sandbox.stub(),
-            trace: sandbox.stub(),
-            show: sandbox.stub(),
-            hide: sandbox.stub(),
-            dispose: sandbox.stub(),
-            replace: sandbox.stub(),
-            append: sandbox.stub(),
-            appendLine: sandbox.stub(),
-            clear: sandbox.stub(),
-            name: "TestLogger",
-        } as unknown as LogOutputChannel;
+        loggerMock = sandbox.createStubInstance(
+            DummyLogOutputChannel,
+        ) as unknown as sinon.SinonStubbedInstance<LogOutputChannel>;
 
-        credentialManager = new CredentialManager(contextMock, loggerMock);
+        credentialManager = new CredentialManager(contextMock, loggerMock as any);
     });
 
     teardown(() => {
