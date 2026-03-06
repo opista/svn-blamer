@@ -13,8 +13,16 @@ export const spawnProcess = (
         const child = spawn(command, args, { ...options, shell: false });
 
         if (options?.input !== undefined) {
-            child.stdin.write(options.input);
-            child.stdin.end();
+            if (child.stdin && child.stdin.writable) {
+                child.stdin.on("error", (err) => {
+                    reject(new Error(`Failed to write input to stdin: ${err.message}`));
+                });
+                child.stdin.write(options.input);
+                child.stdin.end();
+            } else {
+                reject(new Error("Cannot write input to child process: stdin is not writable"));
+                return;
+            }
         }
 
         const data: Buffer[] = [];
