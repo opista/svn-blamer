@@ -302,10 +302,11 @@ export class DecorationManager {
 
         const revisionsSharingDecoration: string[] = [];
         for (const rev in record.revisionDecorations) {
-            if (
-                Object.prototype.hasOwnProperty.call(record.revisionDecorations, rev) &&
-                record.revisionDecorations[rev] === decoration
-            ) {
+            if (!Object.prototype.hasOwnProperty.call(record.revisionDecorations, rev)) {
+                continue;
+            }
+            const dec = record.revisionDecorations[rev];
+            if (dec === decoration) {
                 revisionsSharingDecoration.push(rev);
             }
         }
