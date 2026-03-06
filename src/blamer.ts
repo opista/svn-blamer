@@ -313,27 +313,15 @@ export class Blamer {
         this.logger.info("Blame successful", { fileName });
     }
 
-    private handleError(
-        err: unknown,
-        logMessage: string,
-        showErrorMessage = true,
-        context: object = {},
-    ) {
-        this.statusBarItem.hide();
-        const message = (err as { message?: string })?.message ?? String(err);
-        const loggableError = err instanceof Error ? String(err) : message;
-        this.logger.error(logMessage, { err: loggableError, ...context });
-        if (showErrorMessage) {
-            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
-        }
-    }
-
     async showBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
         try {
             return await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
-            this.handleError(err, "Blame action failed");
+            this.statusBarItem.hide();
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error("Blame action failed", { err: String(err) });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
 
@@ -346,7 +334,10 @@ export class Blamer {
                 : await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
             const blameAction = fileData ? "hide" : "show";
-            this.handleError(err, `Toggle blame failed [${blameAction}]`);
+            this.statusBarItem.hide();
+            const message = (err as { message?: string })?.message ?? String(err);
+            this.logger.error(`Toggle blame failed [${blameAction}]`, { err: String(err) });
+            window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
     }
 
@@ -415,7 +406,8 @@ export class Blamer {
             this.activeLineDecoration?.dispose();
             await this.setUpdatedDecoration(textEditor, fileName, line);
         } catch (err: unknown) {
-            this.handleError(err, "Failed to track line", false);
+            this.statusBarItem.hide();
+            this.logger.error("Failed to track line", { err: String(err) });
         }
     }
 
