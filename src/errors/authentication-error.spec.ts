@@ -13,4 +13,13 @@ suite("AuthenticationError Test Suite", () => {
         assert.strictEqual(error.name, "AuthenticationError");
         assert.strictEqual(error.fileName, fileName);
     });
+
+    test("should handle an empty file name", () => {
+        const fileName = "";
+        const error = new AuthenticationError(fileName);
+
+        assert.ok(error instanceof AuthenticationError);
+        assert.strictEqual(error.message, `Authentication failed for file: `);
+        assert.strictEqual(error.fileName, fileName);
+    });
 });
