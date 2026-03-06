@@ -76,7 +76,7 @@ suite("SVN Test Suite", () => {
             assert.deepStrictEqual(spawnProcessStub.firstCall.args, [
                 "svn",
                 ["arg1", "arg2"],
-                { cwd: "/mock/cwd" },
+                { cwd: "/mock/cwd", input: undefined },
             ]);
         });
 
@@ -110,9 +110,9 @@ suite("SVN Test Suite", () => {
                 "--non-interactive",
                 "--username",
                 "u",
-                "--password",
-                "p",
+                "--password-from-stdin",
             ]);
+            assert.strictEqual(spawnProcessStub.firstCall.args[2].input, "p");
         });
 
         test("should insert auth arguments before '--' if it exists", async () => {
@@ -129,11 +129,11 @@ suite("SVN Test Suite", () => {
                 "--non-interactive",
                 "--username",
                 "u",
-                "--password",
-                "p",
+                "--password-from-stdin",
                 "--",
                 "file.txt",
             ]);
+            assert.strictEqual(spawnProcessStub.firstCall.args[2].input, "p");
         });
     });
 

@@ -1,12 +1,21 @@
 import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
 
+export interface ISpawnProcessOptions extends SpawnOptionsWithoutStdio {
+    input?: string;
+}
+
 export const spawnProcess = (
     command: string,
     args: string[],
-    options?: SpawnOptionsWithoutStdio,
+    options?: ISpawnProcessOptions,
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         const child = spawn(command, args, { ...options, shell: false });
+
+        if (options?.input !== undefined) {
+            child.stdin.write(options.input);
+            child.stdin.end();
+        }
 
         const data: Buffer[] = [];
         const err: Buffer[] = [];

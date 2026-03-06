@@ -31,4 +31,16 @@ suite("spawnProcess Utility Test Suite", () => {
         );
         await assert.rejects(promise, { code: "ENOENT" });
     });
+
+    test("should write input to stdin if provided", async () => {
+        const inputData = "this is some input data";
+        // Cross-platform equivalent of `cat` using Node.js
+        const promise = spawnProcessModule.spawnProcess(
+            "node",
+            ["-e", "process.stdin.pipe(process.stdout)"],
+            { input: inputData },
+        );
+        const result = await promise;
+        assert.strictEqual(result, inputData);
+    });
 });

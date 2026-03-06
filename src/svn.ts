@@ -35,14 +35,17 @@ export class SVN {
 
         const allArgs = [...args];
 
+        let input: string | undefined;
+
         if (credentials) {
             const authArgs = [
                 "--non-interactive",
                 "--username",
                 credentials.user,
-                "--password",
-                credentials.pass,
+                "--password-from-stdin",
             ];
+
+            input = credentials.pass;
 
             const dashDashIndex = allArgs.indexOf("--");
             if (dashDashIndex >= 0) {
@@ -52,7 +55,7 @@ export class SVN {
             }
         }
 
-        return await spawnProcess(svnExecutablePath, allArgs, { cwd });
+        return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
     }
 
     private async handleAuthFailure(
