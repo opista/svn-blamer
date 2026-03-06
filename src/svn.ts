@@ -61,7 +61,7 @@ export class SVN {
             const errorString = String(err);
             if (errorString.includes("password-from-stdin")) {
                 throw new Error(
-                    `Your SVN client version may be incompatible. This feature requires SVN v1.15 or newer for secure password handling. Please upgrade your SVN client. Original error: ${errorString}`,
+                    `Your SVN client version may be incompatible. This feature requires SVN v1.10 or newer for secure password handling. Please upgrade your SVN client. Original error: ${errorString}`,
                 );
             }
             throw err;
