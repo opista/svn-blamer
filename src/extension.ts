@@ -8,7 +8,6 @@ import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { debounce } from "./util/debounce";
-import { warnWorkspaceExecutablePath } from "./warn-workspace-executable-path";
 
 export async function activate(context: ExtensionContext) {
     const logger = window.createOutputChannel(EXTENSION_NAME, {
@@ -24,8 +23,6 @@ export async function activate(context: ExtensionContext) {
     blamer.clearRecordsForAllFiles();
 
     logger.info("Blamer initialised");
-
-    warnWorkspaceExecutablePath();
 
     const clear = commands.registerCommand("blamer-vs.clearBlame", () =>
         blamer.clearBlameForActiveTextEditor(),
