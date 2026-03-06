@@ -20,7 +20,7 @@
     - Breaking change: `type(scope)!: short summary` and/or `BREAKING CHANGE:` footer
 - Allowed `type` values: `feat`, `fix`, `perf`, `refactor`, `deps`, `chore`, `docs`, `test`, `ci`.
 - PR titles and commit subjects MUST match this regex:
-    - `^(feat|fix|perf|refactor|deps|chore|docs|test|ci)(\([a-z0-9._/-]+\))?!?: [a-z0-9].+$`
+    - `^(feat|fix|perf|refactor|deps|chore|docs|test|ci)(\([a-z0-9._/-]+\))?!?: \S.+$`
 - Use lowercase for `type` and scope.
 - Keep the summary concise and imperative (for example, `add`, `fix`, `update`).
 
