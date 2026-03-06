@@ -64,7 +64,7 @@ suite("Get File Name From Text Editor Test Suite", () => {
         assert.strictEqual(result, undefined);
     });
 
-    test("should return undefined if workspace.fs.stat throws an error", async () => {
+    suite("with a valid TextEditor object", () => {
         const mockEditor = {
             document: {
                 fileName: "/mock/path/file.ts",
@@ -73,28 +73,22 @@ suite("Get File Name From Text Editor Test Suite", () => {
             },
         } as unknown as TextEditor;
 
-        statStub.rejects(new Error("File not found"));
+        test("should return undefined if workspace.fs.stat throws an error", async () => {
+            statStub.rejects(new Error("File not found"));
 
-        const result = await getFileNameFromTextEditor(mockEditor);
-        assert.strictEqual(result, undefined);
-        assert.strictEqual(statStub.calledOnce, true);
-        assert.strictEqual(statStub.firstCall.args[0], mockEditor.document.uri);
-    });
+            const result = await getFileNameFromTextEditor(mockEditor);
+            assert.strictEqual(result, undefined);
+            assert.strictEqual(statStub.calledOnce, true);
+            assert.strictEqual(statStub.firstCall.args[0], mockEditor.document.uri);
+        });
 
-    test("should return fileName if workspace.fs.stat succeeds", async () => {
-        const mockEditor = {
-            document: {
-                fileName: "/mock/path/file.ts",
-                isUntitled: false,
-                uri: { fsPath: "/mock/path/file.ts" },
-            },
-        } as unknown as TextEditor;
+        test("should return fileName if workspace.fs.stat succeeds", async () => {
+            statStub.resolves({ type: 1, ctime: 0, mtime: 0, size: 0 });
 
-        statStub.resolves({ type: 1, ctime: 0, mtime: 0, size: 0 });
-
-        const result = await getFileNameFromTextEditor(mockEditor);
-        assert.strictEqual(result, "/mock/path/file.ts");
-        assert.strictEqual(statStub.calledOnce, true);
-        assert.strictEqual(statStub.firstCall.args[0], mockEditor.document.uri);
+            const result = await getFileNameFromTextEditor(mockEditor);
+            assert.strictEqual(result, "/mock/path/file.ts");
+            assert.strictEqual(statStub.calledOnce, true);
+            assert.strictEqual(statStub.firstCall.args[0], mockEditor.document.uri);
+        });
     });
 });
