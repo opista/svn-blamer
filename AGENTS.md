@@ -2,8 +2,8 @@
 
 ## Commit And PR Conventions
 
-- Use Conventional Commits for all commit messages and PR titles.
-- Prefer squash merge commit titles that also follow Conventional Commits, because `release-please` derives release notes and version bumps from commits on `main`.
+- All commit messages and PR titles MUST follow Conventional Commits.
+- Squash merge commit titles MUST also follow Conventional Commits, because `release-please` derives release notes and version bumps from commits on `main`.
 - Use one of these types when the change should appear in release notes:
     - `feat`: new user-facing functionality
     - `fix`: bug fixes
@@ -14,9 +14,15 @@
 
 ## Format
 
-- Use `type: short summary`
-- Optional scope is allowed: `type(scope): short summary`
-- Breaking changes must use `!` or a `BREAKING CHANGE:` footer
+- Required shape:
+    - `type: short summary`
+    - Optional scope: `type(scope): short summary`
+    - Breaking change: `type(scope)!: short summary` and/or `BREAKING CHANGE:` footer
+- Allowed `type` values: `feat`, `fix`, `perf`, `refactor`, `deps`, `chore`, `docs`, `test`, `ci`.
+- PR titles and commit subjects MUST match this regex:
+    - `^(feat|fix|perf|refactor|deps|chore|docs|test|ci)(\([a-z0-9._/-]+\))?!?: \S.+$`
+- Use lowercase for `type` and scope.
+- Keep the summary concise and imperative (for example, `add`, `fix`, `update`).
 
 ## Examples
 
@@ -35,6 +41,17 @@
 
 ## Notes For Agents
 
-- Do not use emoji prefixes in commit messages or PR titles.
-- Do not invent non-standard types when a standard type fits.
-- If a change is not releasable, prefer `chore`, `docs`, `test`, or `ci`.
+- NEVER use emoji in PR titles or commit messages.
+- NEVER prepend or append extra tokens in PR titles (for example: `[JULES]`, `WIP:`, `Draft:`, `🚀`, `(no ticket)`).
+- NEVER invent non-standard types when a standard type fits.
+- If a change is not releasable, use `chore`, `docs`, `test`, or `ci`.
+- If uncertain, default to `chore`.
+
+## Invalid Examples
+
+- `✨ feat: add x` (emoji is not allowed)
+- `Feature: add x` (invalid type and casing)
+- `feat add x` (missing colon)
+- `feat(scope) add x` (missing colon)
+- `chore(scope):` (missing summary)
+- `[JULES] fix: correct crash` (extra prefix is not allowed)
