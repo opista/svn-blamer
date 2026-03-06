@@ -313,10 +313,11 @@ export class Blamer {
         this.logger.info("Blame successful", { fileName });
     }
 
-    private handleError(err: unknown, logMessage: string, showErrorMessage = true) {
+    private handleError(err: unknown, logMessage: string, showErrorMessage = true, context: object = {}) {
         this.statusBarItem.hide();
         const message = (err as { message?: string })?.message ?? String(err);
-        this.logger.error(logMessage, { err: String(err) });
+        const loggableError = err instanceof Error ? String(err) : message;
+        this.logger.error(logMessage, { err: loggableError, ...context });
         if (showErrorMessage) {
             window.showErrorMessage(`${EXTENSION_NAME}: Something went wrong - ${message}`);
         }
