@@ -22,6 +22,9 @@ const vscodeMock = {
             enableVisualIndicators: true,
             get: () => {},
         }),
+        fs: {
+            stat: () => Promise.resolve(),
+        },
     },
     commands: {
         executeCommand: () => Promise.resolve(),
@@ -65,3 +68,22 @@ const vscodeMock = {
     }
     return originalRequire.apply(this, arguments as any);
 };
+
+// Dummy class to allow `createStubInstance` on the `LogOutputChannel` interface.
+export class DummyLogOutputChannel {
+    name = "mock-logger";
+    logLevel = 1;
+    trace() {}
+    debug() {}
+    info() {}
+    warn() {}
+    error() {}
+    append() {}
+    appendLine() {}
+    clear() {}
+    show() {}
+    hide() {}
+    dispose() {}
+    replace() {}
+    onDidChangeLogLevel() {}
+}
