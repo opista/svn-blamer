@@ -74,6 +74,19 @@ suite("CredentialManager Test Suite", () => {
         assert.deepStrictEqual(result, creds);
     });
 
+    test("should add repository to known list when credentials already exist", async () => {
+        const repoUrl = "https://svn.example.com/repo";
+        const creds = { user: "testuser", pass: "testpass" };
+        secretsMap.set(`svn.auth${repoUrl}`, JSON.stringify(creds));
+        globalStateMap.set("svn.auth.known-repos", []);
+
+        const result = await credentialManager.getCredentials(repoUrl);
+
+        assert.deepStrictEqual(result, creds);
+        const knownRepos = globalStateMap.get("svn.auth.known-repos");
+        assert.deepStrictEqual(knownRepos, [repoUrl]);
+    });
+
     test("should handle missing credentials", async () => {
         const repoUrl = "https://svn.example.com/repo";
         const result = await credentialManager.getCredentials(repoUrl);
