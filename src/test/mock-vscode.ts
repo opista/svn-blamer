@@ -22,6 +22,9 @@ const vscodeMock = {
             enableVisualIndicators: true,
             get: () => {},
         }),
+        fs: {
+            stat: () => Promise.resolve(),
+        },
     },
     commands: {
         executeCommand: () => Promise.resolve(),
