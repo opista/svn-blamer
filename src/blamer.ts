@@ -40,8 +40,7 @@ export class Blamer {
     }
 
     setStatusBarText(message: string, icon?: string) {
-        const text = [icon ? `$(${icon})` : "", `${EXTENSION_NAME}:`, message];
-        this.statusBarItem.text = text.filter(Boolean).join(" ");
+        this.statusBarItem.text = `${icon ? `$(${icon}) ` : ""}${EXTENSION_NAME}: ${message}`;
     }
 
     clearRecordForFile(fileName: string) {
