@@ -6,6 +6,7 @@ import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
+import { SvnCommandError } from "./errors/svn-command-error";
 import { mapBlameOutputToBlameModel } from "./mapping/map-blame-output-to-blame-model";
 import { mapInfoOutputToRepoRoot } from "./mapping/map-info-output-to-repo-root";
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
@@ -147,7 +148,7 @@ export class SVN {
                     return await this.handleAuthFailure(args, params);
                 }
 
-                throw new Error(errorString);
+                throw new SvnCommandError(errorString);
             }
 
             throw err;

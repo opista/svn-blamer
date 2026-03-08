@@ -6,6 +6,7 @@ import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
+import { SvnCommandError } from "./errors/svn-command-error";
 import { SVN } from "./svn";
 import { DummyLogOutputChannel } from "./test/mock-vscode";
 import { ICredentials } from "./types/credentials.model";
@@ -195,7 +196,7 @@ suite("SVN Test Suite", () => {
                 async () => {
                     await svn.blameFile("/mock/path/file.txt");
                 },
-                (err: unknown) => err instanceof Error && err.message === "Generic error",
+                (err: unknown) => err instanceof SvnCommandError && err.message === "Generic error",
             );
 
             assert.ok(loggerMock.error.calledWith("Failed to blame file"));
@@ -229,7 +230,7 @@ suite("SVN Test Suite", () => {
                 async () => {
                     await svn.getLogForRevision("/mock/path/file.txt", "123");
                 },
-                (err: unknown) => err instanceof Error && err.message === "Log error",
+                (err: unknown) => err instanceof SvnCommandError && err.message === "Log error",
             );
 
             assert.ok(loggerMock.error.calledWith("Failed to get revision log"));
