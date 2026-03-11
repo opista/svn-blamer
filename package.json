@@ -137,7 +137,7 @@
         "@eslint/eslintrc": "^3.3.5",
         "@eslint/js": "^9.39.4",
         "@sinonjs/fake-timers": "^15.1.1",
-        "@stylistic/eslint-plugin": "^5.9.0",
+        "@stylistic/eslint-plugin": "^5.10.0",
         "@types/lodash.merge": "^4.6.9",
         "@types/luxon": "^3.4.2",
         "@types/mocha": "^10.0.6",
