@@ -146,7 +146,7 @@
         "@types/sinonjs__fake-timers": "^15.0.1",
         "@types/vscode": "^1.63.0",
         "@typescript-eslint/eslint-plugin": "^8.56.0",
-        "@typescript-eslint/parser": "^8.56.1",
+        "@typescript-eslint/parser": "^8.57.0",
         "@vscode/test-cli": "^0.0.12",
         "@vscode/test-electron": "^2.3.9",
         "esbuild": "^0.27.3",
