@@ -64,12 +64,19 @@ suite("Blamer", () => {
     suite("toggleBlameForFile", () => {
         const fileName = "/test/file.ts";
         const mockTextEditor = {} as TextEditor;
+        let clearBlameForFileStub: sinon.SinonStub;
+        let showBlameForFileStub: sinon.SinonStub;
+        let handleErrorStub: sinon.SinonStub;
+
+        setup(() => {
+            clearBlameForFileStub = sandbox.stub(blamer, "clearBlameForFile");
+            showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile");
+            handleErrorStub = sandbox.stub(blamer as any, "handleError");
+        });
 
         test("should clear blame if file data exists", async () => {
             const record = { workingCopy: true } as DecorationRecord;
             sandbox.stub(blamer, "getRecordForFile").returns(record);
-            const clearBlameForFileStub = sandbox.stub(blamer, "clearBlameForFile");
-            const showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile");
 
             await blamer.toggleBlameForFile(mockTextEditor, fileName);
 
@@ -79,8 +86,6 @@ suite("Blamer", () => {
 
         test("should show blame if file data does not exist", async () => {
             sandbox.stub(blamer, "getRecordForFile").returns(undefined);
-            const clearBlameForFileStub = sandbox.stub(blamer, "clearBlameForFile");
-            const showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile");
 
             await blamer.toggleBlameForFile(mockTextEditor, fileName);
 
@@ -92,8 +97,7 @@ suite("Blamer", () => {
             const record = { workingCopy: true } as DecorationRecord;
             sandbox.stub(blamer, "getRecordForFile").returns(record);
             const expectedError = new Error("Clear failed");
-            sandbox.stub(blamer, "clearBlameForFile").rejects(expectedError);
-            const handleErrorStub = sandbox.stub(blamer as any, "handleError");
+            clearBlameForFileStub.rejects(expectedError);
 
             await blamer.toggleBlameForFile(mockTextEditor, fileName);
 
@@ -105,8 +109,7 @@ suite("Blamer", () => {
         test("should handle error during show blame", async () => {
             sandbox.stub(blamer, "getRecordForFile").returns(undefined);
             const expectedError = new Error("Show failed");
-            sandbox.stub(blamer, "showBlameForFile").rejects(expectedError);
-            const handleErrorStub = sandbox.stub(blamer as any, "handleError");
+            showBlameForFileStub.rejects(expectedError);
 
             await blamer.toggleBlameForFile(mockTextEditor, fileName);
 
