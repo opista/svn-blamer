@@ -50,15 +50,15 @@ export const spawnProcess = (
 
         child.on("error", (childError) => rejectOnce(childError));
 
-        const failStdin = (message: string): void => {
-            inputWriteFailed = true;
-            err.push(Buffer.from(message));
-            if (!child.killed) {
-                child.kill();
-            }
-        };
-
         if (options?.input !== undefined) {
+            const failStdin = (message: string): void => {
+                inputWriteFailed = true;
+                err.push(Buffer.from(message));
+                if (!child.killed) {
+                    child.kill();
+                }
+            };
+
             if (child.stdin && child.stdin.writable) {
                 child.stdin.on("error", (e) =>
                     failStdin(`Failed to write input to stdin: ${e.message}`),
