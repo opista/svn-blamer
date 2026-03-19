@@ -123,7 +123,7 @@ export class Blamer {
             const newBlamesByLine: Record<string, (typeof record.blamesByLine)[string]> = {};
 
             for (const lineStr in updatedBlamesByLine) {
-                if (!Object.prototype.hasOwnProperty.call(updatedBlamesByLine, lineStr)) {
+                if (!Object.hasOwn(updatedBlamesByLine, lineStr)) {
                     continue;
                 }
 
@@ -150,7 +150,7 @@ export class Blamer {
         // Rebuild blamesByRevision from the updated blamesByLine
         updatedBlamesByRevision = {};
         for (const key in updatedBlamesByLine) {
-            if (!Object.prototype.hasOwnProperty.call(updatedBlamesByLine, key)) {
+            if (!Object.hasOwn(updatedBlamesByLine, key)) {
                 continue;
             }
 
