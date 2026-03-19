@@ -61,6 +61,61 @@ suite("Blamer", () => {
         sandbox.restore();
     });
 
+    suite("toggleBlameForFile", () => {
+        const fileName = "/test/file.ts";
+        const mockTextEditor = {} as TextEditor;
+
+        test("should clear blame if file data exists", async () => {
+            const record = { workingCopy: true } as DecorationRecord;
+            sandbox.stub(blamer, "getRecordForFile").returns(record);
+            const clearBlameForFileStub = sandbox.stub(blamer, "clearBlameForFile");
+            const showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile");
+
+            await blamer.toggleBlameForFile(mockTextEditor, fileName);
+
+            assert.ok(clearBlameForFileStub.calledOnceWithExactly(fileName));
+            assert.ok(showBlameForFileStub.notCalled);
+        });
+
+        test("should show blame if file data does not exist", async () => {
+            sandbox.stub(blamer, "getRecordForFile").returns(undefined);
+            const clearBlameForFileStub = sandbox.stub(blamer, "clearBlameForFile");
+            const showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile");
+
+            await blamer.toggleBlameForFile(mockTextEditor, fileName);
+
+            assert.ok(showBlameForFileStub.calledOnceWithExactly(mockTextEditor, fileName));
+            assert.ok(clearBlameForFileStub.notCalled);
+        });
+
+        test("should handle error during clear blame", async () => {
+            const record = { workingCopy: true } as DecorationRecord;
+            sandbox.stub(blamer, "getRecordForFile").returns(record);
+            const expectedError = new Error("Clear failed");
+            sandbox.stub(blamer, "clearBlameForFile").rejects(expectedError);
+            const handleErrorStub = sandbox.stub(blamer as any, "handleError");
+
+            await blamer.toggleBlameForFile(mockTextEditor, fileName);
+
+            assert.ok(
+                handleErrorStub.calledOnceWithExactly(expectedError, "Toggle blame failed [hide]"),
+            );
+        });
+
+        test("should handle error during show blame", async () => {
+            sandbox.stub(blamer, "getRecordForFile").returns(undefined);
+            const expectedError = new Error("Show failed");
+            sandbox.stub(blamer, "showBlameForFile").rejects(expectedError);
+            const handleErrorStub = sandbox.stub(blamer as any, "handleError");
+
+            await blamer.toggleBlameForFile(mockTextEditor, fileName);
+
+            assert.ok(
+                handleErrorStub.calledOnceWithExactly(expectedError, "Toggle blame failed [show]"),
+            );
+        });
+    });
+
     suite("setUpdatedDecoration", () => {
         test("should call updateRevisionHoverMessages when log already exists", async () => {
             const fileName = "/test/file.ts";
