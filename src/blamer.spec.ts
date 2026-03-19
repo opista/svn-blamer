@@ -214,4 +214,80 @@ suite("Blamer", () => {
             );
         });
     });
+
+    suite("showBlameForActiveTextEditor", () => {
+        test("should call handleError when showBlameForFile throws an error", async () => {
+            const mockTextEditor = {} as TextEditor;
+            const mockFileName = "/test/error-file.ts";
+            const testError = new Error("Test Error");
+
+            sandbox.stub(blamer, "getActiveTextEditorAndFileName").resolves({
+                textEditor: mockTextEditor,
+                fileName: mockFileName,
+            });
+
+            sandbox.stub(blamer, "showBlameForFile").rejects(testError);
+
+            const handleErrorSpy = sandbox.spy(
+                blamer as unknown as { handleError: Function },
+                "handleError",
+            );
+
+            await blamer.showBlameForActiveTextEditor();
+
+            assert.ok(handleErrorSpy.calledOnce, "handleError should be called once");
+            assert.strictEqual(handleErrorSpy.firstCall.args[0], testError);
+            assert.strictEqual(handleErrorSpy.firstCall.args[1], "Blame action failed");
+        });
+    });
+
+    suite("showBlameForFile", () => {
+        test("should throw an error if svn.blameFile fails", async () => {
+            const mockTextEditor = {
+                document: { isDirty: false, lineCount: 10 },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
+            } as unknown as TextEditor;
+            const mockFileName = "/test/error-file.ts";
+            const testError = new Error("Blame Retrieval Failed");
+
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            svnMock.blameFile.rejects(testError);
+
+            await assert.rejects(
+                blamer.showBlameForFile(mockTextEditor, mockFileName),
+                (err) => {
+                    assert.strictEqual(err, testError);
+                    return true;
+                },
+                "showBlameForFile should propagate the error from svn.blameFile",
+            );
+        });
+
+        test("should throw an error if decorationManager.createAndSetDecorationsForBlame fails", async () => {
+            const mockTextEditor = {
+                document: { isDirty: false, lineCount: 10 },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
+            } as unknown as TextEditor;
+            const mockFileName = "/test/error-file.ts";
+            const testError = new Error("Decoration Creation Failed");
+
+            const blameData = [
+                { revision: "123", author: "test", date: "2026-02-24T00:00:00.000Z", line: "1" },
+            ];
+
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            svnMock.blameFile.resolves(blameData);
+            decorationManagerMock.createGutterImagePathHashMap.resolves({});
+            decorationManagerMock.createAndSetDecorationsForBlame.rejects(testError);
+
+            await assert.rejects(
+                blamer.showBlameForFile(mockTextEditor, mockFileName),
+                (err) => {
+                    assert.strictEqual(err, testError);
+                    return true;
+                },
+                "showBlameForFile should propagate the error from decorationManager.createAndSetDecorationsForBlame",
+            );
+        });
+    });
 });
