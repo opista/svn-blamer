@@ -242,12 +242,13 @@ suite("Blamer", () => {
     });
 
     suite("showBlameForFile", () => {
+        const mockFileName = "/test/error-file.ts";
+        const mockTextEditor = {
+            document: { isDirty: false, lineCount: 10 },
+            visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
+        } as unknown as TextEditor;
+
         test("should throw an error if svn.blameFile fails", async () => {
-            const mockTextEditor = {
-                document: { isDirty: false, lineCount: 10 },
-                visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
-            } as unknown as TextEditor;
-            const mockFileName = "/test/error-file.ts";
             const testError = new Error("Blame Retrieval Failed");
 
             sandbox.stub(blamer, "clearBlameForFile").resolves();
@@ -264,11 +265,6 @@ suite("Blamer", () => {
         });
 
         test("should throw an error if decorationManager.createAndSetDecorationsForBlame fails", async () => {
-            const mockTextEditor = {
-                document: { isDirty: false, lineCount: 10 },
-                visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
-            } as unknown as TextEditor;
-            const mockFileName = "/test/error-file.ts";
             const testError = new Error("Decoration Creation Failed");
 
             const blameData = [
