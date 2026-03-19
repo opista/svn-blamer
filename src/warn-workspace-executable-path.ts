@@ -26,14 +26,14 @@ export function warnWorkspaceExecutablePath(): void {
 
     hasWarned = true;
 
-    void window
+    window
         .showWarningMessage(
             `"${EXTENSION_CONFIGURATION}.${SVN_EXECUTABLE_PATH_KEY}" is set at workspace level. For security, this setting will be restricted to machine-level (User settings) in a future update. Please move this value to your User settings to avoid disruption.`,
             "Open Settings",
         )
         .then((selection) => {
             if (selection === "Open Settings") {
-                void commands.executeCommand(
+                commands.executeCommand(
                     "workbench.action.openSettings",
                     `${EXTENSION_CONFIGURATION}.${SVN_EXECUTABLE_PATH_KEY}`,
                 );
