@@ -186,6 +186,10 @@ export class DecorationManager {
     }
 
     async createGutterImagePathHashMap(revisions: string[]) {
+        if (revisions.length === 0) {
+            return {};
+        }
+
         const { enableVisualIndicators } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
         if (!enableVisualIndicators) {
@@ -195,9 +199,13 @@ export class DecorationManager {
         const generator = await this.gutterImageGenerator();
         const hashMap: GutterImagePathHashMap = {};
 
+        if (!generator) {
+            return hashMap;
+        }
+
         for (const revision of revisions) {
-            if (!hashMap[revision]) {
-                hashMap[revision] = generator?.next().value || undefined;
+            if (hashMap[revision] === undefined) {
+                hashMap[revision] = generator.next().value || undefined;
             }
         }
 
