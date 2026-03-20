@@ -295,7 +295,11 @@ export class Blamer {
             return;
         }
 
-        const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
+        const uniqueRevisionsSet = new Set<string>();
+        for (const { revision } of blame) {
+            uniqueRevisionsSet.add(revision);
+        }
+        const uniqueRevisions = [...uniqueRevisionsSet];
         const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
 
         const extendedRanges = this.getExtendedVisibleRanges(textEditor);
