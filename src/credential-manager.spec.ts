@@ -141,6 +141,17 @@ suite("CredentialManager Test Suite", () => {
         assert.ok(showInputBoxStub.calledTwice);
     });
 
+    test("should return undefined if username is empty string", async () => {
+        const showInputBoxStub = sandbox.stub(window, "showInputBox");
+        // User submits empty string
+        showInputBoxStub.onFirstCall().resolves("");
+
+        const result = await credentialManager.promptForCredentials("https://svn.example.com/repo");
+
+        assert.strictEqual(result, undefined);
+        assert.ok(showInputBoxStub.calledOnce); // Should not prompt for password
+    });
+
     test("should handle cancellation when prompting for username", async () => {
         const showInputBoxStub = sandbox.stub(window, "showInputBox");
         // User cancels username input
