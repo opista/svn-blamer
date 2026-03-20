@@ -111,7 +111,6 @@ suite("CredentialManager Test Suite", () => {
         globalStateMap.set("svn.auth.known-repos", [repoUrl]);
 
         const updateStub = contextMock.globalState.update as sinon.SinonStub;
-        updateStub.resetHistory();
 
         await credentialManager.storeCredentials(repoUrl, "testuser", "testpass");
 
