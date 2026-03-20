@@ -145,7 +145,7 @@ export class SVN {
                     errorString.includes("E215004");
 
                 if (isAuthError) {
-                    return await this.handleAuthFailure(args, params);
+                    return this.handleAuthFailure(args, params);
                 }
 
                 throw new SvnCommandError(errorString);

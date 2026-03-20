@@ -342,7 +342,7 @@ export class Blamer {
     async showBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
         try {
-            return await this.showBlameForFile(textEditor, fileName);
+            await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
             this.handleError(err, "Blame action failed");
         }
@@ -352,9 +352,11 @@ export class Blamer {
         const fileData = this.getRecordForFile(fileName);
 
         try {
-            return fileData
-                ? await this.clearBlameForFile(fileName)
-                : await this.showBlameForFile(textEditor, fileName);
+            if (fileData) {
+                await this.clearBlameForFile(fileName);
+            } else {
+                await this.showBlameForFile(textEditor, fileName);
+            }
         } catch (err: unknown) {
             const blameAction = fileData ? "hide" : "show";
             this.handleError(err, `Toggle blame failed [${blameAction}]`);
@@ -363,7 +365,7 @@ export class Blamer {
 
     async toggleBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return await this.toggleBlameForFile(textEditor, fileName);
+        return this.toggleBlameForFile(textEditor, fileName);
     }
 
     async autoBlame(textEditor?: TextEditor) {
@@ -397,7 +399,7 @@ export class Blamer {
                 return;
             }
 
-            return await this.showBlameForFile(textEditor, fileName);
+            await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
             this.statusBarItem.hide();
             this.logger.debug("Blame attempted via auto-blame, silently failing", { err });
