@@ -1,15 +1,7 @@
-import { XMLParser } from "fast-xml-parser";
-
 import { Blame } from "../types/blame.model";
+import { createXmlParser } from "../util/xml-parser";
 
-const parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: "",
-    attributesGroupName: "attributes",
-    textNodeName: "text",
-    trimValues: true,
-    parseTagValue: false,
-    parseAttributeValue: false,
+const parser = createXmlParser({
     isArray: (name) => name === "entry",
 });
 

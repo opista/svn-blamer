@@ -1,14 +1,7 @@
-import { XMLParser } from "fast-xml-parser";
+import { createXmlParser } from "../util/xml-parser";
 
-const parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: "",
-    attributesGroupName: "attributes",
-    textNodeName: "text",
-    trimValues: true,
+const parser = createXmlParser({
     alwaysCreateTextNode: true,
-    parseTagValue: false,
-    parseAttributeValue: false,
 });
 
 export const mapLogOutputToMessage = (data: string): string | undefined => {

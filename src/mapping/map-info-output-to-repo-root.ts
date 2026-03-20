@@ -1,10 +1,6 @@
-import { XMLParser } from "fast-xml-parser";
+import { createXmlParser } from "../util/xml-parser";
 
-const parser = new XMLParser({
-    ignoreAttributes: false,
-    trimValues: true,
-    textNodeName: "text",
-});
+const parser = createXmlParser();
 
 export const mapInfoOutputToRepoRoot = (data: string): string | undefined => {
     const json = parser.parse(data);
