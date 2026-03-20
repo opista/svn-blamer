@@ -25,6 +25,8 @@ import { DecorationRecord } from "./types/decoration-record.model";
 import { disposeDecorations } from "./util/dispose-decorations";
 import { getFileNameFromTextEditor } from "./util/get-file-name-from-text-editor";
 
+const NEWLINE_REGEX = /\n/g;
+
 export class Blamer {
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
@@ -109,7 +111,7 @@ export class Blamer {
 
         for (const change of sortedChanges) {
             const changeEndLine = change.range.end.line + 1; // Convert to 1-indexed
-            const linesInserted = (change.text.match(/\n/g) || []).length;
+            const linesInserted = (change.text.match(NEWLINE_REGEX) || []).length;
 
             // Calculate how many original lines were affected (for multi-line deletions)
             const originalLinesAffected = change.range.end.line - change.range.start.line;
