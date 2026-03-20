@@ -106,6 +106,18 @@ suite("CredentialManager Test Suite", () => {
         assert.deepStrictEqual(knownRepos, [repoUrl]);
     });
 
+    test("should not update global state if repository is already known", async () => {
+        const repoUrl = "https://svn.example.com/repo";
+        globalStateMap.set("svn.auth.known-repos", [repoUrl]);
+
+        const updateStub = contextMock.globalState.update as sinon.SinonStub;
+        updateStub.resetHistory();
+
+        await credentialManager.storeCredentials(repoUrl, "testuser", "testpass");
+
+        assert.ok(updateStub.notCalled, "globalState.update should not have been called");
+    });
+
     test("should delete credentials and remove from known repositories", async () => {
         const repoUrl = "https://svn.example.com/repo";
         secretsMap.set(
