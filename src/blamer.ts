@@ -363,7 +363,7 @@ export class Blamer {
 
     async toggleBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return await this.toggleBlameForFile(textEditor, fileName);
+        return this.toggleBlameForFile(textEditor, fileName);
     }
 
     async autoBlame(textEditor?: TextEditor) {
