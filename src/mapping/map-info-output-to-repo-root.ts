@@ -1,6 +1,11 @@
 import { createXmlParser } from "../util/xml-parser";
 
-const parser = createXmlParser();
+const parser = createXmlParser({
+    attributeNamePrefix: "@_",
+    attributesGroupName: false,
+    parseTagValue: true,
+    parseAttributeValue: false,
+});
 
 export const mapInfoOutputToRepoRoot = (data: string): string | undefined => {
     const json = parser.parse(data);
