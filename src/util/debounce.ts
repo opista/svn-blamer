@@ -1,6 +1,9 @@
-export const debounce = <T extends (...args: any[]) => unknown>(fn: T, ms = 200) => {
+export const debounce = <This, Args extends unknown[], R>(
+    fn: (this: This, ...args: Args) => R,
+    ms = 200,
+) => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+    return function (this: This, ...args: Args) {
         if (timer !== undefined) {
             clearTimeout(timer);
         }
