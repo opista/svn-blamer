@@ -25,6 +25,8 @@ import { DecorationRecord } from "./types/decoration-record.model";
 import { disposeDecorations } from "./util/dispose-decorations";
 import { getFileNameFromTextEditor } from "./util/get-file-name-from-text-editor";
 
+const NEWLINE_REGEX = /\n/g;
+
 export class Blamer {
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
@@ -106,8 +108,6 @@ export class Blamer {
 
         let updatedBlamesByLine = { ...record.blamesByLine };
         let updatedBlamesByRevision = { ...record.blamesByRevision };
-
-        const NEWLINE_REGEX = /\n/g;
 
         for (const change of sortedChanges) {
             const changeEndLine = change.range.end.line + 1; // Convert to 1-indexed
