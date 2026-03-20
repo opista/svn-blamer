@@ -262,11 +262,9 @@ export class Blamer {
         this.setStatusBarText(`Fetching log for revision #${revision}`, "loading~spin");
         this.statusBarItem.show();
 
-        try {
-            return await this.svn.getLogForRevision(fileName, revision);
-        } finally {
+        return this.svn.getLogForRevision(fileName, revision).finally(() => {
             this.statusBarItem.hide();
-        }
+        });
     }
 
     async showBlameForFile(textEditor?: TextEditor, fileName?: string) {
@@ -341,11 +339,9 @@ export class Blamer {
 
     async showBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        try {
-            return await this.showBlameForFile(textEditor, fileName);
-        } catch (err: unknown) {
+        return this.showBlameForFile(textEditor, fileName).catch((err: unknown) => {
             this.handleError(err, "Blame action failed");
-        }
+        });
     }
 
     async toggleBlameForFile(textEditor?: TextEditor, fileName?: string) {
@@ -363,7 +359,7 @@ export class Blamer {
 
     async toggleBlameForActiveTextEditor() {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
-        return await this.toggleBlameForFile(textEditor, fileName);
+        return this.toggleBlameForFile(textEditor, fileName);
     }
 
     async autoBlame(textEditor?: TextEditor) {

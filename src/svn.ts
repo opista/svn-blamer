@@ -56,9 +56,7 @@ export class SVN {
             }
         }
 
-        try {
-            return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
-        } catch (err: unknown) {
+        return spawnProcess(svnExecutablePath, allArgs, { cwd, input }).catch((err: unknown) => {
             const errorString = String(err);
             if (errorString.includes("password-from-stdin")) {
                 throw new Error(
@@ -66,7 +64,7 @@ export class SVN {
                 );
             }
             throw err;
-        }
+        });
     }
 
     private async handleAuthFailure(
@@ -117,9 +115,7 @@ export class SVN {
         args: string[],
         params: { cwd: string; fileName: string },
     ): Promise<string> {
-        try {
-            return await this.execSvn(args, params.cwd);
-        } catch (err: unknown) {
+        return this.execSvn(args, params.cwd).catch(async (err: unknown) => {
             let errorString = "";
 
             if (typeof err === "string") {
@@ -145,14 +141,14 @@ export class SVN {
                     errorString.includes("E215004");
 
                 if (isAuthError) {
-                    return await this.handleAuthFailure(args, params);
+                    return this.handleAuthFailure(args, params);
                 }
 
                 throw new SvnCommandError(errorString);
             }
 
             throw err;
-        }
+        });
     }
 
     async getRepositoryRoot(fileName: string): Promise<string | undefined> {
