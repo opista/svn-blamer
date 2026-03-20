@@ -1,8 +1,21 @@
 import * as assert from "node:assert";
+import * as cp from "node:child_process";
+
+import * as sinon from "sinon";
 
 import * as spawnProcessModule from "./spawn-process";
 
 suite("spawnProcess Utility Test Suite", () => {
+    let sandbox: sinon.SinonSandbox;
+
+    setup(() => {
+        sandbox = sinon.createSandbox();
+    });
+
+    teardown(() => {
+        sandbox.restore();
+    });
+
     test("should resolve with stdout when process exits with code 0", async () => {
         const promise = spawnProcessModule.spawnProcess("node", [
             "-e",
@@ -30,6 +43,40 @@ suite("spawnProcess Utility Test Suite", () => {
             [],
         );
         await assert.rejects(promise, { code: "ENOENT" });
+    });
+
+    test("should reject with error when process explicitly emits 'error' event", async () => {
+        const errorMsg = "Simulated error event via EventEmitter";
+        const errorObj = new Error(errorMsg);
+
+        const onStub = sandbox.stub(cp.ChildProcess.prototype, "on").callsFake(function (
+            this: cp.ChildProcess,
+            event,
+            listener,
+        ) {
+            // Let the original method register the listener
+            const result = onStub.wrappedMethod.apply(this, [event, listener]);
+
+            // Once the "error" event is registered, we can manually emit it
+            if (event === "error") {
+                // We use process.nextTick to simulate an asynchronous error emission
+                // after all listeners are registered.
+                process.nextTick(() => {
+                    this.emit("error", errorObj);
+                });
+            }
+            return result;
+        });
+
+        const promise = spawnProcessModule.spawnProcess("node", [
+            "-e",
+            "setTimeout(() => {}, 1000)",
+        ]);
+
+        await assert.rejects(promise, (err: unknown) => {
+            assert.strictEqual(err, errorObj);
+            return true;
+        });
     });
 
     test("should write input to stdin if provided", async () => {
