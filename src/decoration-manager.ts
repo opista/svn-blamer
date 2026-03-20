@@ -199,10 +199,6 @@ export class DecorationManager {
         const generator = await this.gutterImageGenerator();
         const hashMap: GutterImagePathHashMap = {};
 
-        if (!generator) {
-            return hashMap;
-        }
-
         for (const revision of revisions) {
             if (hashMap[revision] === undefined) {
                 hashMap[revision] = generator.next().value || undefined;
