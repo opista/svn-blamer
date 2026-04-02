@@ -94,8 +94,8 @@ importers:
         specifier: 3.8.1
         version: 3.8.1
       sinon:
-        specifier: ^21.0.2
-        version: 21.0.2
+        specifier: ^21.0.3
+        version: 21.0.3
       ts-loader:
         specifier: ^9.5.1
         version: 9.5.4(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3))
@@ -379,8 +379,8 @@ packages:
   '@sinonjs/fake-timers@15.2.2':
     resolution: {integrity: sha512-KK6HfcJHaxmQNzHSsCrRzp1igwAWUXEtD64EScEUsaHw3ViNHgpFR/ACgHpesDR/YDbu6IZMzNbQkTDMlnZHGw==}
 
-  '@sinonjs/samsam@9.0.2':
-    resolution: {integrity: sha512-H/JSxa4GNKZuuU41E3b8Y3tbSEx8y4uq4UH1C56ONQac16HblReJomIvv3Ud7ANQHQmkeSowY49Ij972e/pGxQ==}
+  '@sinonjs/samsam@9.0.3':
+    resolution: {integrity: sha512-ZgYY7Dc2RW+OUdnZ1DEHg00lhRt+9BjymPKHog4PRFzr1U3MbK57+djmscWyKxzO1qfunHqs4N45WWyKIFKpiQ==}
 
   '@stylistic/eslint-plugin@5.10.0':
     resolution: {integrity: sha512-nPK52ZHvot8Ju/0A4ucSX1dcPV2/1clx0kLcH5wDmrE4naKso7TUC/voUyU1O9OTKTrR6MYip6LP0ogEMQ9jPQ==}
@@ -798,8 +798,8 @@ packages:
     resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
     engines: {node: '>=0.3.1'}
 
-  diff@8.0.3:
-    resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
+  diff@8.0.4:
+    resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -1297,8 +1297,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  node-releases@2.0.36:
-    resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
+  node-releases@2.0.37:
+    resolution: {integrity: sha512-1h5gKZCF+pO/o3Iqt5Jp7wc9rH3eJJ0+nh/CIoiRwjRxde/hAHyLPXYN4V3CqKAbiZPSeJFSWHmJsbkicta0Eg==}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -1462,8 +1462,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  sinon@21.0.2:
-    resolution: {integrity: sha512-VHV4UaoxIe5jrMd89Y9duI76T5g3Lp+ET+ctLhLDaZtSznDPah1KKpRElbdBV4RwqWSw2vadFiVs9Del7MbVeQ==}
+  sinon@21.0.3:
+    resolution: {integrity: sha512-0x8TQFr8EjADhSME01u1ZK31yv2+bd6Z5NrBCHVM+n4qL1wFqbxftmeyi3bwlr49FbbzRfrqSFOpyHCOh/YmYA==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -1935,7 +1935,7 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@sinonjs/samsam@9.0.2':
+  '@sinonjs/samsam@9.0.3':
     dependencies:
       '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
@@ -2293,7 +2293,7 @@ snapshots:
       baseline-browser-mapping: 2.10.13
       caniuse-lite: 1.0.30001784
       electron-to-chromium: 1.5.331
-      node-releases: 2.0.36
+      node-releases: 2.0.37
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
   buffer-from@1.1.2: {}
@@ -2400,7 +2400,7 @@ snapshots:
 
   diff@7.0.0: {}
 
-  diff@8.0.3: {}
+  diff@8.0.4: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -2923,7 +2923,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  node-releases@2.0.36: {}
+  node-releases@2.0.37: {}
 
   normalize-path@3.0.0: {}
 
@@ -3065,12 +3065,12 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  sinon@21.0.2:
+  sinon@21.0.3:
     dependencies:
       '@sinonjs/commons': 3.0.1
       '@sinonjs/fake-timers': 15.2.2
-      '@sinonjs/samsam': 9.0.2
-      diff: 8.0.3
+      '@sinonjs/samsam': 9.0.3
+      diff: 8.0.4
       supports-color: 7.2.0
 
   slash@3.0.0: {}
