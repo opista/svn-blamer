@@ -2,7 +2,7 @@
     "name": "blamer-vs",
     "displayName": "SVN Blamer",
     "description": "Visually blame SVN-stored code line-by-line",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "publisher": "beaugust",
     "packageManager": "pnpm@10.25.0",
     "repository": {
