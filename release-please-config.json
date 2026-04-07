@@ -5,8 +5,8 @@
             "release-type": "node",
             "include-component-in-tag": false,
             "include-v-in-tag": true,
-            "draft": true,
-            "draft-pull-request": true,
+            "draft": false,
+            "draft-pull-request": false,
             "changelog-sections": [
                 {
                     "type": "feat",
