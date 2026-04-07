@@ -51,8 +51,8 @@ suite("spawnProcess Utility Test Suite", () => {
 
         const onStub = sandbox.stub(cp.ChildProcess.prototype, "on").callsFake(function (
             this: cp.ChildProcess,
-            event,
-            listener,
+            event: any,
+            listener: any,
         ) {
             // Let the original method register the listener
             const result = onStub.wrappedMethod.apply(this, [event, listener]);

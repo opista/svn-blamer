@@ -68,21 +68,25 @@
             "type": "object",
             "properties": {
                 "svnBlamer.autoBlame": {
+                    "scope": "resource",
                     "default": false,
                     "description": "Automatically blames files as you open them.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableLogs": {
+                    "scope": "resource",
                     "default": true,
                     "description": "Enables popup revision log data. Disabling this setting will significantly speed up blame.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableVisualIndicators": {
+                    "scope": "resource",
                     "default": true,
                     "description": "Enable/Disable visual indicators that sit to the left of the line number.",
                     "type": "boolean"
                 },
                 "svnBlamer.viewportBuffer": {
+                    "scope": "resource",
                     "default": 200,
                     "description": "How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Note: Higher values may impact initial load performance.",
                     "type": "integer",
@@ -90,6 +94,7 @@
                     "maximum": 10000
                 },
                 "svnBlamer.svnExecutablePath": {
+                    "scope": "machine",
                     "type": "string",
                     "default": "svn",
                     "description": "Path to svn executable or alternative command"
