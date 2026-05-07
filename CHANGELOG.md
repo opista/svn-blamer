@@ -2,6 +2,52 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [2.0.0](https://github.com/opista/svn-blamer/compare/v1.0.0...v2.0.0) (2026-04-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Restrict configuration scopes to prevent RCE via Workspace Configuration ([#593](https://github.com/opista/svn-blamer/issues/593))
+
+### Added
+
+* Add deprecation warning for workspace-level `svnExecutablePath` ([#599](https://github.com/opista/svn-blamer/issues/599)) ([9337d60](https://github.com/opista/svn-blamer/commit/9337d60e8f58b0eec338dce411447a1b4ff76c9b))
+* Adds blame toggle button to toolbar, configuration of SVN path ([#490](https://github.com/opista/svn-blamer/issues/490)) ([a38ea1d](https://github.com/opista/svn-blamer/commit/a38ea1d5fe72cea53076e4580a1b78ea7c347138))
+* Cache gutter image file names to improve performance ([#512](https://github.com/opista/svn-blamer/issues/512)) ([9cdb287](https://github.com/opista/svn-blamer/commit/9cdb28708e704311cc5e6a5b6d23a2ecfb6663b1))
+* Dynamic blame tracking & High-performance viewport rendering ([#527](https://github.com/opista/svn-blamer/issues/527)) ([2014009](https://github.com/opista/svn-blamer/commit/2014009dedc6bf4a1551f6f8b34fe7714e3fe210))
+* Fetch log per-revision rather than on blame ([#488](https://github.com/opista/svn-blamer/issues/488)) ([5aa65c1](https://github.com/opista/svn-blamer/commit/5aa65c153bc11702b6432cf0e885132547527fbb))
+
+
+### Fixed
+
+* **#580:** re-apply background hover messages to fix tooltip disappearing ([#583](https://github.com/opista/svn-blamer/issues/583)) ([2543725](https://github.com/opista/svn-blamer/commit/254372508932a475cf655a1edd2caefed00db9d8))
+* Duplicate hover messages in line tracker due to untracked decoration ([#487](https://github.com/opista/svn-blamer/issues/487)) ([37b6f29](https://github.com/opista/svn-blamer/commit/37b6f29258861ae6fa796fe906dfa163c3892b67))
+* improves error handling ([35b58e3](https://github.com/opista/svn-blamer/commit/35b58e3741d854e11b86f6cde2469fb7c2b523c5))
+* prevent svn credential leak in error logs ([#611](https://github.com/opista/svn-blamer/issues/611)) ([d11dada](https://github.com/opista/svn-blamer/commit/d11dada57e89a942fbc69dbf62b21571e2f5a8a9))
+* Replace inefficient array shuffling algorithm ([#523](https://github.com/opista/svn-blamer/issues/523)) ([c337ced](https://github.com/opista/svn-blamer/commit/c337ced3fc29d631d9e6a6f757b77b8d6546ba62))
+* resolve type mismatch and improve gutter icon shuffling ([39d1daf](https://github.com/opista/svn-blamer/commit/39d1daf7128501b468aec211f47d76778d28db80))
+* Restrict configuration scopes to prevent RCE via Workspace Configuration ([#593](https://github.com/opista/svn-blamer/issues/593)) ([568cf81](https://github.com/opista/svn-blamer/commit/568cf8136f8dc57161ea1655df4dcbac5ded06bb))
+* **security:** pass SVN credentials via stdin and sync credential repository index ([#622](https://github.com/opista/svn-blamer/issues/622)) ([0a7aa67](https://github.com/opista/svn-blamer/commit/0a7aa679e80982d1e9736348583cf6c7129cf807))
+* **svn:** Trigger process from working directory ([#501](https://github.com/opista/svn-blamer/issues/501)) ([9fd22da](https://github.com/opista/svn-blamer/commit/9fd22dacdfcbb00a8c72292a2f04cc97ca6bfd71))
+
+
+### Changed
+
+* align truncateString logic with consistent 20 char max ([#616](https://github.com/opista/svn-blamer/issues/616)) ([2ba1ca6](https://github.com/opista/svn-blamer/commit/2ba1ca61b0d097d93563914648974ae40ec86675))
+* **blamer:** consolidate duplicated error handling logic ([#620](https://github.com/opista/svn-blamer/issues/620)) ([ce14336](https://github.com/opista/svn-blamer/commit/ce14336e8a4913495b07c54772ed9451d1c97cb5))
+* Extract DummyLogOutputChannel to shared mock-vscode utility ([#623](https://github.com/opista/svn-blamer/issues/623)) ([62ce9d7](https://github.com/opista/svn-blamer/commit/62ce9d79ab7498c02aef9ab7e3db41bbdd2499ad))
+* extract helper for stdin error handling in spawnProcess ([#646](https://github.com/opista/svn-blamer/issues/646)) ([cc7704d](https://github.com/opista/svn-blamer/commit/cc7704ded8fd11b13ab237bc3ec8a842cc149f06))
+* extract inline regex to constant for newline counting ([#656](https://github.com/opista/svn-blamer/issues/656)) ([66922d8](https://github.com/opista/svn-blamer/commit/66922d8694c012eee8288478146941c1f5a58293))
+* improve loop iteration efficiency in DecorationManager ([#632](https://github.com/opista/svn-blamer/issues/632)) ([e2ee58e](https://github.com/opista/svn-blamer/commit/e2ee58e8950527734a6bcb1e8648364bd76cada8))
+* optimize `mapBlameOutputToBlameModel` to avoid intermediate array allocation ([#630](https://github.com/opista/svn-blamer/issues/630)) ([d14e598](https://github.com/opista/svn-blamer/commit/d14e59831429bb0dce7cd888c50bcf729bbcebb2))
+* Optimize setStatusBarText performance ([#629](https://github.com/opista/svn-blamer/issues/629)) ([7af72e4](https://github.com/opista/svn-blamer/commit/7af72e4ff0121989de0330bf67007bb00f5f696c))
+* re-architect decoration management for O(1) lookups and shared types ([#515](https://github.com/opista/svn-blamer/issues/515)) ([401f400](https://github.com/opista/svn-blamer/commit/401f400f2c44fa8f884798d5f7321a1537cc231a))
+* remove 'any' generic constraint from debounce utility ([#658](https://github.com/opista/svn-blamer/issues/658)) ([b5fc238](https://github.com/opista/svn-blamer/commit/b5fc238c215f4ee48a478c13d44ff72ae8c0ab81))
+* remove explicit any casts from svn.spec.ts ([#633](https://github.com/opista/svn-blamer/issues/633)) ([9184e50](https://github.com/opista/svn-blamer/commit/9184e50480a9f9dc0ba663de5ccfa26c3b532255))
+* remove unnecessary void from promise chain ([#648](https://github.com/opista/svn-blamer/issues/648)) ([ed1a1f0](https://github.com/opista/svn-blamer/commit/ed1a1f04e4ff52f30f9a12f1c37cbeb654a0eff6))
+* replace generic error with SvnCommandError in SVN execution ([#624](https://github.com/opista/svn-blamer/issues/624)) ([6231d16](https://github.com/opista/svn-blamer/commit/6231d16e359d02dc427f84bceaccb4a68a5c307a))
+* replace Object.entries and Object.values with for...in loops ([#650](https://github.com/opista/svn-blamer/issues/650)) ([6be197f](https://github.com/opista/svn-blamer/commit/6be197f68c5a75c59362e4d68d62e95061f4c096))
+
 ## [1.0.0](https://github.com/opista/svn-blamer/compare/v0.8.0...v1.0.0) (2026-04-07)
 
 
