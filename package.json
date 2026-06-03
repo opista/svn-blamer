@@ -141,7 +141,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.5",
         "@eslint/js": "^10.0.1",
-        "@sinonjs/fake-timers": "^15.2.2",
+        "@sinonjs/fake-timers": "^15.4.0",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@types/lodash.merge": "^4.6.9",
         "@types/luxon": "^3.4.2",
