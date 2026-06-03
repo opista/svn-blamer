@@ -4,7 +4,7 @@ import * as assert from "assert";
 import { debounce } from "./debounce";
 
 suite("Debounce Utility Test Suite", () => {
-    let clock: FakeTimers.InstalledClock;
+    let clock: ReturnType<typeof FakeTimers.install>;
 
     setup(() => {
         clock = FakeTimers.install();
