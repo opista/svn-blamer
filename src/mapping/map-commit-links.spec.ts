@@ -137,9 +137,15 @@ suite("Map Commit Links Test Suite", () => {
         }
     });
 
-    test("rejects a url whose scheme comes from a capture group", () => {
-        const rule: CommitLink = { pattern: "(command):(\\w+)", url: "$1:$2" };
+    test("matches all occurrences globally", () => {
+        const rule: CommitLink = { pattern: "chg\\\\d+", url: "https://x/$0" };
 
-        assert.deepStrictEqual(mapCommitLinks("run command:evil", [rule]), []);
+        assert.strictEqual(mapCommitLinks("chg1 chg2 chg3", [rule]).length, 3);
+    });
+
+    test("skips links with unsafe protocols (e.g. command:)", () => {
+        const rule: CommitLink = { pattern: "chg\\\\d+", url: "command:unsafe?args=$0" };
+
+        assert.deepStrictEqual(mapCommitLinks("chg1", [rule]), []);
     });
 });
