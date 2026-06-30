@@ -104,6 +104,12 @@ suite("Map Commit Links Test Suite", () => {
         assert.strictEqual(mapCommitLinks("chg1 chg2 chg3", [rule]).length, 3);
     });
 
+    test("skips links with unsafe protocols (e.g. command:)", () => {
+        const rule: CommitLink = { pattern: "chg\\d+", url: "command:unsafe?args=$0" };
+
+        assert.deepStrictEqual(mapCommitLinks("chg1", [rule]), []);
+    });
+
     test("allows http and https urls", () => {
         const http: CommitLink = { pattern: "CHG\\d+", url: "http://x/$0" };
         const https: CommitLink = { pattern: "CHG\\d+", url: "https://x/$0" };
