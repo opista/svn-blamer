@@ -101,7 +101,8 @@ message).
 
 Each rule matches a regular expression against the commit message and builds a
 URL from the match. Use `$0` for the whole match and `$1`-`$9` for capture
-groups, in both `url` and `title`.
+groups, in both `url` and `title`. Only `http`/`https` URLs are rendered; other
+schemes are ignored.
 
 ```jsonc
 "svnBlamer.commitLinks": [

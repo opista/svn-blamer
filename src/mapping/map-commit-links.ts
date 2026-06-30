@@ -29,6 +29,14 @@ export const mapCommitLinks = (text: string, links: CommitLink[] = []): string[]
 
         for (const match of text.matchAll(regex)) {
             const url = applyTemplate(link.url, match);
+
+            // Only render http(s) links. Repository settings are resource-scoped,
+            // so a workspace could supply a rule; restricting the scheme keeps a
+            // malicious `command:`/`file:` URL out of the hover markdown.
+            if (!/^https?:\/\//i.test(url)) {
+                continue;
+            }
+
             const label = applyTemplate(link.title ?? "$0", match) || match[0];
             const icon = link.icon === undefined ? "$(link) " : link.icon ? `$(${link.icon}) ` : "";
 

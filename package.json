@@ -117,7 +117,7 @@
                             },
                             "url": {
                                 "type": "string",
-                                "markdownDescription": "Link target. Use `$0` for the whole match and `$1`-`$9` for capture groups, e.g. `https://jira.example.com/browse/$0`."
+                                "markdownDescription": "Link target. Use `$0` for the whole match and `$1`-`$9` for capture groups, e.g. `https://jira.example.com/browse/$0`. Only `http`/`https` URLs are rendered; other schemes are ignored."
                             },
                             "title": {
                                 "type": "string",

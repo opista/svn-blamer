@@ -103,4 +103,37 @@ suite("Map Commit Links Test Suite", () => {
 
         assert.strictEqual(mapCommitLinks("chg1 chg2 chg3", [rule]).length, 3);
     });
+
+    test("allows http and https urls", () => {
+        const http: CommitLink = { pattern: "CHG\\d+", url: "http://x/$0" };
+        const https: CommitLink = { pattern: "CHG\\d+", url: "https://x/$0" };
+
+        assert.strictEqual(mapCommitLinks("CHG1234567", [http]).length, 1);
+        assert.strictEqual(mapCommitLinks("CHG1234567", [https]).length, 1);
+    });
+
+    test("rejects non-http(s) url schemes", () => {
+        const schemes = [
+            "command:workbench.action.terminal.new",
+            "file:///etc/passwd",
+            "javascript:alert(1)",
+            "vscode://settings",
+            "//evil.example.com/$0",
+        ];
+
+        for (const url of schemes) {
+            const rule: CommitLink = { pattern: "CHG\\d+", url };
+            assert.deepStrictEqual(
+                mapCommitLinks("CHG1234567", [rule]),
+                [],
+                `expected scheme to be rejected: ${url}`,
+            );
+        }
+    });
+
+    test("rejects a url whose scheme comes from a capture group", () => {
+        const rule: CommitLink = { pattern: "(command):(\\w+)", url: "$1:$2" };
+
+        assert.deepStrictEqual(mapCommitLinks("run command:evil", [rule]), []);
+    });
 });
