@@ -19,6 +19,7 @@ import { MAX_NUMBER } from "./const/number";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
 import { Blame } from "./types/blame.model";
+import { CommitLink } from "./types/commit-link.model";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { GutterImagePathHashMap } from "./types/gutter-image-path-hash-map.model";
 import { LogHashMap } from "./types/log-hash-map.model";
@@ -135,7 +136,10 @@ export class DecorationManager {
             if (!hoverMessage) {
                 const [firstBlame] = blames;
                 const log = logs?.[firstBlame.revision];
-                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+                const commitLinks = workspace
+                    .getConfiguration(EXTENSION_CONFIGURATION)
+                    .get<CommitLink[]>("commitLinks", []);
+                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log, commitLinks);
                 hoverMessage = new MarkdownString(hoverMessageText, true);
             }
             return hoverMessage;

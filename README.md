@@ -89,6 +89,50 @@ This extension contributes the following commands to the Command palette.
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number.                                                                                                     | `true`        |
 | **Viewport Buffer**          | How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Higher values may impact performance. | `200`         |
 | **SVN Executable Path**      | Path to svn executable or alternative command.                                                                                                                        | `"svn"`       |
+| **Commit Links**             | Turn ticket/issue references in commit messages into clickable links in the blame hover. Configurable per tracker (ServiceNow, Jira, GitHub, etc.). See below.        | `[]`          |
+
+### Commit links
+
+The blame hover can turn ticket/issue references found in commit messages into
+clickable links. This is fully configurable through the `svnBlamer.commitLinks`
+setting, so it works with any tracker. It is disabled by default (and requires
+`svnBlamer.enableLogs` to be on, since the link is derived from the commit
+message).
+
+Each rule matches a regular expression against the commit message and builds a
+URL from the match. Use `$0` for the whole match and `$1`-`$9` for capture
+groups, in both `url` and `title`.
+
+```jsonc
+"svnBlamer.commitLinks": [
+    // ServiceNow change/incident records (CHG1234567, INC0001234, ...)
+    {
+        "pattern": "\\b(?:CHG|CR|INC|RITM)\\d{4,}\\b",
+        "url": "https://example.service-now.com/nav_to.do?uri=change_request.do?sysparm_query=number=$0"
+    },
+    // Jira issues (PROJ-123)
+    {
+        "pattern": "\\b[A-Z]{2,}-\\d+\\b",
+        "icon": "issues",
+        "url": "https://jira.example.com/browse/$0"
+    },
+    // GitHub issue/PR references (#123) with a capture group
+    {
+        "pattern": "#(\\d+)",
+        "title": "GH-$1",
+        "url": "https://github.com/owner/repo/issues/$1"
+    }
+]
+```
+
+Per-rule options:
+
+| Field     | Required | Description                                                                                                                              |
+| --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `pattern` | yes      | Regular expression matched against the commit message. Each match becomes a link.                                                        |
+| `url`     | yes      | Link target. Supports `$0`-`$9`.                                                                                                         |
+| `title`   | no       | Link label. Supports `$0`-`$9`. Defaults to the matched text (`$0`).                                                                     |
+| `icon`    | no       | [Codicon](https://microsoft.github.io/vscode-codicons/dist/codicon.html) id before the label. Defaults to `link`. Empty string for none. |
 
 ## Known Issues
 

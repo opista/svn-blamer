@@ -133,4 +133,44 @@ suite("Map Blame to Hover Message Test Suite", () => {
 
         assert.strictEqual(result, expected);
     });
+
+    test("should append configured commit links to the header", () => {
+        const blame: Blame = {
+            author: "John Doe",
+            date: "2020-12-31T12:00:00.000Z",
+            revision: "123456",
+            line: "10",
+        };
+        const log = "Implements CHG1234567";
+        const commitLinks = [
+            {
+                pattern: "\\bCHG\\d{4,}\\b",
+                url: "https://example.service-now.com/number=$0",
+            },
+        ];
+
+        const result = mapBlameToHoverMessage(blame, log, commitLinks);
+
+        const separator = "&nbsp;&nbsp;|&nbsp;&nbsp;";
+        const expectedLink =
+            "[$(link) CHG1234567](https://example.service-now.com/number=CHG1234567)";
+
+        assert.ok(result.includes(separator + expectedLink + "\n\n" + log));
+    });
+
+    test("should not append links when none are configured", () => {
+        const blame: Blame = {
+            author: "John Doe",
+            date: "2020-12-31T12:00:00.000Z",
+            revision: "123456",
+            line: "10",
+        };
+        const log = "Implements CHG1234567";
+
+        const withoutLinks = mapBlameToHoverMessage(blame, log);
+        const withEmptyLinks = mapBlameToHoverMessage(blame, log, []);
+
+        assert.strictEqual(withoutLinks, withEmptyLinks);
+        assert.ok(!withoutLinks.includes("]("));
+    });
 });
