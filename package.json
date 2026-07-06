@@ -98,6 +98,37 @@
                     "type": "string",
                     "default": "svn",
                     "description": "Path to svn executable or alternative command"
+                },
+                "svnBlamer.commitLinks": {
+                    "scope": "resource",
+                    "type": "array",
+                    "default": [],
+                    "markdownDescription": "Turn ticket/issue references found in commit messages into clickable links in the blame hover. Each rule matches a regular expression against the commit message and builds a URL from it. Works with any tracker (ServiceNow, Jira, GitHub, etc.). Requires `#svnBlamer.enableLogs#` to be enabled. Leave empty to disable.\n\nIn both `url` and `title`, use `$0` for the whole match and `$1`-`$9` for capture groups.\n\nExample (ServiceNow change requests):\n```json\n[\n  {\n    \"pattern\": \"\\\\b(?:CHG|CR|INC|RITM)\\\\d{4,}\\\\b\",\n    \"url\": \"https://example.service-now.com/nav_to.do?uri=change_request.do?sysparm_query=number=$0\"\n  }\n]\n```",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "pattern",
+                            "url"
+                        ],
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "markdownDescription": "Regular expression matched against the commit message. Each match becomes a link. Use capture groups to reference parts of the match in `url`/`title`."
+                            },
+                            "url": {
+                                "type": "string",
+                                "markdownDescription": "Link target. Use `$0` for the whole match and `$1`-`$9` for capture groups, e.g. `https://jira.example.com/browse/$0`. Only `http`/`https` URLs are rendered; other schemes are ignored."
+                            },
+                            "title": {
+                                "type": "string",
+                                "markdownDescription": "Optional link label. Supports `$0`-`$9`. Defaults to the matched text (`$0`)."
+                            },
+                            "icon": {
+                                "type": "string",
+                                "markdownDescription": "Optional [codicon](https://microsoft.github.io/vscode-codicons/dist/codicon.html) id shown before the label (without the `$(...)` wrapper), e.g. `link` or `issues`. Defaults to `link`. Set to an empty string for no icon."
+                            }
+                        }
+                    }
                 }
             }
         },
