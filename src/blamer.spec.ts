@@ -305,6 +305,65 @@ suite("Blamer", () => {
         });
     });
 
+    suite("autoBlame", () => {
+        test("refreshes a cached background tab after the indicator scheme changes", async () => {
+            const fileName = "/test/background.ts";
+            const textEditor = {
+                document: {
+                    fileName,
+                    uri: { fsPath: fileName, scheme: "vscode-remote" },
+                },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 1 } }],
+            } as unknown as TextEditor;
+            const record: DecorationRecord = {
+                workingCopy: true,
+                indicatorRefreshVersion: 0,
+                icons: { "10": "old-10.svg" },
+                blamesByLine: {
+                    "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
+                },
+                blamesByRevision: {
+                    "10": [{ revision: "10", author: "one", date: "2026-02-24", line: "1" }],
+                },
+                revisionDecorations: {},
+                logs: {},
+            };
+            const refreshedIcons = { "10": "new-10.svg" };
+            const refreshedDecorations = { "10": {} as TextEditorDecorationType };
+
+            sandbox.stub(workspace.fs, "stat").resolves();
+            sandbox.stub(window, "visibleTextEditors").value([]);
+            storageMock.get.withArgs(fileName).returns(record);
+            decorationManagerMock.createGutterImagePathHashMap.resolves(refreshedIcons);
+            decorationManagerMock.createAndSetDecorationsForBlame.resolves({
+                blamesByLine: record.blamesByLine,
+                blamesByRevision: record.blamesByRevision,
+                revisionDecorations: refreshedDecorations,
+            });
+
+            await blamer.refreshVisibleBlameIndicators();
+            await blamer.autoBlame(textEditor);
+
+            assert.ok(
+                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                    fileName,
+                    ["10"],
+                    textEditor.document.uri,
+                ),
+            );
+            assert.ok(decorationManagerMock.reApplyDecorations.notCalled);
+            assert.ok(
+                storageMock.set.calledOnceWithExactly(
+                    fileName,
+                    sinon.match({
+                        icons: refreshedIcons,
+                        indicatorRefreshVersion: 1,
+                    }),
+                ),
+            );
+        });
+    });
+
     suite("refreshVisibleBlameIndicators", () => {
         test("recreates cached blame decorations for every visible split without re-blaming", async () => {
             const fileName = "/test/file.ts";

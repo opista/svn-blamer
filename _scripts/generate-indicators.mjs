@@ -158,6 +158,16 @@ export const shouldCopyImageAssets = (
     !fs.existsSync(path.join(outputImageDir, "marketplace", "icon.png")) ||
     !hasCompleteGeneratedIndicators(path.join(outputImageDir, "indicators"), count);
 
+export const copyMarketplaceAssets = (
+    sourceImageDir = path.join("src", "img"),
+    outputImageDir = path.join("dist", "img"),
+) => {
+    fs.cpSync(path.join(sourceImageDir, "marketplace"), path.join(outputImageDir, "marketplace"), {
+        force: true,
+        recursive: true,
+    });
+};
+
 export const generateIndicators = (count = INDICATOR_COUNT) => {
     const outputDir = path.join("src", "img", "indicators");
 

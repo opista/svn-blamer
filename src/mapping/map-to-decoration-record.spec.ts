@@ -14,6 +14,7 @@ suite("Map To Decoration Record Test Suite", () => {
         assert.deepStrictEqual(result.revisionDecorations, {});
         assert.deepStrictEqual(result.logs, {});
         assert.strictEqual(result.workingCopy, true);
+        assert.strictEqual(result.indicatorRefreshVersion, 0);
     });
 
     test("should merge partial record with default record", () => {

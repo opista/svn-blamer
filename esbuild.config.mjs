@@ -3,6 +3,7 @@ import fs from "node:fs";
 import * as esbuild from "esbuild";
 
 import {
+    copyMarketplaceAssets,
     generateIndicators,
     pruneGeneratedIndicators,
     shouldCopyImageAssets,
@@ -18,7 +19,13 @@ const generateIndicatorsPlugin = {
         });
 
         build.onEnd((result) => {
-            if (result.errors.length === 0 && (assetsChanged || shouldCopyImageAssets())) {
+            if (result.errors.length === 0) {
+                copyMarketplaceAssets();
+
+                if (!assetsChanged && !shouldCopyImageAssets()) {
+                    return;
+                }
+
                 fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
                 pruneGeneratedIndicators("dist/img/indicators");
             }

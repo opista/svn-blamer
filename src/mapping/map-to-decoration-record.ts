@@ -9,6 +9,7 @@ const defaultRecord: DecorationRecord = {
     revisionDecorations: {},
     logs: {},
     workingCopy: true,
+    indicatorRefreshVersion: 0,
 };
 
 export const mapToDecorationRecord = (record: Partial<DecorationRecord>): DecorationRecord =>

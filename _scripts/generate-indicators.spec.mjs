@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+    copyMarketplaceAssets,
     generateIndicators,
     INDICATOR_COUNT,
     shouldCopyImageAssets,
@@ -85,6 +86,28 @@ test("copies image assets when the build output is missing or stale", () => {
         assert.strictEqual(shouldCopyImageAssets(imageDirectory, 1), true);
     } finally {
         fs.rmSync(imageDirectory, { force: true, recursive: true });
+    }
+});
+
+test("copies changed marketplace assets on every successful build", () => {
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "svn-blamer-marketplace-"));
+    const sourceImageDirectory = path.join(temporaryDirectory, "source");
+    const outputImageDirectory = path.join(temporaryDirectory, "output");
+
+    try {
+        fs.mkdirSync(path.join(sourceImageDirectory, "marketplace"), { recursive: true });
+        fs.mkdirSync(path.join(outputImageDirectory, "marketplace"), { recursive: true });
+        fs.writeFileSync(path.join(sourceImageDirectory, "marketplace", "icon.png"), "new icon");
+        fs.writeFileSync(path.join(outputImageDirectory, "marketplace", "icon.png"), "old icon");
+
+        copyMarketplaceAssets(sourceImageDirectory, outputImageDirectory);
+
+        assert.strictEqual(
+            fs.readFileSync(path.join(outputImageDirectory, "marketplace", "icon.png"), "utf8"),
+            "new icon",
+        );
+    } finally {
+        fs.rmSync(temporaryDirectory, { force: true, recursive: true });
     }
 });
 

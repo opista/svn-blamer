@@ -276,6 +276,7 @@ export class Blamer {
             const refreshedRecord: DecorationRecord = {
                 ...record,
                 icons,
+                indicatorRefreshVersion: refreshVersion,
                 revisionDecorations,
             };
             this.setRecordForFile(fileName, refreshedRecord);
@@ -426,6 +427,7 @@ export class Blamer {
             icons,
             blamesByLine,
             blamesByRevision,
+            indicatorRefreshVersion: this.indicatorRefreshVersion,
             revisionDecorations,
         });
 
@@ -483,6 +485,9 @@ export class Blamer {
         }
 
         const fileName = await getFileNameFromTextEditor(textEditor);
+        if (!fileName) {
+            return;
+        }
 
         try {
             const existingRecord = this.getRecordForFile(fileName);
@@ -495,6 +500,15 @@ export class Blamer {
             }
 
             if (existingRecord) {
+                if (existingRecord.indicatorRefreshVersion !== this.indicatorRefreshVersion) {
+                    await this.refreshVisibleBlameForFile(
+                        fileName,
+                        [textEditor],
+                        this.indicatorRefreshVersion,
+                    );
+                    return;
+                }
+
                 this.logger.debug("Blame already exists for file, re-applying decorations", {
                     fileName,
                 });
