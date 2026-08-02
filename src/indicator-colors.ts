@@ -22,11 +22,9 @@ export type IndicatorColorPalette = (typeof INDICATOR_COLOR_PALETTES)[number];
 export type ChronologicalColorScheme = Exclude<IndicatorColorScheme, "random">;
 
 export const getIndicatorColorScheme = (value: unknown): IndicatorColorScheme =>
-    value === "greenToRed"
-        ? "redToGreen"
-        : INDICATOR_COLOR_SCHEMES.includes(value as IndicatorColorScheme)
-          ? (value as IndicatorColorScheme)
-          : "random";
+    INDICATOR_COLOR_SCHEMES.includes(value as IndicatorColorScheme)
+        ? (value as IndicatorColorScheme)
+        : "random";
 
 const hashString = (value: string): number => {
     let hash = 2166136261;
