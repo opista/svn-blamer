@@ -1,6 +1,6 @@
 export const INDICATOR_COLOR_SCHEMES = [
     "random",
-    "greenToRed",
+    "redToGreen",
     "blue",
     "sky",
     "teal",
@@ -22,8 +22,8 @@ export type IndicatorColorPalette = (typeof INDICATOR_COLOR_PALETTES)[number];
 export type ChronologicalColorScheme = Exclude<IndicatorColorScheme, "random">;
 
 export const getIndicatorColorScheme = (value: unknown): IndicatorColorScheme =>
-    value === "redToGreen"
-        ? "greenToRed"
+    value === "greenToRed"
+        ? "redToGreen"
         : INDICATOR_COLOR_SCHEMES.includes(value as IndicatorColorScheme)
           ? (value as IndicatorColorScheme)
           : "random";

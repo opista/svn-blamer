@@ -31,7 +31,7 @@ suite("Extension configuration", () => {
         assert.strictEqual(properties["svnBlamer.indicatorColorScheme"]?.default, "random");
         assert.deepStrictEqual(properties["svnBlamer.indicatorColorScheme"]?.enum, [
             "random",
-            "greenToRed",
+            "redToGreen",
             "blue",
             "sky",
             "teal",
@@ -41,7 +41,7 @@ suite("Extension configuration", () => {
         ]);
         assert.deepStrictEqual(properties["svnBlamer.indicatorColorScheme"]?.enumItemLabels, [
             "Random",
-            "Green → Red",
+            "Red → Green",
             "Blue",
             "Sky blue",
             "Teal",

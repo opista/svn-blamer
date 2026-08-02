@@ -28,9 +28,9 @@ const getDirectoryNames = (directory) =>
 test("prunes obsolete generated asset directories after a build", () => {
     const expectedDirectories = [
         "blue",
-        "greenToRed",
         "orange",
         "random",
+        "redToGreen",
         "sky",
         "teal",
         "vermilion",
@@ -79,14 +79,14 @@ test("generates complete single-hue chronological ranges", () => {
     }
 });
 
-test("generates the green-to-red range and unchanged random palettes", () => {
-    const greenToRedDirectory = path.join(SOURCE_INDICATORS_DIR, "greenToRed");
-    const firstGreenToRed = readSvg(greenToRedDirectory, "0000.svg");
-    const lastGreenToRed = readSvg(greenToRedDirectory, "0499.svg");
+test("generates the red-to-green range and unchanged random palettes", () => {
+    const redToGreenDirectory = path.join(SOURCE_INDICATORS_DIR, "redToGreen");
+    const firstRedToGreen = readSvg(redToGreenDirectory, "0000.svg");
+    const lastRedToGreen = readSvg(redToGreenDirectory, "0499.svg");
 
-    assert.strictEqual(getSvgFiles(greenToRedDirectory).length, INDICATOR_COUNT);
-    assert.match(firstGreenToRed, /fill="hsl\(0\.0000, 68\.0000%, 45\.0000%\)"/);
-    assert.match(lastGreenToRed, /fill="hsl\(142\.0000, 62\.0000%, 38\.0000%\)"/);
+    assert.strictEqual(getSvgFiles(redToGreenDirectory).length, INDICATOR_COUNT);
+    assert.match(firstRedToGreen, /fill="hsl\(0\.0000, 68\.0000%, 45\.0000%\)"/);
+    assert.match(lastRedToGreen, /fill="hsl\(142\.0000, 62\.0000%, 38\.0000%\)"/);
 
     for (const palette of RANDOM_PALETTES) {
         const sourceDirectory = path.join(SOURCE_INDICATORS_DIR, "random", palette);

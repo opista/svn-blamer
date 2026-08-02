@@ -27,7 +27,7 @@ suite("Indicator colours", () => {
 
     test("falls back to safe indicator settings for invalid configuration values", () => {
         assert.strictEqual(getIndicatorColorScheme("unexpected"), "random");
-        assert.strictEqual(getIndicatorColorScheme("redToGreen"), "greenToRed");
+        assert.strictEqual(getIndicatorColorScheme("greenToRed"), "redToGreen");
     });
 
     test("maps chronological revisions from oldest to newest", () => {

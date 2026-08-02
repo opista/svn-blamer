@@ -12,7 +12,7 @@ const RANDOM_PALETTES = {
     vermilion: ["#9e3f13", "#de855d"],
 };
 const SINGLE_HUE_SCHEMES = Object.keys(RANDOM_PALETTES);
-const INDICATOR_DIRECTORIES = ["greenToRed", "random", ...SINGLE_HUE_SCHEMES];
+const INDICATOR_DIRECTORIES = ["redToGreen", "random", ...SINGLE_HUE_SCHEMES];
 
 const RED_TO_GREEN_STOPS = [
     // The scale runs from the oldest revision to the newest revision.
@@ -93,7 +93,7 @@ export const pruneGeneratedIndicators = (outputDir, count = INDICATOR_COUNT) => 
     const indicatorDirectories = new Set(INDICATOR_DIRECTORIES);
 
     let changed = pruneDirectory(outputDir, indicatorDirectories);
-    changed = pruneDirectory(path.join(outputDir, "greenToRed"), indicatorFileNames) || changed;
+    changed = pruneDirectory(path.join(outputDir, "redToGreen"), indicatorFileNames) || changed;
 
     for (const scheme of SINGLE_HUE_SCHEMES) {
         changed = pruneDirectory(path.join(outputDir, scheme), indicatorFileNames) || changed;
@@ -118,7 +118,7 @@ export const generateIndicators = (count = INDICATOR_COUNT) => {
     // copy step has replaced them.
 
     let changed = generatePalette(
-        path.join(outputDir, "greenToRed"),
+        path.join(outputDir, "redToGreen"),
         (ratio) => interpolateChronologicalColor(RED_TO_GREEN_STOPS, ratio),
         count,
     );

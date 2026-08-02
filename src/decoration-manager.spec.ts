@@ -117,7 +117,7 @@ suite("DecorationManager", () => {
         decorationManager = new DecorationManager();
 
         for (const scheme of [
-            "greenToRed",
+            "redToGreen",
             "sky",
             "teal",
             "violet",

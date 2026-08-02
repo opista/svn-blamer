@@ -96,7 +96,7 @@
                     "type": "string",
                     "enum": [
                         "random",
-                        "greenToRed",
+                        "redToGreen",
                         "blue",
                         "sky",
                         "teal",
@@ -106,7 +106,7 @@
                     ],
                     "enumItemLabels": [
                         "Random",
-                        "Green → Red",
+                        "Red → Green",
                         "Blue",
                         "Sky blue",
                         "Teal",
