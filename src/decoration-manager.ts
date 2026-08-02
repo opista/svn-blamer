@@ -186,11 +186,12 @@ export class DecorationManager {
         return options;
     }
 
-    async createGutterImagePathHashMap(fileName: string, revisions: string[]) {
-        const configuration = workspace.getConfiguration(
-            EXTENSION_CONFIGURATION,
-            Uri.file(fileName),
-        );
+    async createGutterImagePathHashMap(
+        fileName: string,
+        revisions: string[],
+        resource: Uri = Uri.file(fileName),
+    ) {
+        const configuration = workspace.getConfiguration(EXTENSION_CONFIGURATION, resource);
         const { enableVisualIndicators } = configuration;
 
         if (!enableVisualIndicators) {

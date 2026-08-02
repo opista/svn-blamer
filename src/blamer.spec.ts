@@ -251,7 +251,11 @@ suite("Blamer", () => {
     suite("showBlameForFile", () => {
         const mockFileName = "/test/error-file.ts";
         const mockTextEditor = {
-            document: { isDirty: false, lineCount: 10 },
+            document: {
+                isDirty: false,
+                lineCount: 10,
+                uri: { fsPath: mockFileName, scheme: "vscode-remote" },
+            },
             visibleRanges: [{ start: { line: 0 }, end: { line: 10 } }],
         } as unknown as TextEditor;
 
@@ -291,6 +295,13 @@ suite("Blamer", () => {
                 },
                 "showBlameForFile should propagate the error from decorationManager.createAndSetDecorationsForBlame",
             );
+            assert.ok(
+                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                    mockFileName,
+                    ["123"],
+                    mockTextEditor.document.uri,
+                ),
+            );
         });
     });
 
@@ -319,11 +330,19 @@ suite("Blamer", () => {
                 logs: {},
             };
             const firstEditor = {
-                document: { fileName, lineCount: 10 },
+                document: {
+                    fileName,
+                    lineCount: 10,
+                    uri: { fsPath: fileName, scheme: "vscode-remote" },
+                },
                 visibleRanges: [{ start: { line: 0 }, end: { line: 4 } }],
             } as unknown as TextEditor;
             const secondEditor = {
-                document: { fileName, lineCount: 10 },
+                document: {
+                    fileName,
+                    lineCount: 10,
+                    uri: { fsPath: fileName, scheme: "vscode-remote" },
+                },
                 visibleRanges: [{ start: { line: 5 }, end: { line: 9 } }],
             } as unknown as TextEditor;
             const newIcons = { "10": "new-10.svg", "20": "new-20.svg" };
@@ -341,10 +360,11 @@ suite("Blamer", () => {
             await blamer.refreshVisibleBlameIndicators();
 
             assert.ok(
-                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(fileName, [
-                    "10",
-                    "20",
-                ]),
+                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                    fileName,
+                    ["10", "20"],
+                    firstEditor.document.uri,
+                ),
             );
             assert.ok(
                 decorationManagerMock.createAndSetDecorationsForBlame.calledOnceWithExactly(

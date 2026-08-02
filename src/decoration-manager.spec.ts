@@ -112,6 +112,27 @@ suite("DecorationManager", () => {
         );
     });
 
+    test("uses the original document URI to resolve indicator settings", async () => {
+        getExtensionStub.returns({ extensionPath: process.cwd() });
+        getConfigurationStub.returns({
+            enableVisualIndicators: true,
+            indicatorColorScheme: "blue",
+        });
+        decorationManager = new DecorationManager();
+        const remoteUri = {
+            fsPath: "/workspace/example.ts",
+            scheme: "vscode-remote",
+        } as unknown as import("vscode").Uri;
+
+        await decorationManager.createGutterImagePathHashMap(
+            "/workspace/example.ts",
+            ["10", "20"],
+            remoteUri,
+        );
+
+        assert.ok(getConfigurationStub.calledWithExactly(EXTENSION_CONFIGURATION, remoteUri));
+    });
+
     test("uses the selected chronological colour scheme", async () => {
         getExtensionStub.returns({ extensionPath: process.cwd() });
         decorationManager = new DecorationManager();

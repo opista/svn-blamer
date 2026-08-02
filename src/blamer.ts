@@ -238,20 +238,21 @@ export class Blamer {
         }
 
         try {
+            const [firstTextEditor, ...otherTextEditors] = textEditors;
+            if (!firstTextEditor) {
+                return;
+            }
+
             const icons = await this.decorationManager.createGutterImagePathHashMap(
                 fileName,
                 Object.keys(record.blamesByRevision),
+                firstTextEditor.document.uri,
             );
 
             if (
                 refreshVersion !== this.indicatorRefreshVersion ||
                 this.getRecordForFile(fileName) !== record
             ) {
-                return;
-            }
-
-            const [firstTextEditor, ...otherTextEditors] = textEditors;
-            if (!firstTextEditor) {
                 return;
             }
 
@@ -407,6 +408,7 @@ export class Blamer {
         const icons = await this.decorationManager.createGutterImagePathHashMap(
             fileName,
             uniqueRevisions,
+            textEditor.document.uri,
         );
 
         const extendedRanges = this.getExtendedVisibleRanges(textEditor);
