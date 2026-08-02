@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { generateIndicators, INDICATOR_COUNT } from "./generate-indicators.mjs";
+import {
+    generateIndicators,
+    INDICATOR_COUNT,
+    shouldCopyImageAssets,
+} from "./generate-indicators.mjs";
 
 const SOURCE_INDICATORS_DIR = path.join("src", "img", "indicators");
 const DIST_INDICATORS_DIR = path.join("dist", "img", "indicators");
@@ -51,6 +56,36 @@ test("prunes obsolete generated asset directories after a build", () => {
 
 test("does not rewrite unchanged indicator assets", () => {
     assert.strictEqual(generateIndicators(), false);
+});
+
+test("copies image assets when the build output is missing or stale", () => {
+    const imageDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "svn-blamer-image-assets-"));
+    const indicatorsDirectory = path.join(imageDirectory, "indicators");
+    const palettes = [...SINGLE_HUE_SCHEMES, "redToGreen"];
+
+    try {
+        assert.strictEqual(shouldCopyImageAssets(imageDirectory, 1), true);
+
+        fs.mkdirSync(path.join(imageDirectory, "marketplace"), { recursive: true });
+        fs.writeFileSync(path.join(imageDirectory, "marketplace", "icon.png"), "icon");
+
+        for (const palette of palettes) {
+            fs.mkdirSync(path.join(indicatorsDirectory, palette), { recursive: true });
+            fs.writeFileSync(path.join(indicatorsDirectory, palette, "0000.svg"), "svg");
+        }
+        for (const palette of RANDOM_PALETTES) {
+            const directory = path.join(indicatorsDirectory, "random", palette);
+            fs.mkdirSync(directory, { recursive: true });
+            fs.writeFileSync(path.join(directory, "0000.svg"), "svg");
+        }
+
+        assert.strictEqual(shouldCopyImageAssets(imageDirectory, 1), false);
+
+        fs.rmSync(path.join(indicatorsDirectory, "random", "blue", "0000.svg"));
+        assert.strictEqual(shouldCopyImageAssets(imageDirectory, 1), true);
+    } finally {
+        fs.rmSync(imageDirectory, { force: true, recursive: true });
+    }
 });
 
 test("generates complete single-hue chronological ranges", () => {

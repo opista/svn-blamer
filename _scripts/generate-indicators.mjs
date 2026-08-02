@@ -110,6 +110,54 @@ export const pruneGeneratedIndicators = (outputDir, count = INDICATOR_COUNT) => 
     return changed;
 };
 
+const hasExactEntries = (directory, expectedNames) => {
+    if (!fs.existsSync(directory)) {
+        return false;
+    }
+
+    const entries = fs.readdirSync(directory);
+    return (
+        entries.length === expectedNames.size && entries.every((entry) => expectedNames.has(entry))
+    );
+};
+
+export const hasCompleteGeneratedIndicators = (outputDir, count = INDICATOR_COUNT) => {
+    const indicatorFileNames = new Set(
+        Array.from({ length: count }, (_, index) => `${index.toString().padStart(4, "0")}.svg`),
+    );
+    const indicatorDirectories = new Set(INDICATOR_DIRECTORIES);
+
+    if (!hasExactEntries(outputDir, indicatorDirectories)) {
+        return false;
+    }
+
+    if (!hasExactEntries(path.join(outputDir, "redToGreen"), indicatorFileNames)) {
+        return false;
+    }
+
+    for (const scheme of SINGLE_HUE_SCHEMES) {
+        if (!hasExactEntries(path.join(outputDir, scheme), indicatorFileNames)) {
+            return false;
+        }
+    }
+
+    const randomDirectory = path.join(outputDir, "random");
+    if (!hasExactEntries(randomDirectory, new Set(SINGLE_HUE_SCHEMES))) {
+        return false;
+    }
+
+    return SINGLE_HUE_SCHEMES.every((palette) =>
+        hasExactEntries(path.join(randomDirectory, palette), indicatorFileNames),
+    );
+};
+
+export const shouldCopyImageAssets = (
+    outputImageDir = path.join("dist", "img"),
+    count = INDICATOR_COUNT,
+) =>
+    !fs.existsSync(path.join(outputImageDir, "marketplace", "icon.png")) ||
+    !hasCompleteGeneratedIndicators(path.join(outputImageDir, "indicators"), count);
+
 export const generateIndicators = (count = INDICATOR_COUNT) => {
     const outputDir = path.join("src", "img", "indicators");
 

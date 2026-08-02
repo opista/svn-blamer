@@ -2,7 +2,11 @@ import fs from "node:fs";
 
 import * as esbuild from "esbuild";
 
-import { generateIndicators, pruneGeneratedIndicators } from "./_scripts/generate-indicators.mjs";
+import {
+    generateIndicators,
+    pruneGeneratedIndicators,
+    shouldCopyImageAssets,
+} from "./_scripts/generate-indicators.mjs";
 
 const generateIndicatorsPlugin = {
     name: "generate-indicators",
@@ -14,7 +18,7 @@ const generateIndicatorsPlugin = {
         });
 
         build.onEnd((result) => {
-            if (result.errors.length === 0 && assetsChanged) {
+            if (result.errors.length === 0 && (assetsChanged || shouldCopyImageAssets())) {
                 fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
                 pruneGeneratedIndicators("dist/img/indicators");
             }
