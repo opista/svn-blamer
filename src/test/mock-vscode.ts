@@ -4,6 +4,7 @@ const originalRequire = Module.prototype.require;
 
 const vscodeMock = {
     window: {
+        createTextEditorDecorationType: () => ({}),
         createStatusBarItem: () => ({
             show: () => {},
             hide: () => {},
@@ -11,6 +12,7 @@ const vscodeMock = {
             text: "",
         }),
         activeTextEditor: undefined,
+        visibleTextEditors: [],
         showWarningMessage: () => {},
         showErrorMessage: () => {},
         showInformationMessage: () => {},
@@ -22,6 +24,7 @@ const vscodeMock = {
             enableVisualIndicators: true,
             get: () => {},
         }),
+        onDidChangeConfiguration: () => ({ dispose: () => {} }),
         fs: {
             stat: () => Promise.resolve(),
         },
@@ -43,12 +46,16 @@ const vscodeMock = {
             public character: number,
         ) {}
     },
+    DecorationRangeBehavior: { ClosedClosed: 0 },
     StatusBarAlignment: { Left: 1, Right: 2 },
     extensions: {
         getExtension: () => ({ extensionPath: "/test/path" }),
     },
     ThemeColor: class ThemeColor {
         constructor(public id: string) {}
+    },
+    Uri: {
+        file: (fileName: string) => ({ fsPath: fileName }),
     },
     Hover: class Hover {
         constructor(public contents: any) {}

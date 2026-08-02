@@ -10,12 +10,22 @@ import {
     TextEditor,
     TextEditorDecorationType,
     ThemeColor,
+    Uri,
     window,
     workspace,
 } from "vscode";
 
 import { EXTENSION_CONFIGURATION, EXTENSION_ID } from "./const/extension";
 import { MAX_NUMBER } from "./const/number";
+import {
+    ChronologicalColorScheme,
+    createChronologicalIconMap,
+    createRandomIconMap,
+    createRandomIconOrder,
+    getIndicatorColorScheme,
+    INDICATOR_COLOR_PALETTES,
+    IndicatorColorPalette,
+} from "./indicator-colors";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
 import { Blame } from "./types/blame.model";
@@ -25,7 +35,7 @@ import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
     private imageDir: string;
-    private gutterImageFileNames?: string[];
+    private gutterImageFileNames = new Map<string, string[]>();
 
     constructor() {
         const extension = extensions.getExtension(EXTENSION_ID);
@@ -36,41 +46,32 @@ export class DecorationManager {
         this.imageDir = path.join(extensionPath, "dist", "img", "indicators");
     }
 
-    private shuffle<T>(array: T[]): T[] {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+    private async getIconPaths(directory: string): Promise<string[]> {
+        const cached = this.gutterImageFileNames.get(directory);
+
+        if (cached) {
+            return cached;
         }
-        return array;
+
+        const fileNames = (await readdir(directory))
+            .filter((fileName) => fileName.endsWith(".svg"))
+            .sort();
+        const iconPaths = fileNames.map((fileName) => path.join(directory, fileName));
+        this.gutterImageFileNames.set(directory, iconPaths);
+        return iconPaths;
     }
 
-    private *createGutterIconImageGenerator(files: string[]) {
-        if (files.length === 0) {
-            return;
-        }
-
-        const currentFiles = [...files];
-
-        while (true) {
-            for (const file of currentFiles) {
-                yield file;
-            }
-            this.shuffle(currentFiles);
-        }
+    private getRandomPaletteIconPaths(palette: IndicatorColorPalette): Promise<string[]> {
+        return this.getIconPaths(path.join(this.imageDir, "random", palette));
     }
 
-    private async gutterImageGenerator() {
-        if (!this.gutterImageFileNames) {
-            const fileNames = await readdir(this.imageDir);
-            this.gutterImageFileNames = this.shuffle(fileNames);
-        }
-
-        return this.createGutterIconImageGenerator(this.gutterImageFileNames);
+    private getChronologicalIconPaths(scheme: ChronologicalColorScheme): Promise<string[]> {
+        return this.getIconPaths(path.join(this.imageDir, scheme));
     }
 
     createGutterDecorationType(gutterIconImage?: string): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
-            gutterIconPath: gutterIconImage && path.join(this.imageDir, gutterIconImage),
+            gutterIconPath: gutterIconImage,
             gutterIconSize: "contain",
             rangeBehavior: DecorationRangeBehavior.ClosedClosed,
         });
@@ -88,7 +89,7 @@ export class DecorationManager {
                 margin: "0 0 0 3em",
                 textDecoration: "none",
             },
-            gutterIconPath: gutterIconImage && path.join(this.imageDir, gutterIconImage),
+            gutterIconPath: gutterIconImage,
             gutterIconSize: "contain",
             rangeBehavior: DecorationRangeBehavior.ClosedClosed,
         });
@@ -185,23 +186,35 @@ export class DecorationManager {
         return options;
     }
 
-    async createGutterImagePathHashMap(revisions: string[]) {
-        const { enableVisualIndicators } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+    async createGutterImagePathHashMap(fileName: string, revisions: string[]) {
+        const configuration = workspace.getConfiguration(
+            EXTENSION_CONFIGURATION,
+            Uri.file(fileName),
+        );
+        const { enableVisualIndicators } = configuration;
 
         if (!enableVisualIndicators) {
             return {};
         }
 
-        const generator = await this.gutterImageGenerator();
-        const hashMap: GutterImagePathHashMap = {};
+        const scheme = getIndicatorColorScheme(configuration.indicatorColorScheme);
 
-        for (const revision of revisions) {
-            if (!hashMap[revision]) {
-                hashMap[revision] = generator?.next().value || undefined;
-            }
+        if (scheme !== "random") {
+            const iconPaths = await this.getChronologicalIconPaths(scheme);
+            return createChronologicalIconMap(revisions, iconPaths);
         }
 
-        return hashMap;
+        const iconPathsByPalette = Object.fromEntries(
+            await Promise.all(
+                INDICATOR_COLOR_PALETTES.map(async (colorPalette) => [
+                    colorPalette,
+                    await this.getRandomPaletteIconPaths(colorPalette),
+                ]),
+            ),
+        ) as Record<IndicatorColorPalette, string[]>;
+        const iconOrder = createRandomIconOrder(iconPathsByPalette, fileName);
+
+        return createRandomIconMap(revisions, iconOrder);
     }
 
     async createAndSetDecorationsForBlame(

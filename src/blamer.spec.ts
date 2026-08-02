@@ -1,6 +1,13 @@
 import * as assert from "assert";
 import sinon from "sinon";
-import { LogOutputChannel, StatusBarItem, TextEditor, window } from "vscode";
+import {
+    LogOutputChannel,
+    StatusBarItem,
+    TextEditor,
+    TextEditorDecorationType,
+    window,
+    workspace,
+} from "vscode";
 
 import { Blamer } from "./blamer";
 import { DecorationManager } from "./decoration-manager";
@@ -284,6 +291,85 @@ suite("Blamer", () => {
                 },
                 "showBlameForFile should propagate the error from decorationManager.createAndSetDecorationsForBlame",
             );
+        });
+    });
+
+    suite("refreshVisibleBlameIndicators", () => {
+        test("recreates cached blame decorations for every visible split without re-blaming", async () => {
+            const fileName = "/test/file.ts";
+            const oldDecorationDispose = sandbox.spy();
+            const oldDecoration = {
+                dispose: oldDecorationDispose,
+            } as unknown as TextEditorDecorationType;
+            const newDecoration = {
+                dispose: sandbox.spy(),
+            } as unknown as TextEditorDecorationType;
+            const record: DecorationRecord = {
+                workingCopy: true,
+                icons: { "10": "old-10.svg", "20": "old-20.svg" },
+                blamesByLine: {
+                    "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
+                    "2": { revision: "20", author: "two", date: "2026-02-24", line: "2" },
+                },
+                blamesByRevision: {
+                    "10": [{ revision: "10", author: "one", date: "2026-02-24", line: "1" }],
+                    "20": [{ revision: "20", author: "two", date: "2026-02-24", line: "2" }],
+                },
+                revisionDecorations: { "10": oldDecoration, "20": oldDecoration },
+                logs: {},
+            };
+            const firstEditor = {
+                document: { fileName, lineCount: 10 },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 4 } }],
+            } as unknown as TextEditor;
+            const secondEditor = {
+                document: { fileName, lineCount: 10 },
+                visibleRanges: [{ start: { line: 5 }, end: { line: 9 } }],
+            } as unknown as TextEditor;
+            const newIcons = { "10": "new-10.svg", "20": "new-20.svg" };
+
+            sandbox.stub(window, "visibleTextEditors").value([firstEditor, secondEditor]);
+            sandbox.stub(workspace, "getConfiguration").returns({ viewportBuffer: 200 } as any);
+            storageMock.get.withArgs(fileName).returns(record);
+            decorationManagerMock.createGutterImagePathHashMap.resolves(newIcons);
+            decorationManagerMock.createAndSetDecorationsForBlame.resolves({
+                blamesByLine: record.blamesByLine,
+                blamesByRevision: record.blamesByRevision,
+                revisionDecorations: { "10": newDecoration, "20": newDecoration },
+            });
+
+            await blamer.refreshVisibleBlameIndicators();
+
+            assert.ok(
+                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(fileName, [
+                    "10",
+                    "20",
+                ]),
+            );
+            assert.ok(
+                decorationManagerMock.createAndSetDecorationsForBlame.calledOnceWithExactly(
+                    firstEditor,
+                    Object.values(record.blamesByLine),
+                    newIcons,
+                    record.logs,
+                    sinon.match.array,
+                ),
+            );
+            assert.ok(
+                decorationManagerMock.reApplyDecorations.calledOnceWithExactly(
+                    secondEditor,
+                    sinon.match({ icons: newIcons }),
+                    sinon.match.array,
+                ),
+            );
+            assert.ok(
+                oldDecorationDispose.calledOnce,
+                "disposes old decorations after replacement",
+            );
+            assert.ok(
+                storageMock.set.calledOnceWithExactly(fileName, sinon.match({ icons: newIcons })),
+            );
+            assert.ok(svnMock.blameFile.notCalled, "uses cached blame data");
         });
     });
 });

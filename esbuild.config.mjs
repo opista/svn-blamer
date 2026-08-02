@@ -1,12 +1,25 @@
-import * as esbuild from "esbuild";
-import { copy } from "esbuild-plugin-copy";
+import fs from "node:fs";
 
-import { generateIndicators } from "./_scripts/generate-indicators.mjs";
+import * as esbuild from "esbuild";
+
+import { generateIndicators, pruneGeneratedIndicators } from "./_scripts/generate-indicators.mjs";
 
 const generateIndicatorsPlugin = {
     name: "generate-indicators",
     setup(build) {
-        build.onStart(() => generateIndicators(3000));
+        build.onStart(() => generateIndicators());
+    },
+};
+
+const pruneIndicatorsPlugin = {
+    name: "prune-indicators",
+    setup(build) {
+        build.onEnd((result) => {
+            if (result.errors.length === 0) {
+                fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
+                pruneGeneratedIndicators("dist/img/indicators");
+            }
+        });
     },
 };
 
@@ -19,16 +32,7 @@ let ctx = await esbuild.context({
     minify: process.argv.includes("--minify"),
     outfile: "./dist/extension.js",
     platform: "node",
-    plugins: [
-        generateIndicatorsPlugin,
-        copy({
-            resolveFrom: "cwd",
-            assets: {
-                from: ["./src/img/**/*"],
-                to: ["./dist/img"],
-            },
-        }),
-    ],
+    plugins: [generateIndicatorsPlugin, pruneIndicatorsPlugin],
     sourcemap: process.argv.includes("--sourcemap"),
 });
 

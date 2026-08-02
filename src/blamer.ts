@@ -30,6 +30,7 @@ const NEWLINE_REGEX = /\n/g;
 export class Blamer {
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
+    private indicatorRefreshVersion = 0;
     private statusBarItem: StatusBarItem;
 
     constructor(
@@ -203,6 +204,111 @@ export class Blamer {
         this.decorationManager.reApplyDecorations(textEditor, record, extendedRanges);
     }
 
+    /**
+     * Recreates gutter decorations from cached blame data after the indicator scheme changes.
+     * This does not run svn blame again.
+     */
+    async refreshVisibleBlameIndicators() {
+        const refreshVersion = ++this.indicatorRefreshVersion;
+        const editorsByFileName = new Map<string, TextEditor[]>();
+
+        for (const textEditor of window.visibleTextEditors) {
+            const fileName = textEditor.document.fileName;
+            const editors = editorsByFileName.get(fileName) ?? [];
+            editors.push(textEditor);
+            editorsByFileName.set(fileName, editors);
+        }
+
+        await Promise.all(
+            [...editorsByFileName].map(([fileName, textEditors]) =>
+                this.refreshVisibleBlameForFile(fileName, textEditors, refreshVersion),
+            ),
+        );
+    }
+
+    private async refreshVisibleBlameForFile(
+        fileName: string,
+        textEditors: TextEditor[],
+        refreshVersion: number,
+    ) {
+        const record = this.getRecordForFile(fileName);
+
+        if (!record || !record.workingCopy || Object.keys(record.blamesByRevision).length === 0) {
+            return;
+        }
+
+        try {
+            const icons = await this.decorationManager.createGutterImagePathHashMap(
+                fileName,
+                Object.keys(record.blamesByRevision),
+            );
+
+            if (
+                refreshVersion !== this.indicatorRefreshVersion ||
+                this.getRecordForFile(fileName) !== record
+            ) {
+                return;
+            }
+
+            const [firstTextEditor, ...otherTextEditors] = textEditors;
+            if (!firstTextEditor) {
+                return;
+            }
+
+            const { revisionDecorations } =
+                await this.decorationManager.createAndSetDecorationsForBlame(
+                    firstTextEditor,
+                    Object.values(record.blamesByLine),
+                    icons,
+                    record.logs,
+                    this.getExtendedVisibleRanges(firstTextEditor),
+                );
+
+            if (
+                refreshVersion !== this.indicatorRefreshVersion ||
+                this.getRecordForFile(fileName) !== record
+            ) {
+                disposeDecorations([...new Set(Object.values(revisionDecorations))]);
+                return;
+            }
+
+            const refreshedRecord: DecorationRecord = {
+                ...record,
+                icons,
+                revisionDecorations,
+            };
+            this.setRecordForFile(fileName, refreshedRecord);
+
+            for (const textEditor of otherTextEditors) {
+                this.decorationManager.reApplyDecorations(
+                    textEditor,
+                    refreshedRecord,
+                    this.getExtendedVisibleRanges(textEditor),
+                );
+            }
+
+            disposeDecorations([...new Set(Object.values(record.revisionDecorations))]);
+            this.refreshActiveLineDecoration(fileName);
+            this.logger.debug("Refreshed visual indicators", { fileName });
+        } catch (err: unknown) {
+            this.logger.error("Failed to refresh visual indicators", {
+                err: String(err),
+                fileName,
+            });
+        }
+    }
+
+    private refreshActiveLineDecoration(fileName: string) {
+        const textEditor = window.activeTextEditor;
+
+        if (!textEditor || textEditor.document.fileName !== fileName || !this.activeLine) {
+            return;
+        }
+
+        this.activeLineDecoration?.dispose();
+        void this.setUpdatedDecoration(textEditor, fileName, this.activeLine);
+    }
+
     private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
         const { viewportBuffer } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
         return textEditor.visibleRanges.map((range) => {
@@ -298,7 +404,10 @@ export class Blamer {
         }
 
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
-        const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
+        const icons = await this.decorationManager.createGutterImagePathHashMap(
+            fileName,
+            uniqueRevisions,
+        );
 
         const extendedRanges = this.getExtendedVisibleRanges(textEditor);
 

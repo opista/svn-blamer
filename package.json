@@ -69,24 +69,65 @@
             "properties": {
                 "svnBlamer.autoBlame": {
                     "scope": "resource",
+                    "order": 1,
                     "default": false,
                     "description": "Automatically blames files as you open them.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableLogs": {
                     "scope": "resource",
+                    "order": 2,
                     "default": true,
                     "description": "Enables popup revision log data. Disabling this setting will significantly speed up blame.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableVisualIndicators": {
                     "scope": "resource",
+                    "order": 3,
                     "default": true,
                     "description": "Enable/Disable visual indicators that sit to the left of the line number.",
                     "type": "boolean"
                 },
+                "svnBlamer.indicatorColorScheme": {
+                    "scope": "resource",
+                    "order": 4,
+                    "default": "random",
+                    "description": "Colour assignment for visual indicators. Random preserves the existing mixed-colour behaviour. Other schemes map revisions from oldest to newest.",
+                    "type": "string",
+                    "enum": [
+                        "random",
+                        "greenToRed",
+                        "blue",
+                        "sky",
+                        "teal",
+                        "violet",
+                        "orange",
+                        "vermilion"
+                    ],
+                    "enumItemLabels": [
+                        "Random",
+                        "Green → Red",
+                        "Blue",
+                        "Sky blue",
+                        "Teal",
+                        "Violet",
+                        "Orange",
+                        "Vermilion"
+                    ],
+                    "enumDescriptions": [
+                        "Assign stable, well-separated colours to revisions in each file.",
+                        "Older commits are redder and newer commits are greener. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are bluer. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are more sky blue. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are more teal. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are more violet. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are more orange. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Older commits fade towards white and newer commits are more vermilion. Files with more than 500 distinct revisions reuse the nearest colour."
+                    ]
+                },
                 "svnBlamer.viewportBuffer": {
                     "scope": "resource",
+                    "order": 5,
                     "default": 200,
                     "description": "How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Note: Higher values may impact initial load performance.",
                     "type": "integer",
@@ -95,6 +136,7 @@
                 },
                 "svnBlamer.svnExecutablePath": {
                     "scope": "machine",
+                    "order": 6,
                     "type": "string",
                     "default": "svn",
                     "description": "Path to svn executable or alternative command"
@@ -131,9 +173,10 @@
         "lint:fix": "pnpm lint --fix",
         "lint": "eslint src",
         "prepare": "husky",
-        "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
+        "pretest": "pnpm compile-tests && pnpm esbuild && pnpm run test:indicators && pnpm lint",
         "test": "vscode-test",
-        "test:unit": "mocha --ui tdd --require out/test/mock-vscode.js \"out/**/*.spec.js\" --exclude \"out/test/**/*.spec.js\"",
+        "test:indicators": "node --test _scripts/generate-indicators.spec.mjs",
+        "test:unit": "pnpm run esbuild && pnpm run test:indicators && mocha --ui tdd --require out/test/mock-vscode.js \"out/**/*.spec.js\" --exclude \"out/test/**/*.spec.js\"",
         "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
         "watch": "pnpm run esbuild -- --sourcemap --watch"
@@ -155,7 +198,6 @@
         "@vscode/test-cli": "^0.0.15",
         "@vscode/test-electron": "^3.0.0",
         "esbuild": "^0.28.1",
-        "esbuild-plugin-copy": "^2.1.1",
         "eslint": "^10.6.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-simple-import-sort": "^12.0.0",

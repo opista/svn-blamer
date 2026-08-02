@@ -66,9 +66,6 @@ importers:
       esbuild:
         specifier: ^0.28.1
         version: 0.28.1
-      esbuild-plugin-copy:
-        specifier: ^2.1.1
-        version: 2.1.1(esbuild@0.28.1)
       eslint:
         specifier: ^10.6.0
         version: 10.6.0
