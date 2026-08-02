@@ -7,15 +7,14 @@ import { generateIndicators, pruneGeneratedIndicators } from "./_scripts/generat
 const generateIndicatorsPlugin = {
     name: "generate-indicators",
     setup(build) {
-        build.onStart(() => generateIndicators());
-    },
-};
+        let assetsChanged = false;
 
-const pruneIndicatorsPlugin = {
-    name: "prune-indicators",
-    setup(build) {
+        build.onStart(() => {
+            assetsChanged = generateIndicators();
+        });
+
         build.onEnd((result) => {
-            if (result.errors.length === 0) {
+            if (result.errors.length === 0 && assetsChanged) {
                 fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
                 pruneGeneratedIndicators("dist/img/indicators");
             }
@@ -32,7 +31,7 @@ let ctx = await esbuild.context({
     minify: process.argv.includes("--minify"),
     outfile: "./dist/extension.js",
     platform: "node",
-    plugins: [generateIndicatorsPlugin, pruneIndicatorsPlugin],
+    plugins: [generateIndicatorsPlugin],
     sourcemap: process.argv.includes("--sourcemap"),
 });
 

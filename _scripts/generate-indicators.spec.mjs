@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
-import { INDICATOR_COUNT } from "./generate-indicators.mjs";
+import { generateIndicators, INDICATOR_COUNT } from "./generate-indicators.mjs";
 
 const SOURCE_INDICATORS_DIR = path.join("src", "img", "indicators");
 const DIST_INDICATORS_DIR = path.join("dist", "img", "indicators");
@@ -47,6 +47,10 @@ test("prunes obsolete generated asset directories after a build", () => {
         getDirectoryNames(path.join(DIST_INDICATORS_DIR, "random")),
         [...RANDOM_PALETTES].sort(),
     );
+});
+
+test("does not rewrite unchanged indicator assets", () => {
+    assert.strictEqual(generateIndicators(), false);
 });
 
 test("generates complete single-hue chronological ranges", () => {

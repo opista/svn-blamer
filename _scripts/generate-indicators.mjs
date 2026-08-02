@@ -53,25 +53,37 @@ const createSvgContent = (color) =>
 
 const generatePalette = (outputDir, getColor, count) => {
     fs.mkdirSync(outputDir, { recursive: true });
+    let changed = false;
 
     for (let index = 0; index < count; index++) {
         const ratio = count === 1 ? 1 : index / (count - 1);
         const color = getColor(ratio);
         const fileName = path.join(outputDir, `${index.toString().padStart(4, "0")}.svg`);
-        fs.writeFileSync(fileName, createSvgContent(color));
+        const svgContent = createSvgContent(color);
+
+        if (!fs.existsSync(fileName) || fs.readFileSync(fileName, "utf8") !== svgContent) {
+            fs.writeFileSync(fileName, svgContent);
+            changed = true;
+        }
     }
+
+    return changed;
 };
 
 const pruneDirectory = (directory, allowedNames) => {
     if (!fs.existsSync(directory)) {
-        return;
+        return false;
     }
 
+    let changed = false;
     for (const entry of fs.readdirSync(directory)) {
         if (!allowedNames.has(entry)) {
             fs.rmSync(path.join(directory, entry), { force: true, recursive: true });
+            changed = true;
         }
     }
+
+    return changed;
 };
 
 export const pruneGeneratedIndicators = (outputDir, count = INDICATOR_COUNT) => {
@@ -80,19 +92,22 @@ export const pruneGeneratedIndicators = (outputDir, count = INDICATOR_COUNT) => 
     );
     const indicatorDirectories = new Set(INDICATOR_DIRECTORIES);
 
-    pruneDirectory(outputDir, indicatorDirectories);
-    pruneDirectory(path.join(outputDir, "greenToRed"), indicatorFileNames);
+    let changed = pruneDirectory(outputDir, indicatorDirectories);
+    changed = pruneDirectory(path.join(outputDir, "greenToRed"), indicatorFileNames) || changed;
 
     for (const scheme of SINGLE_HUE_SCHEMES) {
-        pruneDirectory(path.join(outputDir, scheme), indicatorFileNames);
+        changed = pruneDirectory(path.join(outputDir, scheme), indicatorFileNames) || changed;
     }
 
     const randomDirectory = path.join(outputDir, "random");
-    pruneDirectory(randomDirectory, new Set(SINGLE_HUE_SCHEMES));
+    changed = pruneDirectory(randomDirectory, new Set(SINGLE_HUE_SCHEMES)) || changed;
 
     for (const palette of SINGLE_HUE_SCHEMES) {
-        pruneDirectory(path.join(randomDirectory, palette), indicatorFileNames);
+        changed =
+            pruneDirectory(path.join(randomDirectory, palette), indicatorFileNames) || changed;
     }
+
+    return changed;
 };
 
 export const generateIndicators = (count = INDICATOR_COUNT) => {
@@ -102,24 +117,26 @@ export const generateIndicators = (count = INDICATOR_COUNT) => {
     // build, the running extension reads dist assets and must retain them until the
     // copy step has replaced them.
 
-    generatePalette(
+    let changed = generatePalette(
         path.join(outputDir, "greenToRed"),
         (ratio) => interpolateChronologicalColor(RED_TO_GREEN_STOPS, ratio),
         count,
     );
 
     for (const [paletteName, [strong, pale]] of Object.entries(RANDOM_PALETTES)) {
-        generatePalette(
-            path.join(outputDir, paletteName),
-            (ratio) => interpolateColor("#ffffff", strong, ratio),
-            count,
-        );
-        generatePalette(
-            path.join(outputDir, "random", paletteName),
-            (ratio) => interpolateColor(strong, pale, ratio),
-            count,
-        );
+        changed =
+            generatePalette(
+                path.join(outputDir, paletteName),
+                (ratio) => interpolateColor("#ffffff", strong, ratio),
+                count,
+            ) || changed;
+        changed =
+            generatePalette(
+                path.join(outputDir, "random", paletteName),
+                (ratio) => interpolateColor(strong, pale, ratio),
+                count,
+            ) || changed;
     }
 
-    pruneGeneratedIndicators(outputDir, count);
+    return pruneGeneratedIndicators(outputDir, count) || changed;
 };
