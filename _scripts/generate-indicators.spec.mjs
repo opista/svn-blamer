@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
     copyMarketplaceAssets,
+    createGeneratedAssetCopyState,
     createIndicatorGenerator,
     generateIndicators,
     INDICATOR_COUNT,
@@ -70,6 +71,19 @@ test("generates indicators once per build context", () => {
     assert.strictEqual(generateForBuild(), true);
     assert.strictEqual(generateForBuild(), false);
     assert.strictEqual(generationCalls, 1);
+});
+
+test("retains changed generated assets until a successful copy", () => {
+    const copyState = createGeneratedAssetCopyState();
+
+    copyState.markSourceAssetsChanged(true);
+    assert.strictEqual(copyState.shouldCopy(false), true);
+
+    copyState.markSourceAssetsChanged(false);
+    assert.strictEqual(copyState.shouldCopy(false), true);
+
+    copyState.markCopied();
+    assert.strictEqual(copyState.shouldCopy(false), false);
 });
 
 test("copies image assets when the build output is missing or stale", () => {

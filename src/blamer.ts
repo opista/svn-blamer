@@ -406,6 +406,7 @@ export class Blamer {
         }
 
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
+        const iconMapRefreshVersion = this.indicatorRefreshVersion;
         const icons = await this.decorationManager.createGutterImagePathHashMap(
             fileName,
             uniqueRevisions,
@@ -427,12 +428,20 @@ export class Blamer {
             icons,
             blamesByLine,
             blamesByRevision,
-            indicatorRefreshVersion: this.indicatorRefreshVersion,
+            indicatorRefreshVersion: iconMapRefreshVersion,
             revisionDecorations,
         });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
+
+        if (iconMapRefreshVersion !== this.indicatorRefreshVersion) {
+            await this.refreshVisibleBlameForFile(
+                fileName,
+                [textEditor],
+                this.indicatorRefreshVersion,
+            );
+        }
 
         this.logger.info("Blame successful", { fileName });
     }

@@ -4,6 +4,7 @@ import * as esbuild from "esbuild";
 
 import {
     copyMarketplaceAssets,
+    createGeneratedAssetCopyState,
     createIndicatorGenerator,
     generateIndicators,
     pruneGeneratedIndicators,
@@ -15,21 +16,24 @@ const generateIndicatorsPlugin = {
     setup(build) {
         let assetsChanged = false;
         const generateForBuild = createIndicatorGenerator(generateIndicators);
+        const generatedAssetCopyState = createGeneratedAssetCopyState();
 
         build.onStart(() => {
             assetsChanged = generateForBuild();
+            generatedAssetCopyState.markSourceAssetsChanged(assetsChanged);
         });
 
         build.onEnd((result) => {
             if (result.errors.length === 0) {
                 copyMarketplaceAssets();
 
-                if (!assetsChanged && !shouldCopyImageAssets()) {
+                if (!generatedAssetCopyState.shouldCopy(shouldCopyImageAssets())) {
                     return;
                 }
 
                 fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
                 pruneGeneratedIndicators("dist/img/indicators");
+                generatedAssetCopyState.markCopied();
             }
         });
     },

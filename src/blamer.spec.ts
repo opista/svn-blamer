@@ -303,6 +303,64 @@ suite("Blamer", () => {
                 ),
             );
         });
+
+        test("refreshes icons when the colour scheme changes during initial blame", async () => {
+            const fileName = "/test/race.ts";
+            const textEditor = {
+                document: {
+                    fileName,
+                    isDirty: false,
+                    lineCount: 1,
+                    uri: { fsPath: fileName, scheme: "file" },
+                },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 0 } }],
+            } as unknown as TextEditor;
+            const records = new Map<string, DecorationRecord>();
+            let resolveIcons: (icons: Record<string, string>) => void;
+            const initialIcons = new Promise<Record<string, string>>((resolve) => {
+                resolveIcons = resolve;
+            });
+            const oldDecorationDispose = sandbox.spy();
+            const oldDecoration = {
+                dispose: oldDecorationDispose,
+            } as unknown as TextEditorDecorationType;
+            const newDecoration = { dispose: sandbox.spy() } as unknown as TextEditorDecorationType;
+            const blame = [
+                { revision: "10", author: "test", date: "2026-02-24T00:00:00.000Z", line: "1" },
+            ];
+
+            storageMock.get.callsFake((key: string) => records.get(key));
+            storageMock.set.callsFake((key: string, record: DecorationRecord) =>
+                records.set(key, record),
+            );
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            svnMock.blameFile.resolves(blame);
+            decorationManagerMock.createGutterImagePathHashMap.onFirstCall().returns(initialIcons);
+            decorationManagerMock.createGutterImagePathHashMap.onSecondCall().resolves({
+                "10": "new-10.svg",
+            });
+            decorationManagerMock.createAndSetDecorationsForBlame.onFirstCall().resolves({
+                blamesByLine: { "1": blame[0] },
+                blamesByRevision: { "10": blame },
+                revisionDecorations: { "10": oldDecoration },
+            });
+            decorationManagerMock.createAndSetDecorationsForBlame.onSecondCall().resolves({
+                blamesByLine: { "1": blame[0] },
+                blamesByRevision: { "10": blame },
+                revisionDecorations: { "10": newDecoration },
+            });
+            sandbox.stub(window, "visibleTextEditors").value([]);
+
+            const showBlame = blamer.showBlameForFile(textEditor, fileName);
+            await new Promise((resolve) => setImmediate(resolve));
+            await blamer.refreshVisibleBlameIndicators();
+            resolveIcons!({ "10": "old-10.svg" });
+            await showBlame;
+
+            assert.deepStrictEqual(records.get(fileName)?.icons, { "10": "new-10.svg" });
+            assert.strictEqual(records.get(fileName)?.indicatorRefreshVersion, 1);
+            assert.ok(oldDecorationDispose.calledOnce);
+        });
     });
 
     suite("autoBlame", () => {

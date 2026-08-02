@@ -212,3 +212,17 @@ export const createIndicatorGenerator = (generate = generateIndicators) => {
         return changed;
     };
 };
+
+export const createGeneratedAssetCopyState = () => {
+    let sourceAssetsChanged = false;
+
+    return {
+        markSourceAssetsChanged: (changed) => {
+            sourceAssetsChanged ||= changed;
+        },
+        shouldCopy: (destinationAssetsStale) => sourceAssetsChanged || destinationAssetsStale,
+        markCopied: () => {
+            sourceAssetsChanged = false;
+        },
+    };
+};
