@@ -4,6 +4,7 @@ import * as esbuild from "esbuild";
 
 import {
     copyMarketplaceAssets,
+    createIndicatorGenerator,
     generateIndicators,
     pruneGeneratedIndicators,
     shouldCopyImageAssets,
@@ -13,9 +14,10 @@ const generateIndicatorsPlugin = {
     name: "generate-indicators",
     setup(build) {
         let assetsChanged = false;
+        const generateForBuild = createIndicatorGenerator(generateIndicators);
 
         build.onStart(() => {
-            assetsChanged = generateIndicators();
+            assetsChanged = generateForBuild();
         });
 
         build.onEnd((result) => {

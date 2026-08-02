@@ -75,6 +75,13 @@ suite("Indicator colours", () => {
         assert.strictEqual(new Set(first.slice(0, INDICATOR_COLOR_PALETTES.length * 2)).size, 12);
     });
 
+    test("creates only the required random icon prefix", () => {
+        const fullOrder = createRandomIconOrder(iconsByPalette, "/workspace/example.ts");
+        const requiredOrder = createRandomIconOrder(iconsByPalette, "/workspace/example.ts", 3);
+
+        assert.deepStrictEqual(requiredOrder, fullOrder.slice(0, 3));
+    });
+
     test("reuses random icons only after the ordered palette is exhausted", () => {
         const icons = createRandomIconMap(["1", "2", "3"], ["first", "second"]);
 

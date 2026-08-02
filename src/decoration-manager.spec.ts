@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import * as assert from "assert";
 import sinon from "sinon";
 import { Range, TextEditor, TextEditorDecorationType } from "vscode";
@@ -131,6 +133,28 @@ suite("DecorationManager", () => {
         );
 
         assert.ok(getConfigurationStub.calledWithExactly(EXTENSION_CONFIGURATION, remoteUri));
+    });
+
+    test("shares the first icon-path read between concurrent editors", async () => {
+        getExtensionStub.returns({ extensionPath: process.cwd() });
+        getConfigurationStub.returns({
+            enableVisualIndicators: true,
+            indicatorColorScheme: "blue",
+        });
+        decorationManager = new DecorationManager();
+        const fsPromises = require("node:fs/promises");
+        const readdirSpy = sandbox.spy(fsPromises, "readdir");
+
+        await Promise.all([
+            decorationManager.createGutterImagePathHashMap("/workspace/one.ts", ["10"]),
+            decorationManager.createGutterImagePathHashMap("/workspace/two.ts", ["20"]),
+        ]);
+
+        assert.strictEqual(
+            readdirSpy.withArgs(path.join(process.cwd(), "dist", "img", "indicators", "blue"))
+                .callCount,
+            1,
+        );
     });
 
     test("uses the selected chronological colour scheme", async () => {

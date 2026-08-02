@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
     copyMarketplaceAssets,
+    createIndicatorGenerator,
     generateIndicators,
     INDICATOR_COUNT,
     shouldCopyImageAssets,
@@ -57,6 +58,18 @@ test("prunes obsolete generated asset directories after a build", () => {
 
 test("does not rewrite unchanged indicator assets", () => {
     assert.strictEqual(generateIndicators(), false);
+});
+
+test("generates indicators once per build context", () => {
+    let generationCalls = 0;
+    const generateForBuild = createIndicatorGenerator(() => {
+        generationCalls++;
+        return true;
+    });
+
+    assert.strictEqual(generateForBuild(), true);
+    assert.strictEqual(generateForBuild(), false);
+    assert.strictEqual(generationCalls, 1);
 });
 
 test("copies image assets when the build output is missing or stale", () => {

@@ -35,7 +35,7 @@ import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
     private imageDir: string;
-    private gutterImageFileNames = new Map<string, string[]>();
+    private gutterImageFileNames = new Map<string, Promise<string[]>>();
 
     constructor() {
         const extension = extensions.getExtension(EXTENSION_ID);
@@ -53,12 +53,20 @@ export class DecorationManager {
             return cached;
         }
 
-        const fileNames = (await readdir(directory))
-            .filter((fileName) => fileName.endsWith(".svg"))
-            .sort();
-        const iconPaths = fileNames.map((fileName) => path.join(directory, fileName));
+        const iconPaths = readdir(directory).then((fileNames) =>
+            fileNames
+                .filter((fileName) => fileName.endsWith(".svg"))
+                .sort()
+                .map((fileName) => path.join(directory, fileName)),
+        );
         this.gutterImageFileNames.set(directory, iconPaths);
-        return iconPaths;
+
+        try {
+            return await iconPaths;
+        } catch (error) {
+            this.gutterImageFileNames.delete(directory);
+            throw error;
+        }
     }
 
     private getRandomPaletteIconPaths(palette: IndicatorColorPalette): Promise<string[]> {
@@ -213,7 +221,7 @@ export class DecorationManager {
                 ]),
             ),
         ) as Record<IndicatorColorPalette, string[]>;
-        const iconOrder = createRandomIconOrder(iconPathsByPalette, fileName);
+        const iconOrder = createRandomIconOrder(iconPathsByPalette, fileName, revisions.length);
 
         return createRandomIconMap(revisions, iconOrder);
     }

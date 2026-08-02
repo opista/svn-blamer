@@ -198,3 +198,17 @@ export const generateIndicators = (count = INDICATOR_COUNT) => {
 
     return pruneGeneratedIndicators(outputDir, count) || changed;
 };
+
+export const createIndicatorGenerator = (generate = generateIndicators) => {
+    let generated = false;
+
+    return () => {
+        if (generated) {
+            return false;
+        }
+
+        const changed = generate();
+        generated = true;
+        return changed;
+    };
+};

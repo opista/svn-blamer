@@ -92,12 +92,11 @@ export const createChronologicalIconMap = (
     return icons;
 };
 
-const createIntermediateIndexes = (count: number): number[] => {
+function* createIntermediateIndexes(count: number): Generator<number> {
     if (count < 3) {
-        return [];
+        return;
     }
 
-    const indexes: number[] = [];
     const ranges: Array<[number, number]> = [[0, count - 1]];
 
     while (ranges.length > 0) {
@@ -108,38 +107,55 @@ const createIntermediateIndexes = (count: number): number[] => {
             continue;
         }
 
-        indexes.push(middle);
+        yield middle;
         ranges.push([start, middle], [middle, end]);
     }
-
-    return indexes;
-};
+}
 
 export const createRandomIconOrder = (
     iconsByPalette: Readonly<Record<IndicatorColorPalette, readonly string[]>>,
     fileName: string,
+    requiredIconCount = Number.POSITIVE_INFINITY,
 ): string[] => {
     const palettes = createSeededShuffle(INDICATOR_COLOR_PALETTES, hashString(fileName));
     const iconCount = Math.min(...palettes.map((palette) => iconsByPalette[palette].length));
 
-    if (!Number.isFinite(iconCount) || iconCount === 0) {
+    if (!Number.isFinite(iconCount) || iconCount === 0 || requiredIconCount <= 0) {
         return [];
     }
 
     const order: string[] = [];
     const add = (palette: IndicatorColorPalette, index: number) => {
+        if (order.length >= requiredIconCount) {
+            return;
+        }
+
         const icon = iconsByPalette[palette][index];
         if (icon) {
             order.push(icon);
         }
     };
 
-    palettes.forEach((palette, index) => add(palette, index % 2 === 0 ? iconCount - 1 : 0));
-    palettes.forEach((palette, index) => add(palette, index % 2 === 0 ? 0 : iconCount - 1));
+    for (const [index, palette] of palettes.entries()) {
+        add(palette, index % 2 === 0 ? iconCount - 1 : 0);
+        if (order.length >= requiredIconCount) {
+            return order;
+        }
+    }
+
+    for (const [index, palette] of palettes.entries()) {
+        add(palette, index % 2 === 0 ? 0 : iconCount - 1);
+        if (order.length >= requiredIconCount) {
+            return order;
+        }
+    }
 
     for (const iconIndex of createIntermediateIndexes(iconCount)) {
         for (const palette of palettes) {
             add(palette, iconIndex);
+            if (order.length >= requiredIconCount) {
+                return order;
+            }
         }
     }
 
