@@ -4,6 +4,9 @@ import {
     createChronologicalIconMap,
     createRandomIconMap,
     createRandomIconOrder,
+    DEFAULT_CUSTOM_INDICATOR_GRADIENT,
+    getCustomIndicatorGradient,
+    getCustomIndicatorOutline,
     getIndicatorColorScheme,
     INDICATOR_COLOR_PALETTES,
     sortRevisions,
@@ -28,6 +31,30 @@ suite("Indicator colours", () => {
     test("falls back to safe indicator settings for invalid configuration values", () => {
         assert.strictEqual(getIndicatorColorScheme("unexpected"), "random");
         assert.strictEqual(getIndicatorColorScheme("greenToRed"), "random");
+    });
+
+    test("uses safe defaults for each invalid custom gradient endpoint", () => {
+        assert.deepStrictEqual(getCustomIndicatorGradient("#ABCDEF", "not-a-colour"), {
+            oldest: "#abcdef",
+            newest: DEFAULT_CUSTOM_INDICATOR_GRADIENT.newest,
+        });
+        assert.deepStrictEqual(getCustomIndicatorGradient(undefined, "#123456"), {
+            oldest: DEFAULT_CUSTOM_INDICATOR_GRADIENT.oldest,
+            newest: "#123456",
+        });
+    });
+
+    test("allows equal custom gradient endpoints for a single-colour scheme", () => {
+        assert.deepStrictEqual(getCustomIndicatorGradient("#123456", "#123456"), {
+            oldest: "#123456",
+            newest: "#123456",
+        });
+    });
+
+    test("uses an optional valid custom outline and ignores invalid values", () => {
+        assert.strictEqual(getCustomIndicatorOutline("#ABCDEF"), "#abcdef");
+        assert.strictEqual(getCustomIndicatorOutline(""), undefined);
+        assert.strictEqual(getCustomIndicatorOutline("not-a-colour"), undefined);
     });
 
     test("maps chronological revisions from oldest to newest", () => {

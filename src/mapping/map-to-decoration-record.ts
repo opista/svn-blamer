@@ -8,6 +8,7 @@ const defaultRecord: DecorationRecord = {
     logs: {},
     workingCopy: true,
     indicatorRefreshVersion: 0,
+    indicatorThemeRefreshVersion: 0,
 };
 
 export const mapToDecorationRecord = (

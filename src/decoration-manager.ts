@@ -17,12 +17,18 @@ import {
     createChronologicalIconMapFromFactory,
     createRandomIconMapFromItems,
     createRandomIconOrderFromFactory,
+    getCustomIndicatorGradient,
+    getCustomIndicatorOutline,
     getIndicatorColorScheme,
+    isThemeAwareIndicatorColorScheme,
 } from "./indicator-colors";
 import {
+    getBuiltInIndicatorGradient,
     getChronologicalIndicatorUri,
     getRandomIndicatorUri,
     INDICATOR_COUNT,
+    LIGHT_INDICATOR_OUTLINE,
+    usesLightThemeIndicatorOutline,
 } from "./indicator-uris";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
@@ -32,6 +38,13 @@ import { GutterIconHashMap } from "./types/gutter-icon-hash-map.model";
 import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
+    usesThemeAwareIndicatorScheme(resource: Uri): boolean {
+        const configuration = workspace.getConfiguration(EXTENSION_CONFIGURATION, resource);
+        return isThemeAwareIndicatorColorScheme(
+            getIndicatorColorScheme(configuration.indicatorColorScheme),
+        );
+    }
+
     createGutterDecorationType(gutterIconImage?: Uri): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             gutterIconPath: gutterIconImage,
@@ -164,8 +177,26 @@ export class DecorationManager {
         const scheme = getIndicatorColorScheme(configuration.indicatorColorScheme);
 
         if (scheme !== "random") {
+            const themeKind = window.activeColorTheme.kind;
+            const gradient =
+                scheme === "custom"
+                    ? getCustomIndicatorGradient(
+                          configuration.get("indicatorCustomOldestColor"),
+                          configuration.get("indicatorCustomNewestColor"),
+                      )
+                    : isThemeAwareIndicatorColorScheme(scheme)
+                      ? getBuiltInIndicatorGradient(scheme)
+                      : undefined;
+            const outline =
+                scheme === "custom"
+                    ? getCustomIndicatorOutline(configuration.get("indicatorCustomOutlineColor"))
+                    : isThemeAwareIndicatorColorScheme(scheme) &&
+                        usesLightThemeIndicatorOutline(themeKind)
+                      ? LIGHT_INDICATOR_OUTLINE
+                      : undefined;
+
             return createChronologicalIconMapFromFactory(revisions, INDICATOR_COUNT, (index) =>
-                getChronologicalIndicatorUri(scheme, index),
+                getChronologicalIndicatorUri(scheme, index, gradient, outline),
             );
         }
 

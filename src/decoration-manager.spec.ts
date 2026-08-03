@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import sinon from "sinon";
-import { Range, TextEditor, TextEditorDecorationType, Uri } from "vscode";
+import { ColorThemeKind, Range, TextEditor, TextEditorDecorationType, Uri } from "vscode";
 
 import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { MAX_NUMBER } from "./const/number";
@@ -101,12 +101,43 @@ suite("DecorationManager", () => {
 
         assert.match(decodeSvg(icons["10"]), /fill="rgb\(255\.0000, 255\.0000, 255\.0000\)"/);
         assert.match(decodeSvg(icons["30"]), /fill="rgb\(31\.0000, 95\.0000, 159\.0000\)"/);
+        assert.doesNotMatch(decodeSvg(icons["10"]), /stroke=/);
         assert.ok(
             getConfigurationStub.calledWith(
                 EXTENSION_CONFIGURATION,
                 sinon.match({ fsPath: "/workspace/example.ts" }),
             ),
         );
+    });
+
+    test("outlines built-in indicators only in light themes", async () => {
+        const vscode = require("vscode");
+        const activeColorTheme = { kind: ColorThemeKind.Light };
+        sandbox.stub(vscode.window, "activeColorTheme").value(activeColorTheme);
+        getConfigurationStub.returns({
+            enableVisualIndicators: true,
+            indicatorColorScheme: "blue",
+        });
+
+        for (const themeKind of [ColorThemeKind.Light, ColorThemeKind.HighContrastLight]) {
+            activeColorTheme.kind = themeKind;
+            const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
+                "10",
+            ]);
+            const svg = Buffer.from(String(icons["10"]).split(",")[1], "base64").toString("utf8");
+
+            assert.match(svg, /stroke="#475569" stroke-width="7"/);
+        }
+
+        for (const themeKind of [ColorThemeKind.Dark, ColorThemeKind.HighContrast]) {
+            activeColorTheme.kind = themeKind;
+            const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
+                "10",
+            ]);
+            const svg = Buffer.from(String(icons["10"]).split(",")[1], "base64").toString("utf8");
+
+            assert.doesNotMatch(svg, /stroke=/);
+        }
     });
 
     test("uses the original document URI to resolve indicator settings", async () => {
@@ -174,10 +205,18 @@ suite("DecorationManager", () => {
     test("uses SVG data URIs for every chronological colour scheme", async () => {
         decorationManager = new DecorationManager();
 
-        for (const scheme of ["redToGreen", "blue", "teal", "violet", "vermilion"] as const) {
+        for (const scheme of [
+            "redToGreen",
+            "blue",
+            "teal",
+            "violet",
+            "vermilion",
+            "custom",
+        ] as const) {
             getConfigurationStub.returns({
                 enableVisualIndicators: true,
                 indicatorColorScheme: scheme,
+                get: () => "#123456",
             });
 
             const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
@@ -188,6 +227,51 @@ suite("DecorationManager", () => {
             assert.match(String(icons["10"]), /^data:image\/svg\+xml;base64,/);
             assert.match(String(icons["20"]), /^data:image\/svg\+xml;base64,/);
         }
+    });
+
+    test("uses custom colours and falls back per invalid endpoint", async () => {
+        getConfigurationStub.returns({
+            enableVisualIndicators: true,
+            indicatorColorScheme: "custom",
+            get: (key: string) => {
+                if (key === "indicatorCustomOldestColor") {
+                    return "not-a-colour";
+                }
+                if (key === "indicatorCustomNewestColor") {
+                    return "#ABCDEF";
+                }
+                return "#654321";
+            },
+        });
+        decorationManager = new DecorationManager();
+
+        const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
+            "10",
+            "20",
+        ]);
+        const decodeSvg = (icon: unknown) =>
+            Buffer.from(String(icon).split(",")[1], "base64").toString("utf8");
+
+        assert.match(decodeSvg(icons["10"]), /fill="rgb\(107\.0000, 114\.0000, 128\.0000\)"/);
+        assert.match(decodeSvg(icons["20"]), /fill="rgb\(171\.0000, 205\.0000, 239\.0000\)"/);
+        assert.match(decodeSvg(icons["10"]), /stroke="#654321" stroke-width="7"/);
+    });
+
+    test("identifies only the adaptive single-colour schemes as theme-aware", () => {
+        getConfigurationStub.returns({ indicatorColorScheme: "blue" });
+        assert.ok(
+            decorationManager.usesThemeAwareIndicatorScheme(Uri.file("/workspace/example.ts")),
+        );
+
+        getConfigurationStub.returns({ indicatorColorScheme: "custom" });
+        assert.ok(
+            !decorationManager.usesThemeAwareIndicatorScheme(Uri.file("/workspace/example.ts")),
+        );
+
+        getConfigurationStub.returns({ indicatorColorScheme: "redToGreen" });
+        assert.ok(
+            !decorationManager.usesThemeAwareIndicatorScheme(Uri.file("/workspace/example.ts")),
+        );
     });
 
     test("keeps contrast-first random icons stable for a file", async () => {

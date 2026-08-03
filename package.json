@@ -15,7 +15,7 @@
     "homepage": "https://github.com/BeauAgst/blamer-vs",
     "icon": "dist/img/marketplace/icon.png",
     "engines": {
-        "vscode": "^1.63.0",
+        "vscode": "^1.66.0",
         "node": "^24.0.0",
         "pnpm": "^10.0.0"
     },
@@ -100,7 +100,8 @@
                         "blue",
                         "teal",
                         "violet",
-                        "vermilion"
+                        "vermilion",
+                        "custom"
                     ],
                     "enumItemLabels": [
                         "Random",
@@ -108,20 +109,51 @@
                         "Blue",
                         "Teal",
                         "Violet",
-                        "Vermilion"
+                        "Vermilion",
+                        "Custom gradient"
                     ],
                     "enumDescriptions": [
                         "Assign stable, well-separated colours to revisions in each file.",
-                        "Older commits are redder and newer commits are greener. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are bluer. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are more teal. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are more violet. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are more vermilion. Files with more than 500 distinct revisions reuse the nearest colour."
+                        "Oldest commits are redder and newest commits are greener. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Oldest commits are white and newest commits are bluer. A thin outline keeps older commits visible on light themes. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Oldest commits are white and newest commits are more teal. A thin outline keeps older commits visible on light themes. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Oldest commits are white and newest commits are more violet. A thin outline keeps older commits visible on light themes. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Oldest commits are white and newest commits are more vermilion. A thin outline keeps older commits visible on light themes. Files with more than 500 distinct revisions reuse the nearest colour.",
+                        "Oldest and newest commits use the exact custom colours below. They do not adapt to the active theme. Files with more than 500 distinct revisions reuse the nearest colour."
                     ]
+                },
+                "svnBlamer.indicatorCustomOldestColor": {
+                    "scope": "resource",
+                    "order": 5,
+                    "title": "Oldest commit colour",
+                    "default": "#6b7280",
+                    "description": "Used only with Custom gradient. Enter an opaque #RRGGBB colour. This exact value does not adapt to the active theme, so use enough contrast.",
+                    "type": "string",
+                    "format": "color-hex",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "svnBlamer.indicatorCustomNewestColor": {
+                    "scope": "resource",
+                    "order": 6,
+                    "title": "Newest commit colour",
+                    "default": "#1f5f9f",
+                    "description": "Used only with Custom gradient. Enter an opaque #RRGGBB colour. This exact value does not adapt to the active theme, so use enough contrast.",
+                    "type": "string",
+                    "format": "color-hex",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "svnBlamer.indicatorCustomOutlineColor": {
+                    "scope": "resource",
+                    "order": 7,
+                    "title": "Custom indicator outline colour",
+                    "default": "",
+                    "description": "Used only with Custom gradient. Optionally enter an opaque #RRGGBB colour to outline each indicator. Leave blank for no outline.",
+                    "type": "string",
+                    "pattern": "^(|#[0-9a-fA-F]{6})$"
                 },
                 "svnBlamer.viewportBuffer": {
                     "scope": "resource",
-                    "order": 5,
+                    "order": 8,
                     "default": 200,
                     "description": "How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Note: Higher values may impact initial load performance.",
                     "type": "integer",
@@ -130,7 +162,7 @@
                 },
                 "svnBlamer.svnExecutablePath": {
                     "scope": "machine",
-                    "order": 6,
+                    "order": 9,
                     "type": "string",
                     "default": "svn",
                     "description": "Path to svn executable or alternative command"
@@ -184,7 +216,7 @@
         "@types/node": "26.x",
         "@types/sinon": "^21.0.0",
         "@types/sinonjs__fake-timers": "^15.0.1",
-        "@types/vscode": "^1.63.0",
+        "@types/vscode": "^1.66.0",
         "@typescript-eslint/eslint-plugin": "^8.58.0",
         "@typescript-eslint/parser": "^8.65.0",
         "@vscode/test-cli": "^0.0.15",
