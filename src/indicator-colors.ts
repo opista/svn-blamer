@@ -2,20 +2,11 @@ export const INDICATOR_COLOR_SCHEMES = [
     "random",
     "redToGreen",
     "blue",
-    "sky",
     "teal",
     "violet",
-    "orange",
     "vermilion",
 ] as const;
-export const INDICATOR_COLOR_PALETTES = [
-    "blue",
-    "sky",
-    "teal",
-    "violet",
-    "orange",
-    "vermilion",
-] as const;
+export const INDICATOR_COLOR_PALETTES = ["blue", "teal", "violet", "vermilion"] as const;
 
 export type IndicatorColorScheme = (typeof INDICATOR_COLOR_SCHEMES)[number];
 export type IndicatorColorPalette = (typeof INDICATOR_COLOR_PALETTES)[number];

@@ -14,10 +14,8 @@ suite("Indicator URIs", () => {
     test("preserves the chronological endpoint colours", () => {
         const expectedStrongColours = {
             blue: "rgb(31.0000, 95.0000, 159.0000)",
-            sky: "rgb(37.0000, 125.0000, 172.0000)",
             teal: "rgb(0.0000, 115.0000, 93.0000)",
             violet: "rgb(111.0000, 75.0000, 156.0000)",
-            orange: "rgb(155.0000, 92.0000, 0.0000)",
             vermilion: "rgb(158.0000, 63.0000, 19.0000)",
         } as const;
 
@@ -46,10 +44,8 @@ suite("Indicator URIs", () => {
     test("preserves the random palette endpoint colours", () => {
         const expectedPaleColours = {
             blue: "rgb(112.0000, 165.0000, 219.0000)",
-            sky: "rgb(139.0000, 199.0000, 233.0000)",
             teal: "rgb(83.0000, 174.0000, 152.0000)",
             violet: "rgb(180.0000, 139.0000, 208.0000)",
-            orange: "rgb(230.0000, 173.0000, 69.0000)",
             vermilion: "rgb(222.0000, 133.0000, 93.0000)",
         } as const;
 

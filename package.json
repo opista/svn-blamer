@@ -98,30 +98,24 @@
                         "random",
                         "redToGreen",
                         "blue",
-                        "sky",
                         "teal",
                         "violet",
-                        "orange",
                         "vermilion"
                     ],
                     "enumItemLabels": [
                         "Random",
                         "Red → Green",
                         "Blue",
-                        "Sky blue",
                         "Teal",
                         "Violet",
-                        "Orange",
                         "Vermilion"
                     ],
                     "enumDescriptions": [
                         "Assign stable, well-separated colours to revisions in each file.",
                         "Older commits are redder and newer commits are greener. Files with more than 500 distinct revisions reuse the nearest colour.",
                         "Older commits fade towards white and newer commits are bluer. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are more sky blue. Files with more than 500 distinct revisions reuse the nearest colour.",
                         "Older commits fade towards white and newer commits are more teal. Files with more than 500 distinct revisions reuse the nearest colour.",
                         "Older commits fade towards white and newer commits are more violet. Files with more than 500 distinct revisions reuse the nearest colour.",
-                        "Older commits fade towards white and newer commits are more orange. Files with more than 500 distinct revisions reuse the nearest colour.",
                         "Older commits fade towards white and newer commits are more vermilion. Files with more than 500 distinct revisions reuse the nearest colour."
                     ]
                 },

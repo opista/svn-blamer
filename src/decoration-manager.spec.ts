@@ -174,15 +174,7 @@ suite("DecorationManager", () => {
     test("uses SVG data URIs for every chronological colour scheme", async () => {
         decorationManager = new DecorationManager();
 
-        for (const scheme of [
-            "redToGreen",
-            "blue",
-            "sky",
-            "teal",
-            "violet",
-            "orange",
-            "vermilion",
-        ] as const) {
+        for (const scheme of ["redToGreen", "blue", "teal", "violet", "vermilion"] as const) {
             getConfigurationStub.returns({
                 enableVisualIndicators: true,
                 indicatorColorScheme: scheme,

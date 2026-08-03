@@ -72,7 +72,10 @@ suite("Indicator colours", () => {
 
         assert.deepStrictEqual(first, second);
         assert.strictEqual(first.length, INDICATOR_COLOR_PALETTES.length * 5);
-        assert.strictEqual(new Set(first.slice(0, INDICATOR_COLOR_PALETTES.length * 2)).size, 12);
+        assert.strictEqual(
+            new Set(first.slice(0, INDICATOR_COLOR_PALETTES.length * 2)).size,
+            INDICATOR_COLOR_PALETTES.length * 2,
+        );
     });
 
     test("creates only the required random icon prefix", () => {

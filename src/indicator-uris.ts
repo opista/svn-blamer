@@ -8,10 +8,8 @@ const uriCache = new Map<string, Uri>();
 
 const PALETTE_ENDPOINTS: Record<IndicatorColorPalette, readonly [string, string]> = {
     blue: ["#1f5f9f", "#70a5db"],
-    sky: ["#257dac", "#8bc7e9"],
     teal: ["#00735d", "#53ae98"],
     violet: ["#6f4b9c", "#b48bd0"],
-    orange: ["#9b5c00", "#e6ad45"],
     vermilion: ["#9e3f13", "#de855d"],
 };
 
