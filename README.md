@@ -32,16 +32,6 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 
 <img src="src/img/marketplace/visual-indicators.png" width="700">
 
-#### Choose an indicator colour scheme
-
-Select **SVN Blamer: Indicator colour scheme** in Settings to choose how revision indicators are coloured. The default **Random** scheme keeps the existing mixed-colour behaviour. **Red → Green** shows older commits in red and newer commits in green. Blue, Teal, Violet, and Vermilion fade from white for older commits to a stronger colour for newer commits.
-
-The single-colour schemes adapt to light and dark themes. On light themes, older white indicators have a thin outline so that they remain visible. Choose **Custom gradient** to set your own oldest and newest colours, with an optional outline colour.
-
-| Random                                                                                               | Red → Green                                                                                                      | Blue                                                                                             | Teal                                                                                             | Violet                                                                                               | Vermilion                                                                                                  | Custom (#BADA55)                                                                                            |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| <img src="src/img/marketplace/indicator-scheme-random.png" alt="Random indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-red-to-green.png" alt="Red to Green indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-blue.png" alt="Blue indicator scheme" width="59"> | <img src="src/img/marketplace/indicator-scheme-teal.png" alt="Teal indicator scheme" width="66"> | <img src="src/img/marketplace/indicator-scheme-violet.png" alt="Violet indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-vermilion.png" alt="Vermilion indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-custom.png" alt="Custom BADA55 indicator scheme" width="73"> |
-
 #### Display revision information and logs in line
 
 <img src="src/img/marketplace/inline-blame.png" width="700">
@@ -57,6 +47,12 @@ The single-colour schemes adapt to light and dark themes. On light themes, older
 #### Toggle blame from the toolbar
 
 <img src="src/img/marketplace/toolbar-toggle.gif" width="700">
+
+#### Choose an indicator colour scheme
+
+| Random                                                                                               | Red → Green                                                                                                      | Blue                                                                                             | Teal                                                                                             | Violet                                                                                               | Vermilion                                                                                                  | Custom (#BADA55)                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| <img src="src/img/marketplace/indicator-scheme-random.png" alt="Random indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-red-to-green.png" alt="Red to Green indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-blue.png" alt="Blue indicator scheme" width="59"> | <img src="src/img/marketplace/indicator-scheme-teal.png" alt="Teal indicator scheme" width="66"> | <img src="src/img/marketplace/indicator-scheme-violet.png" alt="Violet indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-vermilion.png" alt="Vermilion indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-custom.png" alt="Custom BADA55 indicator scheme" width="73"> |
 
 ### Secure Authentication
 
