@@ -21,8 +21,8 @@ pnpm install
 
 ```
 
-3. **Generate Assets:**
-   The project uses a script to generate ignored SVG indicators for the random hue families and seven 500-position chronological ranges. This runs automatically as part of the build process, which you can trigger via:
+3. **Build the extension:**
+   The build copies marketplace images to `dist`. Gutter indicators are generated lazily as cached SVG data URIs at runtime: Random, Red → Green, Blue, Teal, Violet, and Vermilion. Run the build with:
 
 ```bash
 pnpm run esbuild
@@ -53,7 +53,7 @@ pnpm run esbuild
 - **`src/svn.ts`**: The core wrapper for the SVN CLI.
 - **`src/blamer.ts`**: The orchestrator that manages state and VS Code events.
 - **`src/decoration-manager.ts`**: Handles all visual aspects (gutter icons, inline text, hovers).
-- **`_scripts/`**: Contains the SVG generator logic.
+- **`src/indicator-uris.ts`**: Lazily creates and caches the runtime SVG gutter indicators.
 
 ---
 
