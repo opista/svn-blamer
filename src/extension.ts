@@ -4,6 +4,7 @@ import { Blamer } from "./blamer";
 import { EXTENSION_NAME } from "./const/extension";
 import { CredentialManager } from "./credential-manager";
 import { DecorationManager } from "./decoration-manager";
+import { clearIndicatorUriCache } from "./indicator-uris";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { DecorationRecord } from "./types/decoration-record.model";
@@ -45,9 +46,20 @@ export async function activate(context: ExtensionContext) {
     );
 
     const updateIndicatorColours = workspace.onDidChangeConfiguration((event) => {
-        if (event.affectsConfiguration("svnBlamer.indicatorColorScheme")) {
+        if (
+            event.affectsConfiguration("svnBlamer.indicatorColorScheme") ||
+            event.affectsConfiguration("svnBlamer.indicatorCustomOldestColor") ||
+            event.affectsConfiguration("svnBlamer.indicatorCustomNewestColor") ||
+            event.affectsConfiguration("svnBlamer.indicatorCustomOutlineColor")
+        ) {
+            clearIndicatorUriCache();
             queueMicrotask(() => void blamer.refreshVisibleBlameIndicators());
         }
+    });
+
+    const updateThemeAwareIndicatorColours = window.onDidChangeActiveColorTheme(() => {
+        clearIndicatorUriCache();
+        void blamer.refreshThemeAwareVisibleBlameIndicators();
     });
 
     const clearOnClose = workspace.onDidCloseTextDocument((textDocument) =>
@@ -75,6 +87,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(scrollUpdate);
     context.subscriptions.push(autoBlame);
     context.subscriptions.push(updateIndicatorColours);
+    context.subscriptions.push(updateThemeAwareIndicatorColours);
     context.subscriptions.push(clearCredentials);
     context.subscriptions.push(logger);
     context.subscriptions.push(blamer);

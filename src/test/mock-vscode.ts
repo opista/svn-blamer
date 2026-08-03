@@ -21,8 +21,10 @@ const vscodeMock = {
             text: "",
         }),
         activeTextEditor: undefined,
+        activeColorTheme: { kind: 2 },
         visibleTextEditors: [],
         onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
+        onDidChangeActiveColorTheme: () => ({ dispose: () => {} }),
         onDidChangeTextEditorSelection: () => ({ dispose: () => {} }),
         onDidChangeTextEditorVisibleRanges: () => ({ dispose: () => {} }),
         showWarningMessage: () => {},
@@ -62,6 +64,7 @@ const vscodeMock = {
         ) {}
     },
     DecorationRangeBehavior: { ClosedClosed: 0 },
+    ColorThemeKind: { Light: 1, Dark: 2, HighContrast: 3, HighContrastLight: 4 },
     StatusBarAlignment: { Left: 1, Right: 2 },
     extensions: {
         getExtension: () => ({ extensionPath: "/test/path" }),

@@ -46,6 +46,7 @@ suite("Blamer", () => {
             createGutterIconHashMap: sandbox.stub(),
             createAndSetDecorationsForBlame: sandbox.stub(),
             reApplyDecorations: sandbox.stub(),
+            usesThemeAwareIndicatorScheme: sandbox.stub().returns(false),
             updateRevisionHoverMessages: sandbox.stub(),
             setActiveLineDecoration: sandbox.stub(),
         } as unknown as sinon.SinonStubbedInstance<DecorationManager>;
@@ -452,6 +453,56 @@ suite("Blamer", () => {
                 ),
             );
         });
+
+        test("refreshes a theme-aware background tab after a theme change", async () => {
+            const fileName = "/test/theme-background.ts";
+            const textEditor = {
+                document: {
+                    fileName,
+                    uri: { fsPath: fileName, scheme: "vscode-remote" },
+                },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 1 } }],
+            } as unknown as TextEditor;
+            const record: DecorationRecord = {
+                workingCopy: true,
+                indicatorRefreshVersion: 0,
+                indicatorThemeRefreshVersion: 0,
+                icons: { "10": Uri.parse("data:image/svg+xml;base64,b2xk") },
+                blamesByLine: {
+                    "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
+                },
+                blamesByRevision: {
+                    "10": [{ revision: "10", author: "one", date: "2026-02-24", line: "1" }],
+                },
+                revisionDecorations: {},
+                logs: {},
+            };
+
+            sandbox.stub(workspace.fs, "stat").resolves();
+            sandbox.stub(window, "visibleTextEditors").value([]);
+            storageMock.get.withArgs(fileName).returns(record);
+            decorationManagerMock.usesThemeAwareIndicatorScheme.returns(true);
+            decorationManagerMock.createGutterIconHashMap.returns({
+                "10": Uri.parse("data:image/svg+xml;base64,bmV3"),
+            });
+            decorationManagerMock.createAndSetDecorationsForBlame.resolves({
+                blamesByLine: record.blamesByLine,
+                blamesByRevision: record.blamesByRevision,
+                revisionDecorations: {},
+            });
+
+            await blamer.refreshThemeAwareVisibleBlameIndicators();
+            await blamer.autoBlame(textEditor);
+
+            assert.ok(
+                decorationManagerMock.createGutterIconHashMap.calledOnceWithExactly(
+                    fileName,
+                    ["10"],
+                    textEditor.document.uri,
+                ),
+            );
+            assert.ok(svnMock.blameFile.notCalled, "uses cached blame data");
+        });
     });
 
     suite("refreshVisibleBlameIndicators", () => {
@@ -541,6 +592,74 @@ suite("Blamer", () => {
             );
             assert.ok(
                 storageMock.set.calledOnceWithExactly(fileName, sinon.match({ icons: newIcons })),
+            );
+            assert.ok(svnMock.blameFile.notCalled, "uses cached blame data");
+        });
+    });
+
+    suite("refreshThemeAwareVisibleBlameIndicators", () => {
+        test("refreshes only theme-aware visible editors from cached blame", async () => {
+            const adaptiveFileName = "/test/adaptive.ts";
+            const unchangedFileName = "/test/unchanged.ts";
+            const createRecord = (): DecorationRecord => ({
+                workingCopy: true,
+                icons: { "10": Uri.parse("data:image/svg+xml;base64,b2xk") },
+                blamesByLine: {
+                    "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
+                },
+                blamesByRevision: {
+                    "10": [{ revision: "10", author: "one", date: "2026-02-24", line: "1" }],
+                },
+                revisionDecorations: {},
+                logs: {},
+            });
+            const records = new Map([
+                [adaptiveFileName, createRecord()],
+                [unchangedFileName, createRecord()],
+            ]);
+            const adaptiveEditor = {
+                document: {
+                    fileName: adaptiveFileName,
+                    lineCount: 1,
+                    uri: { fsPath: adaptiveFileName, scheme: "file" },
+                },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 0 } }],
+            } as unknown as TextEditor;
+            const unchangedEditor = {
+                document: {
+                    fileName: unchangedFileName,
+                    lineCount: 1,
+                    uri: { fsPath: unchangedFileName, scheme: "file" },
+                },
+                visibleRanges: [{ start: { line: 0 }, end: { line: 0 } }],
+            } as unknown as TextEditor;
+
+            storageMock.get.callsFake((fileName: string) => records.get(fileName));
+            storageMock.set.callsFake((fileName: string, record: DecorationRecord) =>
+                records.set(fileName, record),
+            );
+            decorationManagerMock.usesThemeAwareIndicatorScheme.callsFake(
+                (resource) => resource.fsPath === adaptiveFileName,
+            );
+            decorationManagerMock.createGutterIconHashMap.returns({
+                "10": Uri.parse("data:image/svg+xml;base64,bmV3"),
+            });
+            decorationManagerMock.createAndSetDecorationsForBlame.resolves({
+                blamesByLine: records.get(adaptiveFileName)!.blamesByLine,
+                blamesByRevision: records.get(adaptiveFileName)!.blamesByRevision,
+                revisionDecorations: {},
+            });
+            sandbox.stub(window, "visibleTextEditors").value([adaptiveEditor, unchangedEditor]);
+            sandbox.stub(workspace, "getConfiguration").returns({ viewportBuffer: 200 } as any);
+
+            await blamer.refreshThemeAwareVisibleBlameIndicators();
+
+            assert.ok(
+                decorationManagerMock.createGutterIconHashMap.calledOnceWithExactly(
+                    adaptiveFileName,
+                    ["10"],
+                    adaptiveEditor.document.uri,
+                ),
             );
             assert.ok(svnMock.blameFile.notCalled, "uses cached blame data");
         });

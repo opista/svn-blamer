@@ -5,17 +5,51 @@ export const INDICATOR_COLOR_SCHEMES = [
     "teal",
     "violet",
     "vermilion",
+    "custom",
 ] as const;
 export const INDICATOR_COLOR_PALETTES = ["blue", "teal", "violet", "vermilion"] as const;
 
 export type IndicatorColorScheme = (typeof INDICATOR_COLOR_SCHEMES)[number];
 export type IndicatorColorPalette = (typeof INDICATOR_COLOR_PALETTES)[number];
 export type ChronologicalColorScheme = Exclude<IndicatorColorScheme, "random">;
+export type ThemeAwareIndicatorColorScheme = IndicatorColorPalette;
+
+export type IndicatorGradient = Readonly<{
+    oldest: string;
+    newest: string;
+}>;
+
+export const DEFAULT_CUSTOM_INDICATOR_GRADIENT: IndicatorGradient = {
+    oldest: "#6b7280",
+    newest: "#1f5f9f",
+};
 
 export const getIndicatorColorScheme = (value: unknown): IndicatorColorScheme =>
     INDICATOR_COLOR_SCHEMES.includes(value as IndicatorColorScheme)
         ? (value as IndicatorColorScheme)
         : "random";
+
+export const isThemeAwareIndicatorColorScheme = (
+    scheme: IndicatorColorScheme,
+): scheme is ThemeAwareIndicatorColorScheme =>
+    INDICATOR_COLOR_PALETTES.includes(scheme as IndicatorColorPalette);
+
+const isHexColour = (value: unknown): value is string =>
+    typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+
+const getHexColourOrDefault = (value: unknown, defaultValue: string): string =>
+    isHexColour(value) ? value.toLowerCase() : defaultValue;
+
+export const getCustomIndicatorGradient = (
+    oldest: unknown,
+    newest: unknown,
+): IndicatorGradient => ({
+    oldest: getHexColourOrDefault(oldest, DEFAULT_CUSTOM_INDICATOR_GRADIENT.oldest),
+    newest: getHexColourOrDefault(newest, DEFAULT_CUSTOM_INDICATOR_GRADIENT.newest),
+});
+
+export const getCustomIndicatorOutline = (value: unknown): string | undefined =>
+    isHexColour(value) ? value.toLowerCase() : undefined;
 
 const hashString = (value: string): number => {
     let hash = 2166136261;

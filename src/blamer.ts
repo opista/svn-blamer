@@ -30,6 +30,7 @@ export class Blamer {
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
     private indicatorRefreshVersion = 0;
+    private indicatorThemeRefreshVersion = 0;
     private statusBarItem: StatusBarItem;
 
     constructor(
@@ -225,10 +226,42 @@ export class Blamer {
         );
     }
 
+    /**
+     * Recreates theme-aware gutter decorations after the active VS Code theme changes.
+     * This does not run svn blame or replace unaffected colour schemes.
+     */
+    async refreshThemeAwareVisibleBlameIndicators() {
+        const themeRefreshVersion = ++this.indicatorThemeRefreshVersion;
+        const editorsByFileName = new Map<string, TextEditor[]>();
+
+        for (const textEditor of window.visibleTextEditors) {
+            if (!this.decorationManager.usesThemeAwareIndicatorScheme(textEditor.document.uri)) {
+                continue;
+            }
+
+            const fileName = textEditor.document.fileName;
+            const editors = editorsByFileName.get(fileName) ?? [];
+            editors.push(textEditor);
+            editorsByFileName.set(fileName, editors);
+        }
+
+        await Promise.all(
+            [...editorsByFileName].map(([fileName, textEditors]) =>
+                this.refreshVisibleBlameForFile(
+                    fileName,
+                    textEditors,
+                    this.indicatorRefreshVersion,
+                    themeRefreshVersion,
+                ),
+            ),
+        );
+    }
+
     private async refreshVisibleBlameForFile(
         fileName: string,
         textEditors: TextEditor[],
         refreshVersion: number,
+        themeRefreshVersion?: number,
     ) {
         const record = this.getRecordForFile(fileName);
 
@@ -250,6 +283,8 @@ export class Blamer {
 
             if (
                 refreshVersion !== this.indicatorRefreshVersion ||
+                (themeRefreshVersion !== undefined &&
+                    themeRefreshVersion !== this.indicatorThemeRefreshVersion) ||
                 this.getRecordForFile(fileName) !== record
             ) {
                 return;
@@ -266,6 +301,8 @@ export class Blamer {
 
             if (
                 refreshVersion !== this.indicatorRefreshVersion ||
+                (themeRefreshVersion !== undefined &&
+                    themeRefreshVersion !== this.indicatorThemeRefreshVersion) ||
                 this.getRecordForFile(fileName) !== record
             ) {
                 disposeDecorations([...new Set(Object.values(revisionDecorations))]);
@@ -276,6 +313,8 @@ export class Blamer {
                 ...record,
                 icons,
                 indicatorRefreshVersion: refreshVersion,
+                indicatorThemeRefreshVersion:
+                    themeRefreshVersion ?? record.indicatorThemeRefreshVersion,
                 revisionDecorations,
             };
             this.setRecordForFile(fileName, refreshedRecord);
@@ -406,6 +445,7 @@ export class Blamer {
 
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const iconMapRefreshVersion = this.indicatorRefreshVersion;
+        const iconMapThemeRefreshVersion = this.indicatorThemeRefreshVersion;
         const icons = this.decorationManager.createGutterIconHashMap(
             fileName,
             uniqueRevisions,
@@ -428,17 +468,23 @@ export class Blamer {
             blamesByLine,
             blamesByRevision,
             indicatorRefreshVersion: iconMapRefreshVersion,
+            indicatorThemeRefreshVersion: iconMapThemeRefreshVersion,
             revisionDecorations,
         });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
 
-        if (iconMapRefreshVersion !== this.indicatorRefreshVersion) {
+        if (
+            iconMapRefreshVersion !== this.indicatorRefreshVersion ||
+            (this.decorationManager.usesThemeAwareIndicatorScheme(textEditor.document.uri) &&
+                iconMapThemeRefreshVersion !== this.indicatorThemeRefreshVersion)
+        ) {
             await this.refreshVisibleBlameForFile(
                 fileName,
                 [textEditor],
                 this.indicatorRefreshVersion,
+                this.indicatorThemeRefreshVersion,
             );
         }
 
@@ -508,11 +554,20 @@ export class Blamer {
             }
 
             if (existingRecord) {
-                if (existingRecord.indicatorRefreshVersion !== this.indicatorRefreshVersion) {
+                const refreshesForTheme = this.decorationManager.usesThemeAwareIndicatorScheme(
+                    textEditor.document.uri,
+                );
+                if (
+                    existingRecord.indicatorRefreshVersion !== this.indicatorRefreshVersion ||
+                    (refreshesForTheme &&
+                        existingRecord.indicatorThemeRefreshVersion !==
+                            this.indicatorThemeRefreshVersion)
+                ) {
                     await this.refreshVisibleBlameForFile(
                         fileName,
                         [textEditor],
                         this.indicatorRefreshVersion,
+                        refreshesForTheme ? this.indicatorThemeRefreshVersion : undefined,
                     );
                     return;
                 }

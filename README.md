@@ -23,6 +23,8 @@ When run, this extension will place an icon next to each line of your file. Each
 
 **Note**: This extension leverages your machine's SVN installation, so you need to install [SVN](https://subversion.apache.org/) first.
 
+SVN Blamer requires Visual Studio Code 1.66 or later.
+
 ### Windows users
 
 If you use TortoiseSVN, make sure the option Command Line Tools is checked during installation, and C:\Program Files\TortoiseSVN\bin is available in PATH.
@@ -82,16 +84,19 @@ This extension contributes the following commands to the Command palette.
 
 ## Configuration
 
-| Setting                      | Description                                                                                                                                                           | Default value |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| **Auto Blame**               | Automatically blames files as you open them.                                                                                                                          | `false`       |
-| **Enable Logs**              | Fetches and displays revision log data in the popup.                                                                                                                  | `true`        |
-| **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number.                                                                                                     | `true`        |
-| **Indicator colour scheme**  | `random` preserves the existing mixed colours. Other schemes map oldest to newest revisions: red to green, or white fading to blue, teal, violet, or vermilion.       | `random`      |
-| **Viewport Buffer**          | How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Higher values may impact performance. | `200`         |
-| **SVN Executable Path**      | Path to svn executable or alternative command.                                                                                                                        | `"svn"`       |
+| Setting                             | Description                                                                                                                                                                                                                          | Default value |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| **Auto Blame**                      | Automatically blames files as you open them.                                                                                                                                                                                         | `false`       |
+| **Enable Logs**                     | Fetches and displays revision log data in the popup.                                                                                                                                                                                 | `true`        |
+| **Enable Visual Indicators**        | Toggle visual indicators that sit to the left of the line number.                                                                                                                                                                    | `true`        |
+| **Indicator colour scheme**         | `random` preserves the existing mixed colours. Red → Green maps oldest to newest. Blue, Teal, Violet, and Vermilion use white-to-strong gradients with a thin outline on light themes. Custom gradient uses the exact colours below. | `random`      |
+| **Oldest commit colour**            | Used only by Custom gradient. Enter an opaque `#RRGGBB` colour. It does not adapt to the active theme, so choose enough contrast.                                                                                                    | `#6b7280`     |
+| **Newest commit colour**            | Used only by Custom gradient. Enter an opaque `#RRGGBB` colour. It does not adapt to the active theme, so choose enough contrast.                                                                                                    | `#1f5f9f`     |
+| **Custom indicator outline colour** | Used only by Custom gradient. Optionally enter an opaque `#RRGGBB` colour to outline each indicator. Leave blank for no outline.                                                                                                     | `""`          |
+| **Viewport Buffer**                 | How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Higher values may impact performance.                                                                | `200`         |
+| **SVN Executable Path**             | Path to svn executable or alternative command.                                                                                                                                                                                       | `"svn"`       |
 
-All chronological schemes have 500 positions. Files with more than 500 revisions reuse the nearest position.
+All chronological schemes have 500 positions. Files with more than 500 revisions reuse the nearest position. The Blue, Teal, Violet, and Vermilion schemes use the same white-to-strong gradient in every theme. Light and High Contrast Light add a thin outline so older commits remain visible. Custom gradient accepts identical colours when you want a single-colour indicator.
 
 ## Known Issues
 

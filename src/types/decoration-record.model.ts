@@ -22,4 +22,5 @@ export type DecorationRecord = {
     logs: LogHashMap;
     workingCopy: boolean;
     indicatorRefreshVersion?: number;
+    indicatorThemeRefreshVersion?: number;
 };
