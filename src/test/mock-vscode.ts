@@ -4,6 +4,15 @@ const originalRequire = Module.prototype.require;
 
 const vscodeMock = {
     window: {
+        createOutputChannel: () => ({
+            clear: () => {},
+            debug: () => {},
+            dispose: () => {},
+            error: () => {},
+            info: () => {},
+            trace: () => {},
+            warn: () => {},
+        }),
         createTextEditorDecorationType: () => ({}),
         createStatusBarItem: () => ({
             show: () => {},
@@ -13,6 +22,9 @@ const vscodeMock = {
         }),
         activeTextEditor: undefined,
         visibleTextEditors: [],
+        onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
+        onDidChangeTextEditorSelection: () => ({ dispose: () => {} }),
+        onDidChangeTextEditorVisibleRanges: () => ({ dispose: () => {} }),
         showWarningMessage: () => {},
         showErrorMessage: () => {},
         showInformationMessage: () => {},
@@ -25,12 +37,15 @@ const vscodeMock = {
             get: () => {},
         }),
         onDidChangeConfiguration: () => ({ dispose: () => {} }),
+        onDidChangeTextDocument: () => ({ dispose: () => {} }),
+        onDidCloseTextDocument: () => ({ dispose: () => {} }),
         fs: {
             stat: () => Promise.resolve(),
         },
     },
     commands: {
         executeCommand: () => Promise.resolve(),
+        registerCommand: () => ({ dispose: () => {} }),
     },
     Range: class Range {
         constructor(

@@ -46,7 +46,7 @@ export async function activate(context: ExtensionContext) {
 
     const updateIndicatorColours = workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration("svnBlamer.indicatorColorScheme")) {
-            void blamer.refreshVisibleBlameIndicators();
+            queueMicrotask(() => void blamer.refreshVisibleBlameIndicators());
         }
     });
 
