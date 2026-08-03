@@ -55,7 +55,12 @@ const vscodeMock = {
         constructor(public id: string) {}
     },
     Uri: {
-        file: (fileName: string) => ({ fsPath: fileName }),
+        file: (fileName: string) => ({
+            fsPath: fileName,
+            scheme: "file",
+            toString: () => fileName,
+        }),
+        parse: (value: string) => ({ scheme: value.split(":", 1)[0], toString: () => value }),
     },
     Hover: class Hover {
         constructor(public contents: any) {}

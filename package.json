@@ -173,10 +173,9 @@
         "lint:fix": "pnpm lint --fix",
         "lint": "eslint src",
         "prepare": "husky",
-        "pretest": "pnpm compile-tests && pnpm esbuild && pnpm run test:indicators && pnpm lint",
+        "pretest": "pnpm compile-tests && pnpm esbuild && pnpm lint",
         "test": "vscode-test",
-        "test:indicators": "node --test _scripts/generate-indicators.spec.mjs",
-        "test:unit": "pnpm run esbuild && pnpm run test:indicators && mocha --ui tdd --require out/test/mock-vscode.js \"out/**/*.spec.js\" --exclude \"out/test/**/*.spec.js\"",
+        "test:unit": "pnpm run esbuild && mocha --ui tdd --require out/test/mock-vscode.js \"out/**/*.spec.js\" --exclude \"out/test/**/*.spec.js\"",
         "vscode:prepublish": "pnpm run esbuild -- --minify",
         "watch-tests": "tsc -p . -w --outDir out",
         "watch": "pnpm run esbuild -- --sourcemap --watch"
@@ -186,7 +185,6 @@
         "@eslint/js": "^10.0.1",
         "@sinonjs/fake-timers": "^15.4.0",
         "@stylistic/eslint-plugin": "^5.10.0",
-        "@types/lodash.merge": "^4.6.9",
         "@types/luxon": "^3.7.2",
         "@types/mocha": "^10.0.6",
         "@types/node": "26.x",
@@ -213,7 +211,6 @@
     },
     "dependencies": {
         "fast-xml-parser": "^5.10.1",
-        "lodash.merge": "^4.6.2",
         "luxon": "^3.4.4"
     }
 }

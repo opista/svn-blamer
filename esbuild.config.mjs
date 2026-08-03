@@ -2,38 +2,16 @@ import fs from "node:fs";
 
 import * as esbuild from "esbuild";
 
-import {
-    copyMarketplaceAssets,
-    createGeneratedAssetCopyState,
-    createIndicatorGenerator,
-    generateIndicators,
-    pruneGeneratedIndicators,
-    shouldCopyImageAssets,
-} from "./_scripts/generate-indicators.mjs";
-
-const generateIndicatorsPlugin = {
-    name: "generate-indicators",
+const copyMarketplaceAssetsPlugin = {
+    name: "copy-marketplace-assets",
     setup(build) {
-        let assetsChanged = false;
-        const generateForBuild = createIndicatorGenerator(generateIndicators);
-        const generatedAssetCopyState = createGeneratedAssetCopyState();
-
-        build.onStart(() => {
-            assetsChanged = generateForBuild();
-            generatedAssetCopyState.markSourceAssetsChanged(assetsChanged);
-        });
-
         build.onEnd((result) => {
             if (result.errors.length === 0) {
-                copyMarketplaceAssets();
-
-                if (!generatedAssetCopyState.shouldCopy(shouldCopyImageAssets())) {
-                    return;
-                }
-
-                fs.cpSync("src/img", "dist/img", { force: true, recursive: true });
-                pruneGeneratedIndicators("dist/img/indicators");
-                generatedAssetCopyState.markCopied();
+                fs.cpSync("src/img/marketplace", "dist/img/marketplace", {
+                    force: true,
+                    recursive: true,
+                });
+                fs.rmSync("dist/img/indicators", { force: true, recursive: true });
             }
         });
     },
@@ -48,7 +26,7 @@ let ctx = await esbuild.context({
     minify: process.argv.includes("--minify"),
     outfile: "./dist/extension.js",
     platform: "node",
-    plugins: [generateIndicatorsPlugin],
+    plugins: [copyMarketplaceAssetsPlugin],
     sourcemap: process.argv.includes("--sourcemap"),
 });
 

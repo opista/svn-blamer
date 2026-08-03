@@ -1,4 +1,3 @@
-import merge from "lodash.merge";
 import {
     LogOutputChannel,
     Range,
@@ -67,7 +66,7 @@ export class Blamer {
 
     updateRecordForFile(fileName: string, update: Partial<DecorationRecord>) {
         const existingRecord = this.getRecordForFile(fileName);
-        return this.storage.set(fileName, merge({}, existingRecord, update));
+        return this.storage.set(fileName, mapToDecorationRecord(existingRecord, update));
     }
 
     async getActiveTextEditorAndFileName() {
@@ -243,7 +242,7 @@ export class Blamer {
                 return;
             }
 
-            const icons = await this.decorationManager.createGutterImagePathHashMap(
+            const icons = this.decorationManager.createGutterIconHashMap(
                 fileName,
                 Object.keys(record.blamesByRevision),
                 firstTextEditor.document.uri,
@@ -407,7 +406,7 @@ export class Blamer {
 
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
         const iconMapRefreshVersion = this.indicatorRefreshVersion;
-        const icons = await this.decorationManager.createGutterImagePathHashMap(
+        const icons = this.decorationManager.createGutterIconHashMap(
             fileName,
             uniqueRevisions,
             textEditor.document.uri,

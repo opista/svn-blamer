@@ -5,6 +5,7 @@ import {
     StatusBarItem,
     TextEditor,
     TextEditorDecorationType,
+    Uri,
     window,
     workspace,
 } from "vscode";
@@ -42,7 +43,7 @@ suite("Blamer", () => {
         } as unknown as sinon.SinonStubbedInstance<SVN>;
 
         decorationManagerMock = {
-            createGutterImagePathHashMap: sandbox.stub(),
+            createGutterIconHashMap: sandbox.stub(),
             createAndSetDecorationsForBlame: sandbox.stub(),
             reApplyDecorations: sandbox.stub(),
             updateRevisionHoverMessages: sandbox.stub(),
@@ -66,6 +67,26 @@ suite("Blamer", () => {
 
     teardown(() => {
         sandbox.restore();
+    });
+
+    test("preserves indicator URI identity when updating a record", () => {
+        const fileName = "/test/file.ts";
+        const icon = Uri.parse("data:image/svg+xml;base64,aWNvbg==");
+        const record = {
+            icons: { "10": icon },
+            blamesByLine: {},
+            blamesByRevision: {},
+            revisionDecorations: {},
+            logs: { "10": "existing" },
+            workingCopy: true,
+        } as DecorationRecord;
+        storageMock.get.withArgs(fileName).returns(record);
+
+        blamer.updateRecordForFile(fileName, { logs: { "20": "new" } });
+
+        const updated = storageMock.set.firstCall.args[1];
+        assert.strictEqual(updated.icons["10"], icon);
+        assert.deepStrictEqual(updated.logs, { "10": "existing", "20": "new" });
     });
 
     suite("toggleBlameForFile", () => {
@@ -284,7 +305,7 @@ suite("Blamer", () => {
 
             sandbox.stub(blamer, "clearBlameForFile").resolves();
             svnMock.blameFile.resolves(blameData);
-            decorationManagerMock.createGutterImagePathHashMap.resolves({});
+            decorationManagerMock.createGutterIconHashMap.returns({});
             decorationManagerMock.createAndSetDecorationsForBlame.rejects(testError);
 
             await assert.rejects(
@@ -296,7 +317,7 @@ suite("Blamer", () => {
                 "showBlameForFile should propagate the error from decorationManager.createAndSetDecorationsForBlame",
             );
             assert.ok(
-                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                decorationManagerMock.createGutterIconHashMap.calledOnceWithExactly(
                     mockFileName,
                     ["123"],
                     mockTextEditor.document.uri,
@@ -316,10 +337,8 @@ suite("Blamer", () => {
                 visibleRanges: [{ start: { line: 0 }, end: { line: 0 } }],
             } as unknown as TextEditor;
             const records = new Map<string, DecorationRecord>();
-            let resolveIcons: (icons: Record<string, string>) => void;
-            const initialIcons = new Promise<Record<string, string>>((resolve) => {
-                resolveIcons = resolve;
-            });
+            const oldIcon = Uri.parse("data:image/svg+xml;base64,b2xk");
+            const newIcon = Uri.parse("data:image/svg+xml;base64,bmV3");
             const oldDecorationDispose = sandbox.spy();
             const oldDecoration = {
                 dispose: oldDecorationDispose,
@@ -328,6 +347,13 @@ suite("Blamer", () => {
             const blame = [
                 { revision: "10", author: "test", date: "2026-02-24T00:00:00.000Z", line: "1" },
             ];
+            type DecorationResult = Awaited<
+                ReturnType<DecorationManager["createAndSetDecorationsForBlame"]>
+            >;
+            let resolveInitialDecorations: (result: DecorationResult) => void;
+            const initialDecorations = new Promise<DecorationResult>((resolve) => {
+                resolveInitialDecorations = resolve;
+            });
 
             storageMock.get.callsFake((key: string) => records.get(key));
             storageMock.set.callsFake((key: string, record: DecorationRecord) =>
@@ -335,15 +361,15 @@ suite("Blamer", () => {
             );
             sandbox.stub(blamer, "clearBlameForFile").resolves();
             svnMock.blameFile.resolves(blame);
-            decorationManagerMock.createGutterImagePathHashMap.onFirstCall().returns(initialIcons);
-            decorationManagerMock.createGutterImagePathHashMap.onSecondCall().resolves({
-                "10": "new-10.svg",
+            decorationManagerMock.createGutterIconHashMap.onFirstCall().returns({
+                "10": oldIcon,
             });
-            decorationManagerMock.createAndSetDecorationsForBlame.onFirstCall().resolves({
-                blamesByLine: { "1": blame[0] },
-                blamesByRevision: { "10": blame },
-                revisionDecorations: { "10": oldDecoration },
+            decorationManagerMock.createGutterIconHashMap.onSecondCall().returns({
+                "10": newIcon,
             });
+            decorationManagerMock.createAndSetDecorationsForBlame
+                .onFirstCall()
+                .returns(initialDecorations);
             decorationManagerMock.createAndSetDecorationsForBlame.onSecondCall().resolves({
                 blamesByLine: { "1": blame[0] },
                 blamesByRevision: { "10": blame },
@@ -354,10 +380,14 @@ suite("Blamer", () => {
             const showBlame = blamer.showBlameForFile(textEditor, fileName);
             await new Promise((resolve) => setImmediate(resolve));
             await blamer.refreshVisibleBlameIndicators();
-            resolveIcons!({ "10": "old-10.svg" });
+            resolveInitialDecorations!({
+                blamesByLine: { "1": blame[0] },
+                blamesByRevision: { "10": blame },
+                revisionDecorations: { "10": oldDecoration },
+            });
             await showBlame;
 
-            assert.deepStrictEqual(records.get(fileName)?.icons, { "10": "new-10.svg" });
+            assert.deepStrictEqual(records.get(fileName)?.icons, { "10": newIcon });
             assert.strictEqual(records.get(fileName)?.indicatorRefreshVersion, 1);
             assert.ok(oldDecorationDispose.calledOnce);
         });
@@ -373,10 +403,12 @@ suite("Blamer", () => {
                 },
                 visibleRanges: [{ start: { line: 0 }, end: { line: 1 } }],
             } as unknown as TextEditor;
+            const oldIcon = Uri.parse("data:image/svg+xml;base64,b2xk");
+            const newIcon = Uri.parse("data:image/svg+xml;base64,bmV3");
             const record: DecorationRecord = {
                 workingCopy: true,
                 indicatorRefreshVersion: 0,
-                icons: { "10": "old-10.svg" },
+                icons: { "10": oldIcon },
                 blamesByLine: {
                     "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
                 },
@@ -386,13 +418,13 @@ suite("Blamer", () => {
                 revisionDecorations: {},
                 logs: {},
             };
-            const refreshedIcons = { "10": "new-10.svg" };
+            const refreshedIcons = { "10": newIcon };
             const refreshedDecorations = { "10": {} as TextEditorDecorationType };
 
             sandbox.stub(workspace.fs, "stat").resolves();
             sandbox.stub(window, "visibleTextEditors").value([]);
             storageMock.get.withArgs(fileName).returns(record);
-            decorationManagerMock.createGutterImagePathHashMap.resolves(refreshedIcons);
+            decorationManagerMock.createGutterIconHashMap.returns(refreshedIcons);
             decorationManagerMock.createAndSetDecorationsForBlame.resolves({
                 blamesByLine: record.blamesByLine,
                 blamesByRevision: record.blamesByRevision,
@@ -403,7 +435,7 @@ suite("Blamer", () => {
             await blamer.autoBlame(textEditor);
 
             assert.ok(
-                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                decorationManagerMock.createGutterIconHashMap.calledOnceWithExactly(
                     fileName,
                     ["10"],
                     textEditor.document.uri,
@@ -432,9 +464,13 @@ suite("Blamer", () => {
             const newDecoration = {
                 dispose: sandbox.spy(),
             } as unknown as TextEditorDecorationType;
+            const oldIcon10 = Uri.parse("data:image/svg+xml;base64,b2xkLTEw");
+            const oldIcon20 = Uri.parse("data:image/svg+xml;base64,b2xkLTIw");
+            const newIcon10 = Uri.parse("data:image/svg+xml;base64,bmV3LTEw");
+            const newIcon20 = Uri.parse("data:image/svg+xml;base64,bmV3LTIw");
             const record: DecorationRecord = {
                 workingCopy: true,
-                icons: { "10": "old-10.svg", "20": "old-20.svg" },
+                icons: { "10": oldIcon10, "20": oldIcon20 },
                 blamesByLine: {
                     "1": { revision: "10", author: "one", date: "2026-02-24", line: "1" },
                     "2": { revision: "20", author: "two", date: "2026-02-24", line: "2" },
@@ -462,12 +498,12 @@ suite("Blamer", () => {
                 },
                 visibleRanges: [{ start: { line: 5 }, end: { line: 9 } }],
             } as unknown as TextEditor;
-            const newIcons = { "10": "new-10.svg", "20": "new-20.svg" };
+            const newIcons = { "10": newIcon10, "20": newIcon20 };
 
             sandbox.stub(window, "visibleTextEditors").value([firstEditor, secondEditor]);
             sandbox.stub(workspace, "getConfiguration").returns({ viewportBuffer: 200 } as any);
             storageMock.get.withArgs(fileName).returns(record);
-            decorationManagerMock.createGutterImagePathHashMap.resolves(newIcons);
+            decorationManagerMock.createGutterIconHashMap.returns(newIcons);
             decorationManagerMock.createAndSetDecorationsForBlame.resolves({
                 blamesByLine: record.blamesByLine,
                 blamesByRevision: record.blamesByRevision,
@@ -477,7 +513,7 @@ suite("Blamer", () => {
             await blamer.refreshVisibleBlameIndicators();
 
             assert.ok(
-                decorationManagerMock.createGutterImagePathHashMap.calledOnceWithExactly(
+                decorationManagerMock.createGutterIconHashMap.calledOnceWithExactly(
                     fileName,
                     ["10", "20"],
                     firstEditor.document.uri,

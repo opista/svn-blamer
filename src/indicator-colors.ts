@@ -70,23 +70,31 @@ export const createChronologicalIconMap = (
     revisions: readonly string[],
     iconPaths: readonly string[],
 ): Record<string, string | undefined> => {
-    const sortedRevisions = sortRevisions(revisions);
-    const icons: Record<string, string | undefined> = {};
+    return createChronologicalIconMapFromFactory(revisions, iconPaths.length, (index) =>
+        iconPaths.at(index),
+    );
+};
 
-    if (sortedRevisions.length === 0 || iconPaths.length === 0) {
+export const createChronologicalIconMapFromFactory = <T>(
+    revisions: readonly string[],
+    iconCount: number,
+    getIcon: (index: number) => T | undefined,
+): Record<string, T | undefined> => {
+    const sortedRevisions = sortRevisions(revisions);
+    const icons: Record<string, T | undefined> = {};
+
+    if (sortedRevisions.length === 0 || iconCount === 0) {
         return icons;
     }
 
     if (sortedRevisions.length === 1) {
-        icons[sortedRevisions[0]] = iconPaths[iconPaths.length - 1];
+        icons[sortedRevisions[0]] = getIcon(iconCount - 1);
         return icons;
     }
 
     for (const [index, revision] of sortedRevisions.entries()) {
-        const iconIndex = Math.round(
-            (index * (iconPaths.length - 1)) / (sortedRevisions.length - 1),
-        );
-        icons[revision] = iconPaths[iconIndex];
+        const iconIndex = Math.round((index * (iconCount - 1)) / (sortedRevisions.length - 1));
+        icons[revision] = getIcon(iconIndex);
     }
 
     return icons;
@@ -117,20 +125,37 @@ export const createRandomIconOrder = (
     fileName: string,
     requiredIconCount = Number.POSITIVE_INFINITY,
 ): string[] => {
+    const iconCount = Math.min(
+        ...INDICATOR_COLOR_PALETTES.map((palette) => iconsByPalette[palette].length),
+    );
+
+    return createRandomIconOrderFromFactory(
+        fileName,
+        iconCount,
+        requiredIconCount,
+        (palette, index) => iconsByPalette[palette][index],
+    );
+};
+
+export const createRandomIconOrderFromFactory = <T>(
+    fileName: string,
+    iconCount: number,
+    requiredIconCount: number,
+    getIcon: (palette: IndicatorColorPalette, index: number) => T | undefined,
+): T[] => {
     const palettes = createSeededShuffle(INDICATOR_COLOR_PALETTES, hashString(fileName));
-    const iconCount = Math.min(...palettes.map((palette) => iconsByPalette[palette].length));
 
     if (!Number.isFinite(iconCount) || iconCount === 0 || requiredIconCount <= 0) {
         return [];
     }
 
-    const order: string[] = [];
+    const order: T[] = [];
     const add = (palette: IndicatorColorPalette, index: number) => {
         if (order.length >= requiredIconCount) {
             return;
         }
 
-        const icon = iconsByPalette[palette][index];
+        const icon = getIcon(palette, index);
         if (icon) {
             order.push(icon);
         }
@@ -165,12 +190,17 @@ export const createRandomIconOrder = (
 export const createRandomIconMap = (
     revisions: readonly string[],
     iconPaths: readonly string[],
-): Record<string, string | undefined> => {
-    const icons: Record<string, string | undefined> = {};
+): Record<string, string | undefined> => createRandomIconMapFromItems(revisions, iconPaths);
+
+export const createRandomIconMapFromItems = <T>(
+    revisions: readonly string[],
+    iconsInOrder: readonly T[],
+): Record<string, T | undefined> => {
+    const icons: Record<string, T | undefined> = {};
     const sortedRevisions = sortRevisions(revisions);
 
     for (const [index, revision] of sortedRevisions.entries()) {
-        icons[revision] = iconPaths[index % iconPaths.length];
+        icons[revision] = iconsInOrder[index % iconsInOrder.length];
     }
 
     return icons;

@@ -1,8 +1,6 @@
-import path from "node:path";
-
 import * as assert from "assert";
 import sinon from "sinon";
-import { Range, TextEditor, TextEditorDecorationType } from "vscode";
+import { Range, TextEditor, TextEditorDecorationType, Uri } from "vscode";
 
 import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { MAX_NUMBER } from "./const/number";
@@ -13,15 +11,10 @@ import { Blame } from "./types/blame.model";
 suite("DecorationManager", () => {
     let decorationManager: DecorationManager;
     const sandbox = sinon.createSandbox();
-    let getExtensionStub: sinon.SinonStub;
     let getConfigurationStub: sinon.SinonStub;
 
     setup(() => {
-        // Stub extensions and workspace so constructor doesn't fail
         const vscode = require("vscode");
-        getExtensionStub = sandbox
-            .stub(vscode.extensions, "getExtension")
-            .returns({ extensionPath: "/test/path" });
         getConfigurationStub = sandbox
             .stub(vscode.workspace, "getConfiguration")
             .returns({ enableVisualIndicators: true });
@@ -72,40 +65,42 @@ suite("DecorationManager", () => {
         ]);
     });
 
-    test("uses resolved icon paths without joining the image directory again", () => {
+    test("passes an SVG data URI directly to the gutter decoration", () => {
         const vscode = require("vscode");
         const decoration = {} as TextEditorDecorationType;
         const createDecorationStub = sandbox
             .stub(vscode.window, "createTextEditorDecorationType")
             .returns(decoration);
+        const icon = Uri.parse("data:image/svg+xml;base64,PHN2Zy8+");
 
-        const result = decorationManager.createGutterDecorationType(
-            "/test/path/dist/img/indicators/standard/blue/0000.svg",
-        );
+        const result = decorationManager.createGutterDecorationType(icon);
 
         assert.strictEqual(result, decoration);
-        assert.deepStrictEqual(
-            createDecorationStub.firstCall.args[0].gutterIconPath,
-            "/test/path/dist/img/indicators/standard/blue/0000.svg",
-        );
+        assert.strictEqual(createDecorationStub.firstCall.args[0].gutterIconPath, icon);
     });
 
-    test("assigns blue icons from oldest to newest", async () => {
-        getExtensionStub.returns({ extensionPath: process.cwd() });
+    test("assigns blue SVG data URIs from oldest to newest", async () => {
         getConfigurationStub.returns({
             enableVisualIndicators: true,
             indicatorColorScheme: "blue",
         });
         decorationManager = new DecorationManager();
 
-        const icons = await decorationManager.createGutterImagePathHashMap(
-            "/workspace/example.ts",
-            ["30", "10", "20"],
-        );
+        const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
+            "30",
+            "10",
+            "20",
+        ]);
 
-        assert.ok(icons["10"]?.endsWith("/blue/0000.svg"));
-        assert.ok(icons["20"]?.endsWith("/blue/0250.svg"));
-        assert.ok(icons["30"]?.endsWith("/blue/0499.svg"));
+        assert.match(String(icons["10"]), /^data:image\/svg\+xml;base64,/);
+        assert.match(String(icons["20"]), /^data:image\/svg\+xml;base64,/);
+        assert.match(String(icons["30"]), /^data:image\/svg\+xml;base64,/);
+
+        const decodeSvg = (icon: unknown) =>
+            Buffer.from(String(icon).split(",")[1], "base64").toString("utf8");
+
+        assert.match(decodeSvg(icons["10"]), /fill="rgb\(255\.0000, 255\.0000, 255\.0000\)"/);
+        assert.match(decodeSvg(icons["30"]), /fill="rgb\(31\.0000, 95\.0000, 159\.0000\)"/);
         assert.ok(
             getConfigurationStub.calledWith(
                 EXTENSION_CONFIGURATION,
@@ -115,7 +110,6 @@ suite("DecorationManager", () => {
     });
 
     test("uses the original document URI to resolve indicator settings", async () => {
-        getExtensionStub.returns({ extensionPath: process.cwd() });
         getConfigurationStub.returns({
             enableVisualIndicators: true,
             indicatorColorScheme: "blue",
@@ -126,7 +120,7 @@ suite("DecorationManager", () => {
             scheme: "vscode-remote",
         } as unknown as import("vscode").Uri;
 
-        await decorationManager.createGutterImagePathHashMap(
+        await decorationManager.createGutterIconHashMap(
             "/workspace/example.ts",
             ["10", "20"],
             remoteUri,
@@ -135,34 +129,54 @@ suite("DecorationManager", () => {
         assert.ok(getConfigurationStub.calledWithExactly(EXTENSION_CONFIGURATION, remoteUri));
     });
 
-    test("shares the first icon-path read between concurrent editors", async () => {
-        getExtensionStub.returns({ extensionPath: process.cwd() });
+    test("does not read indicator icons from the filesystem", async () => {
+        decorationManager = new DecorationManager();
+        const fsPromises = require("node:fs/promises");
+        const readdirSpy = sandbox.spy(fsPromises, "readdir");
+
+        for (const scheme of ["blue", "random"]) {
+            getConfigurationStub.returns({
+                enableVisualIndicators: true,
+                indicatorColorScheme: scheme,
+            });
+            await decorationManager.createGutterIconHashMap("/workspace/example.ts", ["10"]);
+        }
+
+        assert.strictEqual(readdirSpy.callCount, 0);
+    });
+
+    test("creates at most the chronological URIs in use and reuses them", async () => {
+        const vscode = require("vscode");
+        const parseSpy = sandbox.spy(vscode.Uri, "parse");
         getConfigurationStub.returns({
             enableVisualIndicators: true,
             indicatorColorScheme: "blue",
         });
         decorationManager = new DecorationManager();
-        const fsPromises = require("node:fs/promises");
-        const readdirSpy = sandbox.spy(fsPromises, "readdir");
+        const revisions = Array.from({ length: 20 }, (_, index) => `${index + 1}`);
 
-        await Promise.all([
-            decorationManager.createGutterImagePathHashMap("/workspace/one.ts", ["10"]),
-            decorationManager.createGutterImagePathHashMap("/workspace/two.ts", ["20"]),
-        ]);
-
-        assert.strictEqual(
-            readdirSpy.withArgs(path.join(process.cwd(), "dist", "img", "indicators", "blue"))
-                .callCount,
-            1,
+        const first = await decorationManager.createGutterIconHashMap(
+            "/workspace/example.ts",
+            revisions,
         );
+        const createdForFirstBlame = parseSpy.callCount;
+        const second = await decorationManager.createGutterIconHashMap(
+            "/workspace/example.ts",
+            revisions,
+        );
+
+        assert.ok(createdForFirstBlame <= revisions.length);
+        assert.strictEqual(parseSpy.callCount, createdForFirstBlame);
+        assert.strictEqual(first["1"], second["1"]);
+        assert.strictEqual(first["20"], second["20"]);
     });
 
-    test("uses the selected chronological colour scheme", async () => {
-        getExtensionStub.returns({ extensionPath: process.cwd() });
+    test("uses SVG data URIs for every chronological colour scheme", async () => {
         decorationManager = new DecorationManager();
 
         for (const scheme of [
             "redToGreen",
+            "blue",
             "sky",
             "teal",
             "violet",
@@ -174,18 +188,17 @@ suite("DecorationManager", () => {
                 indicatorColorScheme: scheme,
             });
 
-            const icons = await decorationManager.createGutterImagePathHashMap(
-                "/workspace/example.ts",
-                ["10", "20"],
-            );
+            const icons = await decorationManager.createGutterIconHashMap("/workspace/example.ts", [
+                "10",
+                "20",
+            ]);
 
-            assert.ok(icons["10"]?.endsWith(`/${scheme}/0000.svg`));
-            assert.ok(icons["20"]?.endsWith(`/${scheme}/0499.svg`));
+            assert.match(String(icons["10"]), /^data:image\/svg\+xml;base64,/);
+            assert.match(String(icons["20"]), /^data:image\/svg\+xml;base64,/);
         }
     });
 
     test("keeps contrast-first random icons stable for a file", async () => {
-        getExtensionStub.returns({ extensionPath: process.cwd() });
         getConfigurationStub.returns({
             enableVisualIndicators: true,
             indicatorColorScheme: "random",
@@ -193,16 +206,21 @@ suite("DecorationManager", () => {
         decorationManager = new DecorationManager();
 
         const revisions = Array.from({ length: 12 }, (_, index) => `${index + 1}`);
-        const first = await decorationManager.createGutterImagePathHashMap(
+        const first = await decorationManager.createGutterIconHashMap(
             "/workspace/example.ts",
             revisions,
         );
-        const second = await decorationManager.createGutterImagePathHashMap(
+        const second = await decorationManager.createGutterIconHashMap(
             "/workspace/example.ts",
             revisions,
         );
 
         assert.deepStrictEqual(first, second);
         assert.strictEqual(new Set(Object.values(first)).size, 12);
+        assert.ok(
+            Object.values(first).every((icon) =>
+                String(icon).startsWith("data:image/svg+xml;base64,"),
+            ),
+        );
     });
 });

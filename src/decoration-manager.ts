@@ -1,10 +1,6 @@
-import { readdir } from "node:fs/promises";
-import path from "node:path";
-
 import {
     DecorationOptions,
     DecorationRangeBehavior,
-    extensions,
     MarkdownString,
     Range,
     TextEditor,
@@ -15,69 +11,28 @@ import {
     workspace,
 } from "vscode";
 
-import { EXTENSION_CONFIGURATION, EXTENSION_ID } from "./const/extension";
+import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { MAX_NUMBER } from "./const/number";
 import {
-    ChronologicalColorScheme,
-    createChronologicalIconMap,
-    createRandomIconMap,
-    createRandomIconOrder,
+    createChronologicalIconMapFromFactory,
+    createRandomIconMapFromItems,
+    createRandomIconOrderFromFactory,
     getIndicatorColorScheme,
-    INDICATOR_COLOR_PALETTES,
-    IndicatorColorPalette,
 } from "./indicator-colors";
+import {
+    getChronologicalIndicatorUri,
+    getRandomIndicatorUri,
+    INDICATOR_COUNT,
+} from "./indicator-uris";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
 import { Blame } from "./types/blame.model";
 import { DecorationRecord } from "./types/decoration-record.model";
-import { GutterImagePathHashMap } from "./types/gutter-image-path-hash-map.model";
+import { GutterIconHashMap } from "./types/gutter-icon-hash-map.model";
 import { LogHashMap } from "./types/log-hash-map.model";
 
 export class DecorationManager {
-    private imageDir: string;
-    private gutterImageFileNames = new Map<string, Promise<string[]>>();
-
-    constructor() {
-        const extension = extensions.getExtension(EXTENSION_ID);
-        if (!extension) {
-            throw new Error(`Extension ${EXTENSION_ID} not found`);
-        }
-        const extensionPath = extension.extensionPath;
-        this.imageDir = path.join(extensionPath, "dist", "img", "indicators");
-    }
-
-    private async getIconPaths(directory: string): Promise<string[]> {
-        const cached = this.gutterImageFileNames.get(directory);
-
-        if (cached) {
-            return cached;
-        }
-
-        const iconPaths = readdir(directory).then((fileNames) =>
-            fileNames
-                .filter((fileName) => fileName.endsWith(".svg"))
-                .sort()
-                .map((fileName) => path.join(directory, fileName)),
-        );
-        this.gutterImageFileNames.set(directory, iconPaths);
-
-        try {
-            return await iconPaths;
-        } catch (error) {
-            this.gutterImageFileNames.delete(directory);
-            throw error;
-        }
-    }
-
-    private getRandomPaletteIconPaths(palette: IndicatorColorPalette): Promise<string[]> {
-        return this.getIconPaths(path.join(this.imageDir, "random", palette));
-    }
-
-    private getChronologicalIconPaths(scheme: ChronologicalColorScheme): Promise<string[]> {
-        return this.getIconPaths(path.join(this.imageDir, scheme));
-    }
-
-    createGutterDecorationType(gutterIconImage?: string): TextEditorDecorationType {
+    createGutterDecorationType(gutterIconImage?: Uri): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             gutterIconPath: gutterIconImage,
             gutterIconSize: "contain",
@@ -88,7 +43,7 @@ export class DecorationManager {
     createActiveLineDecorationType(
         blame: Blame,
         log?: string,
-        gutterIconImage?: string,
+        gutterIconImage?: Uri,
     ): TextEditorDecorationType {
         return window.createTextEditorDecorationType({
             after: {
@@ -194,11 +149,11 @@ export class DecorationManager {
         return options;
     }
 
-    async createGutterImagePathHashMap(
+    createGutterIconHashMap(
         fileName: string,
         revisions: string[],
         resource: Uri = Uri.file(fileName),
-    ) {
+    ): GutterIconHashMap {
         const configuration = workspace.getConfiguration(EXTENSION_CONFIGURATION, resource);
         const { enableVisualIndicators } = configuration;
 
@@ -209,27 +164,25 @@ export class DecorationManager {
         const scheme = getIndicatorColorScheme(configuration.indicatorColorScheme);
 
         if (scheme !== "random") {
-            const iconPaths = await this.getChronologicalIconPaths(scheme);
-            return createChronologicalIconMap(revisions, iconPaths);
+            return createChronologicalIconMapFromFactory(revisions, INDICATOR_COUNT, (index) =>
+                getChronologicalIndicatorUri(scheme, index),
+            );
         }
 
-        const iconPathsByPalette = Object.fromEntries(
-            await Promise.all(
-                INDICATOR_COLOR_PALETTES.map(async (colorPalette) => [
-                    colorPalette,
-                    await this.getRandomPaletteIconPaths(colorPalette),
-                ]),
-            ),
-        ) as Record<IndicatorColorPalette, string[]>;
-        const iconOrder = createRandomIconOrder(iconPathsByPalette, fileName, revisions.length);
+        const iconOrder = createRandomIconOrderFromFactory(
+            fileName,
+            INDICATOR_COUNT,
+            revisions.length,
+            getRandomIndicatorUri,
+        );
 
-        return createRandomIconMap(revisions, iconOrder);
+        return createRandomIconMapFromItems(revisions, iconOrder);
     }
 
     async createAndSetDecorationsForBlame(
         textEditor: TextEditor,
         blames: Blame[],
-        icons: GutterImagePathHashMap,
+        icons: GutterIconHashMap,
         logs?: LogHashMap,
         visibleRanges?: readonly Range[],
     ): Promise<
@@ -248,10 +201,10 @@ export class DecorationManager {
         }
 
         const revisionDecorations: Record<string, TextEditorDecorationType> = {};
-        const revisionsByIcon = new Map<string, string[]>();
+        const revisionsByIcon = new Map<Uri | undefined, string[]>();
 
         for (const revision of Object.keys(blamesByRevision)) {
-            const icon = icons[revision] || "";
+            const icon = icons[revision];
             if (!revisionsByIcon.has(icon)) {
                 revisionsByIcon.set(icon, []);
             }
@@ -259,7 +212,7 @@ export class DecorationManager {
         }
 
         for (const [icon, revisions] of revisionsByIcon) {
-            const decoration = this.createGutterDecorationType(icon || undefined);
+            const decoration = this.createGutterDecorationType(icon);
             const allOptions: DecorationOptions[] = [];
 
             for (const revision of revisions) {
@@ -347,7 +300,7 @@ export class DecorationManager {
         textEditor: TextEditor,
         blame: Blame,
         log?: string,
-        gutterIconImage?: string,
+        gutterIconImage?: Uri,
     ): TextEditorDecorationType {
         const decoration = this.createActiveLineDecorationType(blame, log, gutterIconImage);
         const lineNumber = Number(blame.line) - 1;
