@@ -19,6 +19,7 @@ import { MAX_NUMBER } from "./const/number";
 import { mapBlameToHoverMessage } from "./mapping/map-blame-to-hover-message";
 import { mapBlameToInlineMessage } from "./mapping/map-blame-to-inline-message";
 import { Blame } from "./types/blame.model";
+import { CommitLink } from "./types/commit-link.model";
 import { DecorationRecord } from "./types/decoration-record.model";
 import { GutterImagePathHashMap } from "./types/gutter-image-path-hash-map.model";
 import { LogHashMap } from "./types/log-hash-map.model";
@@ -119,8 +120,15 @@ export class DecorationManager {
         return low;
     }
 
+    private getCommitLinks(): CommitLink[] {
+        return workspace
+            .getConfiguration(EXTENSION_CONFIGURATION)
+            .get<CommitLink[]>("commitLinks", []);
+    }
+
     private createDecorationOptions(
         blames: Blame[],
+        commitLinks: CommitLink[],
         logs?: LogHashMap,
         visibleRanges?: readonly Range[],
     ): DecorationOptions[] {
@@ -135,7 +143,7 @@ export class DecorationManager {
             if (!hoverMessage) {
                 const [firstBlame] = blames;
                 const log = logs?.[firstBlame.revision];
-                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log);
+                const hoverMessageText = mapBlameToHoverMessage(firstBlame, log, commitLinks);
                 hoverMessage = new MarkdownString(hoverMessageText, true);
             }
             return hoverMessage;
@@ -225,6 +233,7 @@ export class DecorationManager {
             blamesByRevision[blame.revision].push(blame);
         }
 
+        const commitLinks = this.getCommitLinks();
         const revisionDecorations: Record<string, TextEditorDecorationType> = {};
         const revisionsByIcon = new Map<string, string[]>();
 
@@ -243,7 +252,12 @@ export class DecorationManager {
             for (const revision of revisions) {
                 revisionDecorations[revision] = decoration;
                 const revisionBlames = blamesByRevision[revision];
-                const options = this.createDecorationOptions(revisionBlames, logs, visibleRanges);
+                const options = this.createDecorationOptions(
+                    revisionBlames,
+                    commitLinks,
+                    logs,
+                    visibleRanges,
+                );
                 allOptions.push(...options);
             }
 
@@ -262,6 +276,7 @@ export class DecorationManager {
         record: DecorationRecord,
         visibleRanges?: readonly Range[],
     ) {
+        const commitLinks = this.getCommitLinks();
         const decorationToRevisions = new Map<TextEditorDecorationType, string[]>();
 
         for (const revision in record.revisionDecorations) {
@@ -281,6 +296,7 @@ export class DecorationManager {
                 const revisionBlames = record.blamesByRevision[revision] || [];
                 const options = this.createDecorationOptions(
                     revisionBlames,
+                    commitLinks,
                     record.logs,
                     visibleRanges,
                 );
@@ -311,10 +327,11 @@ export class DecorationManager {
             }
         }
 
+        const commitLinks = this.getCommitLinks();
         const allOptions: DecorationOptions[] = [];
         for (const rev of revisionsSharingDecoration) {
             const revisionBlames = record.blamesByRevision[rev] || [];
-            const options = this.createDecorationOptions(revisionBlames, record.logs);
+            const options = this.createDecorationOptions(revisionBlames, commitLinks, record.logs);
             allOptions.push(...options);
         }
 
