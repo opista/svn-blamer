@@ -4,9 +4,6 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/beauagst/svn-blamer?display_date=published_at&style=for-the-badge)
 
 <a href="https://marketplace.visualstudio.com/items?itemName=beaugust.blamer-vs" target="_blank">![Visual Studio Marketplace Link](https://img.shields.io/badge/Visual%20Studio%20Marketplace-black?style=for-the-badge&logo=visualstudiocode)</a>
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/beaugust.blamer-vs?style=for-the-badge)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/beaugust.blamer-vs?style=for-the-badge)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/beaugust.blamer-vs?style=for-the-badge)
 
 <a href="https://open-vsx.org/extension/beaugust/blamer-vs" target="_blank">![Open VSX Registry Link](https://img.shields.io/badge/Open%20VSX%20Registry-%23c160ef?style=for-the-badge)</a>
 ![Open VSX Downloads](https://img.shields.io/open-vsx/dt/beaugust/blamer-vs?style=for-the-badge)
@@ -34,6 +31,14 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 #### Visually identify lines changed by the same revision
 
 <img src="src/img/marketplace/visual-indicators.png" width="700">
+
+#### Choose an indicator colour scheme
+
+Select **SVN Blamer: Indicator colour scheme** in Settings to choose how revision indicators are coloured. The default **Random** scheme keeps the existing mixed-colour behaviour. **Red → Green** shows older commits in red and newer commits in green. Blue, Teal, Violet, and Vermilion fade from white for older commits to a stronger colour for newer commits.
+
+The single-colour schemes adapt to light and dark themes. On light themes, older white indicators have a thin outline so that they remain visible. Choose **Custom gradient** to set your own oldest and newest colours, with an optional outline colour.
+
+Screenshots of the available schemes will be added here.
 
 #### Display revision information and logs in line
 
