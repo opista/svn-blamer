@@ -38,25 +38,9 @@ Select **SVN Blamer: Indicator colour scheme** in Settings to choose how revisio
 
 The single-colour schemes adapt to light and dark themes. On light themes, older white indicators have a thin outline so that they remain visible. Choose **Custom gradient** to set your own oldest and newest colours, with an optional outline colour.
 
-<p align="center">
-  <strong>Random</strong>&nbsp;&nbsp;&nbsp;
-  <strong>Red → Green</strong>&nbsp;&nbsp;&nbsp;
-  <strong>Blue</strong>&nbsp;&nbsp;&nbsp;
-  <strong>Teal</strong><br>
-  <img src="src/img/marketplace/indicator-scheme-random.png" alt="Random indicator scheme" width="64">
-  <img src="src/img/marketplace/indicator-scheme-red-to-green.png" alt="Red to Green indicator scheme" width="60">
-  <img src="src/img/marketplace/indicator-scheme-blue.png" alt="Blue indicator scheme" width="59">
-  <img src="src/img/marketplace/indicator-scheme-teal.png" alt="Teal indicator scheme" width="66">
-</p>
-
-<p align="center">
-  <strong>Violet</strong>&nbsp;&nbsp;&nbsp;
-  <strong>Vermilion</strong>&nbsp;&nbsp;&nbsp;
-  <strong>Custom (#BADA55)</strong><br>
-  <img src="src/img/marketplace/indicator-scheme-violet.png" alt="Violet indicator scheme" width="64">
-  <img src="src/img/marketplace/indicator-scheme-vermilion.png" alt="Vermilion indicator scheme" width="60">
-  <img src="src/img/marketplace/indicator-scheme-custom.png" alt="Custom BADA55 indicator scheme" width="73">
-</p>
+| Random                                                                                               | Red → Green                                                                                                      | Blue                                                                                             | Teal                                                                                             | Violet                                                                                               | Vermilion                                                                                                  | Custom (#BADA55)                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| <img src="src/img/marketplace/indicator-scheme-random.png" alt="Random indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-red-to-green.png" alt="Red to Green indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-blue.png" alt="Blue indicator scheme" width="59"> | <img src="src/img/marketplace/indicator-scheme-teal.png" alt="Teal indicator scheme" width="66"> | <img src="src/img/marketplace/indicator-scheme-violet.png" alt="Violet indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-vermilion.png" alt="Vermilion indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-custom.png" alt="Custom BADA55 indicator scheme" width="73"> |
 
 #### Display revision information and logs in line
 
