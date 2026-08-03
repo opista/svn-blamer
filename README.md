@@ -4,9 +4,6 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/beauagst/svn-blamer?display_date=published_at&style=for-the-badge)
 
 <a href="https://marketplace.visualstudio.com/items?itemName=beaugust.blamer-vs" target="_blank">![Visual Studio Marketplace Link](https://img.shields.io/badge/Visual%20Studio%20Marketplace-black?style=for-the-badge&logo=visualstudiocode)</a>
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/beaugust.blamer-vs?style=for-the-badge)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/beaugust.blamer-vs?style=for-the-badge)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/beaugust.blamer-vs?style=for-the-badge)
 
 <a href="https://open-vsx.org/extension/beaugust/blamer-vs" target="_blank">![Open VSX Registry Link](https://img.shields.io/badge/Open%20VSX%20Registry-%23c160ef?style=for-the-badge)</a>
 ![Open VSX Downloads](https://img.shields.io/open-vsx/dt/beaugust/blamer-vs?style=for-the-badge)
@@ -50,6 +47,12 @@ If you use TortoiseSVN, make sure the option Command Line Tools is checked durin
 #### Toggle blame from the toolbar
 
 <img src="src/img/marketplace/toolbar-toggle.gif" width="700">
+
+#### Choose an indicator colour scheme
+
+| Random                                                                                               | Red → Green                                                                                                      | Blue                                                                                             | Teal                                                                                             | Violet                                                                                               | Vermilion                                                                                                  | Custom (#BADA55)                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| <img src="src/img/marketplace/indicator-scheme-random.png" alt="Random indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-red-to-green.png" alt="Red to Green indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-blue.png" alt="Blue indicator scheme" width="59"> | <img src="src/img/marketplace/indicator-scheme-teal.png" alt="Teal indicator scheme" width="66"> | <img src="src/img/marketplace/indicator-scheme-violet.png" alt="Violet indicator scheme" width="64"> | <img src="src/img/marketplace/indicator-scheme-vermilion.png" alt="Vermilion indicator scheme" width="60"> | <img src="src/img/marketplace/indicator-scheme-custom.png" alt="Custom BADA55 indicator scheme" width="73"> |
 
 ### Secure Authentication
 
