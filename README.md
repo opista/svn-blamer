@@ -87,8 +87,11 @@ This extension contributes the following commands to the Command palette.
 | **Auto Blame**               | Automatically blames files as you open them.                                                                                                                          | `false`       |
 | **Enable Logs**              | Fetches and displays revision log data in the popup.                                                                                                                  | `true`        |
 | **Enable Visual Indicators** | Toggle visual indicators that sit to the left of the line number.                                                                                                     | `true`        |
+| **Indicator colour scheme**  | `random` preserves the existing mixed colours. Other schemes map oldest to newest revisions: red to green, or white fading to blue, teal, violet, or vermilion.       | `random`      |
 | **Viewport Buffer**          | How many extra lines of blame to load above and below your screen. Increase this if blame icons disappear while scrolling fast. Higher values may impact performance. | `200`         |
 | **SVN Executable Path**      | Path to svn executable or alternative command.                                                                                                                        | `"svn"`       |
+
+All chronological schemes have 500 positions. Files with more than 500 revisions reuse the nearest position.
 
 ## Known Issues
 

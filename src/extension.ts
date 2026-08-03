@@ -44,6 +44,12 @@ export async function activate(context: ExtensionContext) {
         blamer.autoBlame(textEditor),
     );
 
+    const updateIndicatorColours = workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration("svnBlamer.indicatorColorScheme")) {
+            queueMicrotask(() => void blamer.refreshVisibleBlameIndicators());
+        }
+    });
+
     const clearOnClose = workspace.onDidCloseTextDocument((textDocument) =>
         blamer.handleClosedDocument(textDocument),
     );
@@ -68,6 +74,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(updateOnChange);
     context.subscriptions.push(scrollUpdate);
     context.subscriptions.push(autoBlame);
+    context.subscriptions.push(updateIndicatorColours);
     context.subscriptions.push(clearCredentials);
     context.subscriptions.push(logger);
     context.subscriptions.push(blamer);

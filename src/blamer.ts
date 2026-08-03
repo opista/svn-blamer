@@ -1,4 +1,3 @@
-import merge from "lodash.merge";
 import {
     LogOutputChannel,
     Range,
@@ -30,6 +29,7 @@ const NEWLINE_REGEX = /\n/g;
 export class Blamer {
     private activeLine: string | undefined;
     private activeLineDecoration: TextEditorDecorationType | undefined;
+    private indicatorRefreshVersion = 0;
     private statusBarItem: StatusBarItem;
 
     constructor(
@@ -66,7 +66,7 @@ export class Blamer {
 
     updateRecordForFile(fileName: string, update: Partial<DecorationRecord>) {
         const existingRecord = this.getRecordForFile(fileName);
-        return this.storage.set(fileName, merge({}, existingRecord, update));
+        return this.storage.set(fileName, mapToDecorationRecord(existingRecord, update));
     }
 
     async getActiveTextEditorAndFileName() {
@@ -203,6 +203,113 @@ export class Blamer {
         this.decorationManager.reApplyDecorations(textEditor, record, extendedRanges);
     }
 
+    /**
+     * Recreates gutter decorations from cached blame data after the indicator scheme changes.
+     * This does not run svn blame again.
+     */
+    async refreshVisibleBlameIndicators() {
+        const refreshVersion = ++this.indicatorRefreshVersion;
+        const editorsByFileName = new Map<string, TextEditor[]>();
+
+        for (const textEditor of window.visibleTextEditors) {
+            const fileName = textEditor.document.fileName;
+            const editors = editorsByFileName.get(fileName) ?? [];
+            editors.push(textEditor);
+            editorsByFileName.set(fileName, editors);
+        }
+
+        await Promise.all(
+            [...editorsByFileName].map(([fileName, textEditors]) =>
+                this.refreshVisibleBlameForFile(fileName, textEditors, refreshVersion),
+            ),
+        );
+    }
+
+    private async refreshVisibleBlameForFile(
+        fileName: string,
+        textEditors: TextEditor[],
+        refreshVersion: number,
+    ) {
+        const record = this.getRecordForFile(fileName);
+
+        if (!record || !record.workingCopy || Object.keys(record.blamesByRevision).length === 0) {
+            return;
+        }
+
+        try {
+            const [firstTextEditor, ...otherTextEditors] = textEditors;
+            if (!firstTextEditor) {
+                return;
+            }
+
+            const icons = this.decorationManager.createGutterIconHashMap(
+                fileName,
+                Object.keys(record.blamesByRevision),
+                firstTextEditor.document.uri,
+            );
+
+            if (
+                refreshVersion !== this.indicatorRefreshVersion ||
+                this.getRecordForFile(fileName) !== record
+            ) {
+                return;
+            }
+
+            const { revisionDecorations } =
+                await this.decorationManager.createAndSetDecorationsForBlame(
+                    firstTextEditor,
+                    Object.values(record.blamesByLine),
+                    icons,
+                    record.logs,
+                    this.getExtendedVisibleRanges(firstTextEditor),
+                );
+
+            if (
+                refreshVersion !== this.indicatorRefreshVersion ||
+                this.getRecordForFile(fileName) !== record
+            ) {
+                disposeDecorations([...new Set(Object.values(revisionDecorations))]);
+                return;
+            }
+
+            const refreshedRecord: DecorationRecord = {
+                ...record,
+                icons,
+                indicatorRefreshVersion: refreshVersion,
+                revisionDecorations,
+            };
+            this.setRecordForFile(fileName, refreshedRecord);
+
+            for (const textEditor of otherTextEditors) {
+                this.decorationManager.reApplyDecorations(
+                    textEditor,
+                    refreshedRecord,
+                    this.getExtendedVisibleRanges(textEditor),
+                );
+            }
+
+            disposeDecorations([...new Set(Object.values(record.revisionDecorations))]);
+            this.refreshActiveLineDecoration(fileName);
+            this.logger.debug("Refreshed visual indicators", { fileName });
+        } catch (err: unknown) {
+            this.logger.error("Failed to refresh visual indicators", {
+                err: String(err),
+                fileName,
+            });
+        }
+    }
+
+    private refreshActiveLineDecoration(fileName: string) {
+        const textEditor = window.activeTextEditor;
+
+        if (!textEditor || textEditor.document.fileName !== fileName || !this.activeLine) {
+            return;
+        }
+
+        this.activeLineDecoration?.dispose();
+        void this.setUpdatedDecoration(textEditor, fileName, this.activeLine);
+    }
+
     private getExtendedVisibleRanges(textEditor: TextEditor): Range[] {
         const { viewportBuffer } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
         return textEditor.visibleRanges.map((range) => {
@@ -298,7 +405,12 @@ export class Blamer {
         }
 
         const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
-        const icons = await this.decorationManager.createGutterImagePathHashMap(uniqueRevisions);
+        const iconMapRefreshVersion = this.indicatorRefreshVersion;
+        const icons = this.decorationManager.createGutterIconHashMap(
+            fileName,
+            uniqueRevisions,
+            textEditor.document.uri,
+        );
 
         const extendedRanges = this.getExtendedVisibleRanges(textEditor);
 
@@ -315,11 +427,20 @@ export class Blamer {
             icons,
             blamesByLine,
             blamesByRevision,
+            indicatorRefreshVersion: iconMapRefreshVersion,
             revisionDecorations,
         });
 
         this.statusBarItem.hide();
         this.setRecordForFile(fileName, record);
+
+        if (iconMapRefreshVersion !== this.indicatorRefreshVersion) {
+            await this.refreshVisibleBlameForFile(
+                fileName,
+                [textEditor],
+                this.indicatorRefreshVersion,
+            );
+        }
 
         this.logger.info("Blame successful", { fileName });
     }
@@ -372,6 +493,9 @@ export class Blamer {
         }
 
         const fileName = await getFileNameFromTextEditor(textEditor);
+        if (!fileName) {
+            return;
+        }
 
         try {
             const existingRecord = this.getRecordForFile(fileName);
@@ -384,6 +508,15 @@ export class Blamer {
             }
 
             if (existingRecord) {
+                if (existingRecord.indicatorRefreshVersion !== this.indicatorRefreshVersion) {
+                    await this.refreshVisibleBlameForFile(
+                        fileName,
+                        [textEditor],
+                        this.indicatorRefreshVersion,
+                    );
+                    return;
+                }
+
                 this.logger.debug("Blame already exists for file, re-applying decorations", {
                     fileName,
                 });

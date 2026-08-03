@@ -1,12 +1,19 @@
+import fs from "node:fs";
+
 import * as esbuild from "esbuild";
-import { copy } from "esbuild-plugin-copy";
 
-import { generateIndicators } from "./_scripts/generate-indicators.mjs";
-
-const generateIndicatorsPlugin = {
-    name: "generate-indicators",
+const copyMarketplaceAssetsPlugin = {
+    name: "copy-marketplace-assets",
     setup(build) {
-        build.onStart(() => generateIndicators(3000));
+        build.onEnd((result) => {
+            if (result.errors.length === 0) {
+                fs.cpSync("src/img/marketplace", "dist/img/marketplace", {
+                    force: true,
+                    recursive: true,
+                });
+                fs.rmSync("dist/img/indicators", { force: true, recursive: true });
+            }
+        });
     },
 };
 
@@ -19,16 +26,7 @@ let ctx = await esbuild.context({
     minify: process.argv.includes("--minify"),
     outfile: "./dist/extension.js",
     platform: "node",
-    plugins: [
-        generateIndicatorsPlugin,
-        copy({
-            resolveFrom: "cwd",
-            assets: {
-                from: ["./src/img/**/*"],
-                to: ["./dist/img"],
-            },
-        }),
-    ],
+    plugins: [copyMarketplaceAssetsPlugin],
     sourcemap: process.argv.includes("--sourcemap"),
 });
 

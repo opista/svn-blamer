@@ -1,7 +1,7 @@
 import { TextEditorDecorationType } from "vscode";
 
 import { Blame } from "./blame.model";
-import { GutterImagePathHashMap } from "./gutter-image-path-hash-map.model";
+import { GutterIconHashMap } from "./gutter-icon-hash-map.model";
 import { LogHashMap } from "./log-hash-map.model";
 
 export type BlamesByLine = {
@@ -13,7 +13,7 @@ export type BlamesByRevision = {
 };
 
 export type DecorationRecord = {
-    icons: GutterImagePathHashMap;
+    icons: GutterIconHashMap;
     blamesByLine: BlamesByLine;
     blamesByRevision: BlamesByRevision;
     revisionDecorations: {
@@ -21,4 +21,5 @@ export type DecorationRecord = {
     };
     logs: LogHashMap;
     workingCopy: boolean;
+    indicatorRefreshVersion?: number;
 };

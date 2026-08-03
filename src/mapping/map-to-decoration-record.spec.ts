@@ -1,4 +1,5 @@
 import * as assert from "assert";
+import { Uri } from "vscode";
 
 import { DecorationRecord } from "../types/decoration-record.model";
 import { mapToDecorationRecord } from "./map-to-decoration-record";
@@ -14,6 +15,7 @@ suite("Map To Decoration Record Test Suite", () => {
         assert.deepStrictEqual(result.revisionDecorations, {});
         assert.deepStrictEqual(result.logs, {});
         assert.strictEqual(result.workingCopy, true);
+        assert.strictEqual(result.indicatorRefreshVersion, 0);
     });
 
     test("should merge partial record with default record", () => {
@@ -28,25 +30,27 @@ suite("Map To Decoration Record Test Suite", () => {
     });
 
     test("should deep merge nested objects", () => {
+        const icon = Uri.parse("data:image/svg+xml;base64,aWNvbg==");
         const input: Partial<DecorationRecord> = {
             icons: {
-                rev1: "path/to/icon.png",
+                rev1: icon,
             },
         };
         const result = mapToDecorationRecord(input);
 
-        assert.strictEqual(result.icons["rev1"], "path/to/icon.png");
+        assert.strictEqual(result.icons["rev1"], icon);
         assert.deepStrictEqual(result.blamesByLine, {});
     });
 
     test("should overwrite default properties if provided", () => {
+        const icon = Uri.parse("data:image/svg+xml;base64,aWNvbjI=");
         const input: Partial<DecorationRecord> = {
             workingCopy: false,
-            icons: { rev2: "icon2" },
+            icons: { rev2: icon },
         };
         const result = mapToDecorationRecord(input);
 
         assert.strictEqual(result.workingCopy, false);
-        assert.strictEqual(result.icons["rev2"], "icon2");
+        assert.strictEqual(result.icons["rev2"], icon);
     });
 });

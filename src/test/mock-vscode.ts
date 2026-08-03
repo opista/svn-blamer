@@ -4,6 +4,16 @@ const originalRequire = Module.prototype.require;
 
 const vscodeMock = {
     window: {
+        createOutputChannel: () => ({
+            clear: () => {},
+            debug: () => {},
+            dispose: () => {},
+            error: () => {},
+            info: () => {},
+            trace: () => {},
+            warn: () => {},
+        }),
+        createTextEditorDecorationType: () => ({}),
         createStatusBarItem: () => ({
             show: () => {},
             hide: () => {},
@@ -11,6 +21,10 @@ const vscodeMock = {
             text: "",
         }),
         activeTextEditor: undefined,
+        visibleTextEditors: [],
+        onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
+        onDidChangeTextEditorSelection: () => ({ dispose: () => {} }),
+        onDidChangeTextEditorVisibleRanges: () => ({ dispose: () => {} }),
         showWarningMessage: () => {},
         showErrorMessage: () => {},
         showInformationMessage: () => {},
@@ -22,12 +36,16 @@ const vscodeMock = {
             enableVisualIndicators: true,
             get: () => {},
         }),
+        onDidChangeConfiguration: () => ({ dispose: () => {} }),
+        onDidChangeTextDocument: () => ({ dispose: () => {} }),
+        onDidCloseTextDocument: () => ({ dispose: () => {} }),
         fs: {
             stat: () => Promise.resolve(),
         },
     },
     commands: {
         executeCommand: () => Promise.resolve(),
+        registerCommand: () => ({ dispose: () => {} }),
     },
     Range: class Range {
         constructor(
@@ -43,12 +61,21 @@ const vscodeMock = {
             public character: number,
         ) {}
     },
+    DecorationRangeBehavior: { ClosedClosed: 0 },
     StatusBarAlignment: { Left: 1, Right: 2 },
     extensions: {
         getExtension: () => ({ extensionPath: "/test/path" }),
     },
     ThemeColor: class ThemeColor {
         constructor(public id: string) {}
+    },
+    Uri: {
+        file: (fileName: string) => ({
+            fsPath: fileName,
+            scheme: "file",
+            toString: () => fileName,
+        }),
+        parse: (value: string) => ({ scheme: value.split(":", 1)[0], toString: () => value }),
     },
     Hover: class Hover {
         constructor(public contents: any) {}
