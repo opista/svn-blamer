@@ -16,7 +16,7 @@ on:
           - pre-release
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   run-release:
@@ -25,13 +25,13 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: 'package.json'
           cache: "pnpm"
@@ -76,11 +76,17 @@ jobs:
         run: echo "name=$(ls *.vsix)" >> $GITHUB_OUTPUT
 
       - name: Upload Extension Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.vsix_file.outputs.name }}
           path: ${{ steps.vsix_file.outputs.name }}
           retention-days: 5
+
+      - name: Upload VSIX to GitHub release
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.vsix_file.outputs.name }}
 
       - name: Publish to Open VSX Registry
         if: ${{ github.event_name == 'release' && steps.release_meta.outputs.type == 'stable' }}
