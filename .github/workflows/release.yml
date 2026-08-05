@@ -16,7 +16,7 @@ on:
           - pre-release
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   run-release:
@@ -81,6 +81,12 @@ jobs:
           name: ${{ steps.vsix_file.outputs.name }}
           path: ${{ steps.vsix_file.outputs.name }}
           retention-days: 5
+
+      - name: Upload VSIX to GitHub release
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.vsix_file.outputs.name }}
 
       - name: Publish to Open VSX Registry
         if: ${{ github.event_name == 'release' && steps.release_meta.outputs.type == 'stable' }}
