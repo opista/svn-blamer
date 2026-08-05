@@ -15,12 +15,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
 
     - name: Use Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version-file: 'package.json'
         cache: 'pnpm'
@@ -33,12 +33,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
 
     - name: Use Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version-file: 'package.json'
         cache: 'pnpm'
@@ -55,12 +55,12 @@ jobs:
       - lint
       - test
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
 
     - name: Use Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version-file: 'package.json'
         cache: 'pnpm'
@@ -70,7 +70,7 @@ jobs:
     - run: pnpm dlx @vscode/vsce package --no-dependencies
 
     - name: Upload VSIX artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: svn-blamer-vsix-${{ github.sha }}
         path: "*.vsix"
