@@ -2,6 +2,14 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [1.1.0](https://github.com/opista/svn-blamer/compare/v1.0.0...v1.1.0) (2026-08-03)
+
+
+### Added
+
+* add customizable indicator gradients ([2360b49](https://github.com/opista/svn-blamer/commit/2360b49a375f1d07b7f67a76d2910640c3509a33))
+* add indicator colour schemes ([5dedf72](https://github.com/opista/svn-blamer/commit/5dedf7241a0e43e02bf57d4250808f38683aac99))
+
 ## [1.0.0](https://github.com/opista/svn-blamer/compare/v0.8.0...v1.0.0) (2026-04-07)
 
 
