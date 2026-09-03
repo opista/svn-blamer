@@ -67,8 +67,8 @@ importers:
         specifier: ^10.1.8
         version: 10.1.8(eslint@10.9.1)
       eslint-plugin-simple-import-sort:
-        specifier: ^12.0.0
-        version: 12.1.1(eslint@10.9.1)
+        specifier: ^14.0.0
+        version: 14.0.0(eslint@10.6.0)
       eslint-plugin-unused-imports:
         specifier: ^4.4.1
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.65.0(eslint@10.9.1)(typescript@6.0.3))(eslint@10.9.1)(typescript@6.0.3))(eslint@10.9.1)
@@ -866,8 +866,8 @@ packages:
     peerDependencies:
       eslint: '>=7.0.0'
 
-  eslint-plugin-simple-import-sort@12.1.1:
-    resolution: {integrity: sha512-6nuzu4xwQtE3332Uz0to+TxDQYRLTKRESSc2hefVT48Zc8JthmN23Gx9lnYhu0FtkRSL1oxny3kJ2aveVhmOVA==}
+  eslint-plugin-simple-import-sort@14.0.0:
+    resolution: {integrity: sha512-NUJO0+XFCkk+o5EsAJruTgnfMEpeWrPWeJS15UVF60GgXmqz1BJ9/3hzlvG7lkL8Bubzos5cCLptThbFfPnSMQ==}
     peerDependencies:
       eslint: '>=5.0.0'
 
@@ -2478,7 +2478,7 @@ snapshots:
     dependencies:
       eslint: 10.9.1
 
-  eslint-plugin-simple-import-sort@12.1.1(eslint@10.9.1):
+  eslint-plugin-simple-import-sort@14.0.0(eslint@10.6.0):
     dependencies:
       eslint: 10.9.1
 
