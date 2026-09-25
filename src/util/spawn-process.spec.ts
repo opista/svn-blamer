@@ -121,4 +121,22 @@ suite("spawnProcess Utility Test Suite", () => {
             return true;
         });
     });
+
+    test("should expose stderr when process exits with code 0", async () => {
+        const onStderr = sandbox.spy();
+
+        const promise = spawnProcessModule.spawnProcess(
+            "node",
+            [
+                "-e",
+                "process.stderr.write('Skipping binary file'); process.stdout.write('success output')",
+            ],
+            { onStderr },
+        );
+
+        const result = await promise;
+
+        assert.strictEqual(result, "success output");
+        assert.ok(onStderr.calledOnceWithExactly("Skipping binary file"));
+    });
 });

@@ -4,6 +4,7 @@ import { LogOutputChannel, workspace, WorkspaceConfiguration } from "vscode";
 
 import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
+import { BinaryFileError } from "./errors/binary-file-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { SvnCommandError } from "./errors/svn-command-error";
@@ -200,6 +201,98 @@ suite("SVN Test Suite", () => {
             );
 
             assert.ok(loggerMock.error.calledWith("Failed to blame file"));
+        });
+
+        test("should not use --force by default", async () => {
+            execSvnStub.resolves(`<?xml version="1.0" encoding="UTF-8"?>
+<blame>
+<target path="file.txt">
+</target>
+</blame>`);
+
+            await svn.blameFile("/mock/path/file.txt");
+
+            assert.ok(execSvnStub.calledOnce);
+
+            const args = execSvnStub.firstCall.args[0];
+
+            assert.deepStrictEqual(args, [
+                "blame",
+                "--xml",
+                "-x",
+                "-w --ignore-eol-style",
+                "--",
+                "file.txt",
+            ]);
+        });
+
+        test("should use --force when force blame is requested", async () => {
+            execSvnStub.resolves(`<?xml version="1.0" encoding="UTF-8"?>
+<blame>
+<target path="file.txt">
+</target>
+</blame>`);
+
+            await svn.blameFile("/mock/path/file.txt", true);
+
+            assert.ok(execSvnStub.calledOnce);
+
+            const args = execSvnStub.firstCall.args[0];
+
+            assert.deepStrictEqual(args, [
+                "blame",
+                "--xml",
+                "-x",
+                "-w --ignore-eol-style",
+                "--force",
+                "--",
+                "file.txt",
+            ]);
+        });
+
+        test("should throw BinaryFileError when SVN skips a binary file", async () => {
+            execSvnStub.callsFake(
+                async (
+                    _args: string[],
+                    _cwd: string,
+                    _credentials?: ICredentials,
+                    onStderr?: (stderr: string) => void,
+                ) => {
+                    onStderr?.("Skipping binary file 'file.txt'\n");
+
+                    return `<?xml version="1.0" encoding="UTF-8"?>
+<blame>
+<target path="file.txt">
+</target>
+</blame>`;
+                },
+            );
+
+            await assert.rejects(
+                svn.blameFile("/mock/path/file.txt"),
+                (err: unknown) => err instanceof BinaryFileError,
+            );
+        });
+
+        test("should not throw BinaryFileError when force blame is enabled", async () => {
+            execSvnStub.callsFake(
+                async (
+                    _args: string[],
+                    _cwd: string,
+                    _credentials?: ICredentials,
+                    onStderr?: (stderr: string) => void,
+                ) => {
+                    onStderr?.("Skipping binary file 'file.txt'\n");
+
+                    return `<?xml version="1.0" encoding="UTF-8"?>
+<blame>
+<target path="file.txt">
+</target>
+</blame>`;
+                },
+            );
+
+            await assert.doesNotReject(svn.blameFile("/mock/path/file.txt", true));
         });
     });
 

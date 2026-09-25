@@ -12,6 +12,7 @@ import {
 
 import { Blamer } from "./blamer";
 import { DecorationManager } from "./decoration-manager";
+import { BinaryFileError } from "./errors/binary-file-error";
 import { Storage } from "./storage";
 import { SVN } from "./svn";
 import { DummyLogOutputChannel } from "./test/mock-vscode";
@@ -23,6 +24,12 @@ suite("Blamer", () => {
     let storageMock: sinon.SinonStubbedInstance<Storage<DecorationRecord>>;
     let svnMock: sinon.SinonStubbedInstance<SVN>;
     let decorationManagerMock: sinon.SinonStubbedInstance<DecorationManager>;
+    let statusBarItemMock: {
+        text: string;
+        show: sinon.SinonStub;
+        hide: sinon.SinonStub;
+        dispose: sinon.SinonStub;
+    };
     const sandbox = sinon.createSandbox();
 
     setup(() => {
@@ -51,12 +58,15 @@ suite("Blamer", () => {
             setActiveLineDecoration: sandbox.stub(),
         } as unknown as sinon.SinonStubbedInstance<DecorationManager>;
 
-        sandbox.stub(window, "createStatusBarItem").returns({
+        statusBarItemMock = {
             text: "",
             show: sandbox.stub(),
             hide: sandbox.stub(),
             dispose: sandbox.stub(),
-        } as unknown as StatusBarItem);
+        };
+        sandbox
+            .stub(window, "createStatusBarItem")
+            .returns(statusBarItemMock as unknown as StatusBarItem);
 
         blamer = new Blamer(
             loggerMock,
@@ -146,6 +156,18 @@ suite("Blamer", () => {
                 handleErrorStub.calledOnceWithExactly(expectedError, "Toggle blame failed [show]"),
             );
         });
+    });
+
+    test("toggle offers force retry for a binary file", async () => {
+        const editor = {} as TextEditor;
+        const file = "/test/binary.txt";
+        sandbox.stub(blamer, "getRecordForFile").returns(undefined);
+        const show = sandbox.stub(blamer, "showBlameForFile");
+        show.onFirstCall().rejects(new BinaryFileError(file));
+        show.onSecondCall().resolves();
+        sandbox.stub(window, "showWarningMessage").resolves("Force blame" as any);
+        await blamer.toggleBlameForFile(editor, file);
+        assert.ok(show.secondCall.calledWithExactly(editor, file, true));
     });
 
     suite("setUpdatedDecoration", () => {
@@ -268,6 +290,51 @@ suite("Blamer", () => {
             assert.strictEqual(handleErrorSpy.firstCall.args[0], testError);
             assert.strictEqual(handleErrorSpy.firstCall.args[1], "Blame action failed");
         });
+
+        test("should force blame when explicitly requested", async () => {
+            const mockTextEditor = {} as TextEditor;
+            const mockFileName = "/test/file.txt";
+
+            sandbox.stub(blamer, "getActiveTextEditorAndFileName").resolves({
+                textEditor: mockTextEditor,
+                fileName: mockFileName,
+            });
+
+            const showBlameForFileStub = sandbox.stub(blamer, "showBlameForFile").resolves();
+
+            await blamer.showBlameForActiveTextEditor(true);
+
+            assert.ok(
+                showBlameForFileStub.calledOnceWithExactly(mockTextEditor, mockFileName, true),
+            );
+        });
+    });
+
+    test("manual blame offers to retry the same binary file", async () => {
+        const editor = {} as TextEditor;
+        const file = "/test/binary.txt";
+        sandbox
+            .stub(blamer, "getActiveTextEditorAndFileName")
+            .resolves({ textEditor: editor, fileName: file });
+        const show = sandbox.stub(blamer, "showBlameForFile");
+        show.onFirstCall().rejects(new BinaryFileError(file));
+        show.onSecondCall().resolves();
+        sandbox.stub(window, "showWarningMessage").resolves("Force blame" as any);
+        await blamer.showBlameForActiveTextEditor();
+        assert.ok(show.secondCall.calledWithExactly(editor, file, true));
+        assert.ok(statusBarItemMock.hide.notCalled);
+    });
+
+    test("dismissed binary prompt does not retry", async () => {
+        const editor = {} as TextEditor;
+        const file = "/test/binary.txt";
+        sandbox
+            .stub(blamer, "getActiveTextEditorAndFileName")
+            .resolves({ textEditor: editor, fileName: file });
+        const show = sandbox.stub(blamer, "showBlameForFile").rejects(new BinaryFileError(file));
+        sandbox.stub(window, "showWarningMessage").resolves(undefined);
+        await blamer.showBlameForActiveTextEditor();
+        assert.ok(show.calledOnce);
     });
 
     suite("showBlameForFile", () => {
@@ -295,6 +362,7 @@ suite("Blamer", () => {
                 },
                 "showBlameForFile should propagate the error from svn.blameFile",
             );
+            assert.ok(statusBarItemMock.hide.calledOnce);
         });
 
         test("should throw an error if decorationManager.createAndSetDecorationsForBlame fails", async () => {
@@ -391,6 +459,54 @@ suite("Blamer", () => {
             assert.deepStrictEqual(records.get(fileName)?.icons, { "10": newIcon });
             assert.strictEqual(records.get(fileName)?.indicatorRefreshVersion, 1);
             assert.ok(oldDecorationDispose.calledOnce);
+        });
+
+        test("hides the spinner when SVN returns no blame", async () => {
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            svnMock.blameFile.resolves([]);
+            await blamer.showBlameForFile(mockTextEditor, mockFileName);
+            assert.ok(statusBarItemMock.show.calledOnce);
+            assert.ok(statusBarItemMock.hide.calledOnce);
+        });
+
+        test("explicit force overrides the disabled setting", async () => {
+            sandbox
+                .stub(workspace, "getConfiguration")
+                .returns({ forceBlame: false, viewportBuffer: 200 } as any);
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            svnMock.blameFile.resolves([]);
+            await blamer.showBlameForFile(mockTextEditor, mockFileName, true);
+            assert.ok(svnMock.blameFile.calledOnceWithExactly(mockFileName, true));
+        });
+
+        test("should use force blame when forceBlame setting is enabled", async () => {
+            sandbox.stub(workspace, "getConfiguration").returns({
+                forceBlame: true,
+                viewportBuffer: 200,
+            } as any);
+
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+
+            svnMock.blameFile.resolves([]);
+
+            await blamer.showBlameForFile(mockTextEditor, mockFileName);
+
+            assert.ok(svnMock.blameFile.calledOnceWithExactly(mockFileName, true));
+        });
+
+        test("should not force blame when forceBlame setting is disabled", async () => {
+            sandbox.stub(workspace, "getConfiguration").returns({
+                forceBlame: false,
+                viewportBuffer: 200,
+            } as any);
+
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
+
+            svnMock.blameFile.resolves([]);
+
+            await blamer.showBlameForFile(mockTextEditor, mockFileName);
+
+            assert.ok(svnMock.blameFile.calledOnceWithExactly(mockFileName, false));
         });
     });
 

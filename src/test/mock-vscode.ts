@@ -27,6 +27,7 @@ const vscodeMock = {
         onDidChangeActiveColorTheme: () => ({ dispose: () => {} }),
         onDidChangeTextEditorSelection: () => ({ dispose: () => {} }),
         onDidChangeTextEditorVisibleRanges: () => ({ dispose: () => {} }),
+        setStatusBarMessage: () => ({ dispose: () => {} }),
         showWarningMessage: () => {},
         showErrorMessage: () => {},
         showInformationMessage: () => {},

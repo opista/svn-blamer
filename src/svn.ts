@@ -4,6 +4,7 @@ import { LogOutputChannel, workspace } from "vscode";
 import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
+import { BinaryFileError } from "./errors/binary-file-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { SvnCommandError } from "./errors/svn-command-error";
@@ -24,6 +25,7 @@ export class SVN {
         args: string[],
         cwd: string,
         credentials?: ICredentials,
+        onStderr?: (stderr: string) => void,
     ): Promise<string> {
         const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
@@ -57,7 +59,11 @@ export class SVN {
         }
 
         try {
-            return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
+            return await spawnProcess(svnExecutablePath, allArgs, {
+                cwd,
+                input,
+                ...(onStderr ? { onStderr } : {}),
+            });
         } catch (err: unknown) {
             const errorString = String(err);
             if (errorString.includes("password-from-stdin")) {
@@ -72,6 +78,7 @@ export class SVN {
     private async handleAuthFailure(
         args: string[],
         params: { cwd: string; fileName: string },
+        onStderr?: (stderr: string) => void,
     ): Promise<string> {
         this.logger.warn("Authentication failed");
 
@@ -85,7 +92,7 @@ export class SVN {
             const stored = await this.credentialManager.getCredentials(repoRoot);
             if (stored) {
                 this.logger.info("Retrying with stored credentials");
-                return await this.execSvn(args, params.cwd, stored);
+                return await this.execSvn(args, params.cwd, stored, onStderr);
             }
 
             // 2. Prompt user if no stored credentials found
@@ -94,7 +101,7 @@ export class SVN {
 
             if (newCreds) {
                 // Try to execute with new credentials
-                const result = await this.execSvn(args, params.cwd, newCreds);
+                const result = await this.execSvn(args, params.cwd, newCreds, onStderr);
 
                 // If successful, store them
                 this.logger.info("Credentials verified and stored successfully");
@@ -116,9 +123,10 @@ export class SVN {
     private async command(
         args: string[],
         params: { cwd: string; fileName: string },
+        onStderr?: (stderr: string) => void,
     ): Promise<string> {
         try {
-            return await this.execSvn(args, params.cwd);
+            return await this.execSvn(args, params.cwd, undefined, onStderr);
         } catch (err: unknown) {
             let errorString = "";
 
@@ -145,7 +153,7 @@ export class SVN {
                     errorString.includes("E215004");
 
                 if (isAuthError) {
-                    return await this.handleAuthFailure(args, params);
+                    return await this.handleAuthFailure(args, params, onStderr);
                 }
 
                 throw new SvnCommandError(errorString);
@@ -169,23 +177,43 @@ export class SVN {
         }
     }
 
-    async blameFile(fileName: string): Promise<Blame[]> {
+    async blameFile(fileName: string, force = false): Promise<Blame[]> {
         this.logger.debug("Running blame child process");
         try {
             const dir = dirname(fileName);
             const file = basename(fileName);
 
+            const args = ["blame", "--xml", "-x", "-w --ignore-eol-style"];
+            if (force) {
+                args.push("--force");
+            }
+            args.push("--", file);
+
+            let stderr = "";
+
             const data = await this.command(
-                ["blame", "--xml", "-x", "-w --ignore-eol-style", "--", file],
+                args,
                 {
                     cwd: dir,
                     fileName,
                 },
+                (output) => {
+                    stderr += output;
+                },
             );
 
-            this.logger.debug("Blame child process successful");
+            const blame = mapBlameOutputToBlameModel(data);
 
-            return mapBlameOutputToBlameModel(data);
+            if (
+                !force &&
+                blame.length === 0 &&
+                (stderr.includes("Skipping binary file") ||
+                    stderr.includes("use --force to treat as text"))
+            ) {
+                throw new BinaryFileError(fileName);
+            }
+
+            return blame;
         } catch (err: unknown) {
             this.logger.error("Failed to blame file", { err: String(err), fileName });
             throw err;

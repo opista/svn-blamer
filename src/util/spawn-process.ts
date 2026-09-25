@@ -2,6 +2,7 @@ import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
 
 export interface ISpawnProcessOptions extends SpawnOptionsWithoutStdio {
     input?: string;
+    onStderr?: (stderr: string) => void;
 }
 
 export const spawnProcess = (
@@ -10,7 +11,8 @@ export const spawnProcess = (
     options?: ISpawnProcessOptions,
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const child = spawn(command, args, { ...options, shell: false });
+        const { input, onStderr, ...spawnOptions } = options ?? {};
+        const child = spawn(command, args, { ...spawnOptions, shell: false });
         const data: Buffer[] = [];
         const err: Buffer[] = [];
         let settled = false;
@@ -39,8 +41,13 @@ export const spawnProcess = (
         });
 
         child.on("close", (code: number | null) => {
+            const errorString = Buffer.concat(err).toString();
+
+            if (errorString) {
+                onStderr?.(errorString);
+            }
+
             if (code !== 0 || inputWriteFailed) {
-                const errorString = Buffer.concat(err).toString();
                 rejectOnce(errorString);
             } else {
                 const dataString = Buffer.concat(data).toString();
@@ -50,7 +57,7 @@ export const spawnProcess = (
 
         child.on("error", (childError) => rejectOnce(childError));
 
-        if (options?.input !== undefined) {
+        if (input !== undefined) {
             const failStdin = (message: string): void => {
                 inputWriteFailed = true;
                 err.push(Buffer.from(message));
@@ -64,7 +71,7 @@ export const spawnProcess = (
                     failStdin(`Failed to write input to stdin: ${e.message}`),
                 );
                 try {
-                    child.stdin.write(options.input);
+                    child.stdin.write(input);
                     child.stdin.end();
                 } catch (e) {
                     const message = e instanceof Error ? e.message : String(e);

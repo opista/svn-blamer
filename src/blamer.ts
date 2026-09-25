@@ -15,6 +15,7 @@ import {
 
 import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
+import { BinaryFileError } from "./errors/binary-file-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapToDecorationRecord } from "./mapping/map-to-decoration-record";
 import { Storage } from "./storage";
@@ -415,7 +416,7 @@ export class Blamer {
         }
     }
 
-    async showBlameForFile(textEditor?: TextEditor, fileName?: string) {
+    async showBlameForFile(textEditor?: TextEditor, fileName?: string, force?: boolean) {
         if (!textEditor || !fileName) {
             this.logger.debug("No editor or file found, aborting...");
             return;
@@ -435,60 +436,66 @@ export class Blamer {
         this.statusBarItem.show();
         this.setStatusBarText("Blaming file...", "loading~spin");
 
-        await this.clearBlameForFile(fileName);
+        try {
+            await this.clearBlameForFile(fileName);
 
-        const blame = await this.svn.blameFile(fileName);
+            const { forceBlame = false } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+            const shouldForce = force ?? forceBlame;
 
-        if (!blame?.length) {
-            return;
-        }
+            const blame = await this.svn.blameFile(fileName, shouldForce);
 
-        const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
-        const iconMapRefreshVersion = this.indicatorRefreshVersion;
-        const iconMapThemeRefreshVersion = this.indicatorThemeRefreshVersion;
-        const icons = this.decorationManager.createGutterIconHashMap(
-            fileName,
-            uniqueRevisions,
-            textEditor.document.uri,
-        );
+            if (!blame?.length) {
+                return;
+            }
 
-        const extendedRanges = this.getExtendedVisibleRanges(textEditor);
-
-        const { blamesByLine, blamesByRevision, revisionDecorations } =
-            await this.decorationManager.createAndSetDecorationsForBlame(
-                textEditor,
-                blame,
-                icons,
-                undefined,
-                extendedRanges,
-            );
-
-        const record = mapToDecorationRecord({
-            icons,
-            blamesByLine,
-            blamesByRevision,
-            indicatorRefreshVersion: iconMapRefreshVersion,
-            indicatorThemeRefreshVersion: iconMapThemeRefreshVersion,
-            revisionDecorations,
-        });
-
-        this.statusBarItem.hide();
-        this.setRecordForFile(fileName, record);
-
-        if (
-            iconMapRefreshVersion !== this.indicatorRefreshVersion ||
-            (this.decorationManager.usesThemeAwareIndicatorScheme(textEditor.document.uri) &&
-                iconMapThemeRefreshVersion !== this.indicatorThemeRefreshVersion)
-        ) {
-            await this.refreshVisibleBlameForFile(
+            const uniqueRevisions = [...new Set(blame.map(({ revision }) => revision))];
+            const iconMapRefreshVersion = this.indicatorRefreshVersion;
+            const iconMapThemeRefreshVersion = this.indicatorThemeRefreshVersion;
+            const icons = this.decorationManager.createGutterIconHashMap(
                 fileName,
-                [textEditor],
-                this.indicatorRefreshVersion,
-                this.indicatorThemeRefreshVersion,
+                uniqueRevisions,
+                textEditor.document.uri,
             );
-        }
 
-        this.logger.info("Blame successful", { fileName });
+            const extendedRanges = this.getExtendedVisibleRanges(textEditor);
+
+            const { blamesByLine, blamesByRevision, revisionDecorations } =
+                await this.decorationManager.createAndSetDecorationsForBlame(
+                    textEditor,
+                    blame,
+                    icons,
+                    undefined,
+                    extendedRanges,
+                );
+
+            const record = mapToDecorationRecord({
+                icons,
+                blamesByLine,
+                blamesByRevision,
+                indicatorRefreshVersion: iconMapRefreshVersion,
+                indicatorThemeRefreshVersion: iconMapThemeRefreshVersion,
+                revisionDecorations,
+            });
+
+            this.setRecordForFile(fileName, record);
+
+            if (
+                iconMapRefreshVersion !== this.indicatorRefreshVersion ||
+                (this.decorationManager.usesThemeAwareIndicatorScheme(textEditor.document.uri) &&
+                    iconMapThemeRefreshVersion !== this.indicatorThemeRefreshVersion)
+            ) {
+                await this.refreshVisibleBlameForFile(
+                    fileName,
+                    [textEditor],
+                    this.indicatorRefreshVersion,
+                    this.indicatorThemeRefreshVersion,
+                );
+            }
+
+            this.logger.info("Blame successful", { fileName });
+        } finally {
+            this.statusBarItem.hide();
+        }
     }
 
     private handleError(
@@ -506,11 +513,40 @@ export class Blamer {
         }
     }
 
-    async showBlameForActiveTextEditor() {
+    private showBlameFailureStatus() {
+        window.setStatusBarMessage(`$(error) ${EXTENSION_NAME}: Failed to blame file`, 2000);
+    }
+
+    private async offerForceBlame(err: unknown, textEditor?: TextEditor, fileName?: string) {
+        if (!(err instanceof BinaryFileError) || !textEditor || !fileName) {
+            return false;
+        }
+
+        const action = await window.showWarningMessage(
+            `${EXTENSION_NAME}: SVN considers this file binary. Would you like to retry using force blame?`,
+            "Force blame",
+        );
+        if (action === "Force blame") {
+            await this.showBlameForFile(textEditor, fileName, true);
+        }
+        return true;
+    }
+
+    async showBlameForActiveTextEditor(force?: boolean) {
         const { fileName, textEditor } = await this.getActiveTextEditorAndFileName();
+
         try {
-            return await this.showBlameForFile(textEditor, fileName);
+            return await this.showBlameForFile(textEditor, fileName, force);
         } catch (err: unknown) {
+            try {
+                if (!force && (await this.offerForceBlame(err, textEditor, fileName))) {
+                    return;
+                }
+            } catch (retryError: unknown) {
+                err = retryError;
+            }
+
+            this.showBlameFailureStatus();
             this.handleError(err, "Blame action failed");
         }
     }
@@ -524,6 +560,16 @@ export class Blamer {
                 : await this.showBlameForFile(textEditor, fileName);
         } catch (err: unknown) {
             const blameAction = fileData ? "hide" : "show";
+            if (!fileData) {
+                try {
+                    if (await this.offerForceBlame(err, textEditor, fileName)) {
+                        return;
+                    }
+                } catch (retryError: unknown) {
+                    err = retryError;
+                }
+            }
+            this.showBlameFailureStatus();
             this.handleError(err, `Toggle blame failed [${blameAction}]`);
         }
     }

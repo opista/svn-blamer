@@ -54,6 +54,10 @@
                 "title": "SVN Blamer: Show blame"
             },
             {
+                "command": "blamer-vs.forceShowBlame",
+                "title": "SVN Blamer: Force show blame"
+            },
+            {
                 "command": "blamer-vs.toggleBlame",
                 "icon": "$(git-merge)",
                 "title": "SVN Blamer: Toggle blame"
@@ -72,6 +76,13 @@
                     "order": 1,
                     "default": false,
                     "description": "Automatically blames files as you open them.",
+                    "type": "boolean"
+                },
+                "svnBlamer.forceBlame": {
+                    "scope": "resource",
+                    "order": 10,
+                    "default": false,
+                    "description": "Defaults to using SVN's --force option when blaming files, allowing files marked as binary to be treated as text.",
                     "type": "boolean"
                 },
                 "svnBlamer.enableLogs": {
