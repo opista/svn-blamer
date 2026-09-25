@@ -11,6 +11,7 @@ import {
 } from "vscode";
 
 import { Blamer } from "./blamer";
+import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
 import { BinaryFileError } from "./errors/binary-file-error";
 import { Storage } from "./storage";
@@ -165,7 +166,7 @@ suite("Blamer", () => {
         const show = sandbox.stub(blamer, "showBlameForFile");
         show.onFirstCall().rejects(new BinaryFileError(file));
         show.onSecondCall().resolves();
-        sandbox.stub(window, "showWarningMessage").resolves("Force blame" as any);
+        sandbox.stub(window, "showWarningMessage").resolvesArg(1);
         await blamer.toggleBlameForFile(editor, file);
         assert.ok(show.secondCall.calledWithExactly(editor, file, true));
     });
@@ -319,7 +320,7 @@ suite("Blamer", () => {
         const show = sandbox.stub(blamer, "showBlameForFile");
         show.onFirstCall().rejects(new BinaryFileError(file));
         show.onSecondCall().resolves();
-        sandbox.stub(window, "showWarningMessage").resolves("Force blame" as any);
+        sandbox.stub(window, "showWarningMessage").resolvesArg(1);
         await blamer.showBlameForActiveTextEditor();
         assert.ok(show.secondCall.calledWithExactly(editor, file, true));
         assert.ok(statusBarItemMock.hide.notCalled);
@@ -479,18 +480,30 @@ suite("Blamer", () => {
             assert.ok(svnMock.blameFile.calledOnceWithExactly(mockFileName, true));
         });
 
-        test("should use force blame when forceBlame setting is enabled", async () => {
-            sandbox.stub(workspace, "getConfiguration").returns({
-                forceBlame: true,
+        test("should use forceBlame configuration for the file URI", async () => {
+            const configurationStub = sandbox.stub(workspace, "getConfiguration").returns({
+                forceBlame: false,
                 viewportBuffer: 200,
             } as any);
 
-            sandbox.stub(blamer, "clearBlameForFile").resolves();
+            configurationStub
+                .withArgs(EXTENSION_CONFIGURATION, mockTextEditor.document.uri)
+                .returns({
+                    forceBlame: true,
+                    viewportBuffer: 200,
+                } as any);
 
+            sandbox.stub(blamer, "clearBlameForFile").resolves();
             svnMock.blameFile.resolves([]);
 
             await blamer.showBlameForFile(mockTextEditor, mockFileName);
 
+            assert.ok(
+                configurationStub.calledWithExactly(
+                    EXTENSION_CONFIGURATION,
+                    mockTextEditor.document.uri,
+                ),
+            );
             assert.ok(svnMock.blameFile.calledOnceWithExactly(mockFileName, true));
         });
 

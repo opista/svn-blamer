@@ -41,14 +41,14 @@ export const spawnProcess = (
         });
 
         child.on("close", (code: number | null) => {
-            const errorString = Buffer.concat(err).toString();
+            const stderrOutput = Buffer.concat(err).toString();
 
-            if (errorString) {
-                onStderr?.(errorString);
+            if (stderrOutput) {
+                onStderr?.(stderrOutput);
             }
 
             if (code !== 0 || inputWriteFailed) {
-                rejectOnce(errorString);
+                rejectOnce(stderrOutput);
             } else {
                 const dataString = Buffer.concat(data).toString();
                 resolveOnce(dataString);

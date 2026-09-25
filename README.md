@@ -78,13 +78,13 @@ You can manage your stored credentials at any time using the command palette:
 
 This extension contributes the following commands to the Command palette.
 
-| Command                            | Description                                                                       | Shortcut                                               |
-| ---------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **SVN Blamer - Show blame**        | Blames file, and retrieves log data (if setting is enabled)                       | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
-| **SVN Blamer - Force show blame**  | Blames the active file using SVN `--force`, treating files marked binary as text. |                                                        |
-| **SVN Blamer - Clear blame**       | Clears the applied blame for the active file                                      |                                                        |
-| **SVN Blamer - Toggle blame**      | Will toggle between fetching blame data and clearing visual indicators            | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
-| **SVN Blamer - Clear credentials** | Opens a management UI to clear stored credentials for specific repos              |                                                        |
+| Command                            | Description                                                                                                                                              | Shortcut                                               |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **SVN Blamer - Show blame**        | Blames file, and retrieves log data (if setting is enabled)                                                                                              | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
+| **SVN Blamer - Force show blame**  | Blames the active file using SVN `--force`, allowing files that are otherwise skipped due to SVN's default behavior (such as binary files) to be blamed. |                                                        |
+| **SVN Blamer - Clear blame**       | Clears the applied blame for the active file                                                                                                             |                                                        |
+| **SVN Blamer - Toggle blame**      | Will toggle between fetching blame data and clearing visual indicators                                                                                   | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
+| **SVN Blamer - Clear credentials** | Opens a management UI to clear stored credentials for specific repos                                                                                     |                                                        |
 
 ## Configuration
 
@@ -105,7 +105,7 @@ All chronological schemes have 500 positions. Files with more than 500 revisions
 
 ### Force blame
 
-If SVN skips a file because it considers it binary, a manually requested Show or Toggle offers to retry with `--force`. You can also run **SVN Blamer - Force show blame** for one file, or enable **Force Blame** to use `--force` by default, including automatic blame. This does not modify the file or its SVN properties.
+If SVN skips a file, due to its default behavior (such as considering it binary), a manually requested Show or Toggle offers to retry with `--force`. You can also run **SVN Blamer - Force show blame** for one file, or enable **Force Blame** to use `--force` by default, including automatic blame. This does not modify the file or its SVN properties.
 
 ## Known Issues
 

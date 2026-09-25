@@ -439,7 +439,10 @@ export class Blamer {
         try {
             await this.clearBlameForFile(fileName);
 
-            const { forceBlame = false } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
+            const { forceBlame = false } = workspace.getConfiguration(
+                EXTENSION_CONFIGURATION,
+                textEditor.document.uri,
+            );
             const shouldForce = force ?? forceBlame;
 
             const blame = await this.svn.blameFile(fileName, shouldForce);
@@ -521,12 +524,11 @@ export class Blamer {
         if (!(err instanceof BinaryFileError) || !textEditor || !fileName) {
             return false;
         }
+        const message = `${EXTENSION_NAME}: SVN considers this a binary file. Would you like to retry using force blame?`;
+        const forceBlameAction = { title: "Force blame" };
+        const action = await window.showWarningMessage(message, forceBlameAction);
 
-        const action = await window.showWarningMessage(
-            `${EXTENSION_NAME}: SVN considers this file binary. Would you like to retry using force blame?`,
-            "Force blame",
-        );
-        if (action === "Force blame") {
+        if (action === forceBlameAction) {
             await this.showBlameForFile(textEditor, fileName, true);
         }
         return true;

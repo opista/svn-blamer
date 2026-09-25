@@ -82,7 +82,7 @@
                     "scope": "resource",
                     "order": 10,
                     "default": false,
-                    "description": "Defaults to using SVN's --force option when blaming files, allowing files marked as binary to be treated as text.",
+                    "description": "Defaults to using SVN's --force option when blaming files. This can be useful for files that are otherwise skipped due to SVN's default behavior (such as binary files).",
                     "type": "boolean"
                 },
                 "svnBlamer.enableLogs": {
