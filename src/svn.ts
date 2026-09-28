@@ -13,7 +13,7 @@ import { mapInfoOutputToRepoRoot } from "./mapping/map-info-output-to-repo-root"
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
 import { Blame } from "./types/blame.model";
 import { ICredentials } from "./types/credentials.model";
-import { spawnProcess } from "./util/spawn-process";
+import { ISpawnProcessResult, spawnProcess } from "./util/spawn-process";
 
 export class SVN {
     constructor(
@@ -25,8 +25,7 @@ export class SVN {
         args: string[],
         cwd: string,
         credentials?: ICredentials,
-        onStderr?: (stderr: string) => void,
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
         if (!svnExecutablePath) {
@@ -62,7 +61,6 @@ export class SVN {
             return await spawnProcess(svnExecutablePath, allArgs, {
                 cwd,
                 input,
-                ...(onStderr ? { onStderr } : {}),
             });
         } catch (err: unknown) {
             const errorString = String(err);
@@ -78,8 +76,7 @@ export class SVN {
     private async handleAuthFailure(
         args: string[],
         params: { cwd: string; fileName: string },
-        onStderr?: (stderr: string) => void,
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         this.logger.warn("Authentication failed");
 
         try {
@@ -92,7 +89,7 @@ export class SVN {
             const stored = await this.credentialManager.getCredentials(repoRoot);
             if (stored) {
                 this.logger.info("Retrying with stored credentials");
-                return await this.execSvn(args, params.cwd, stored, onStderr);
+                return await this.execSvn(args, params.cwd, stored);
             }
 
             // 2. Prompt user if no stored credentials found
@@ -101,7 +98,7 @@ export class SVN {
 
             if (newCreds) {
                 // Try to execute with new credentials
-                const result = await this.execSvn(args, params.cwd, newCreds, onStderr);
+                const result = await this.execSvn(args, params.cwd, newCreds);
 
                 // If successful, store them
                 this.logger.info("Credentials verified and stored successfully");
@@ -123,10 +120,9 @@ export class SVN {
     private async command(
         args: string[],
         params: { cwd: string; fileName: string },
-        onStderr?: (stderr: string) => void,
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         try {
-            return await this.execSvn(args, params.cwd, undefined, onStderr);
+            return await this.execSvn(args, params.cwd);
         } catch (err: unknown) {
             let errorString = "";
 
@@ -153,7 +149,7 @@ export class SVN {
                     errorString.includes("E215004");
 
                 if (isAuthError) {
-                    return await this.handleAuthFailure(args, params, onStderr);
+                    return await this.handleAuthFailure(args, params);
                 }
 
                 throw new SvnCommandError(errorString);
@@ -168,9 +164,9 @@ export class SVN {
             const dir = dirname(fileName);
             // "svn info --xml" gives us the repo info. We want <repository><root>
             // We use the file name to target the specific file's repo
-            const data = await this.execSvn(["info", "--xml", "--", basename(fileName)], dir);
+            const { stdout } = await this.execSvn(["info", "--xml", "--", basename(fileName)], dir);
 
-            return mapInfoOutputToRepoRoot(data);
+            return mapInfoOutputToRepoRoot(stdout);
         } catch (err: unknown) {
             this.logger.warn("Failed to get repository root", { err: String(err) });
             return undefined;
@@ -189,21 +185,15 @@ export class SVN {
             }
             args.push("--", file);
 
-            let stderr = "";
+            const { stdout, stderr } = await this.command(args, { cwd: dir, fileName });
 
-            const data = await this.command(
-                args,
-                {
-                    cwd: dir,
-                    fileName,
-                },
-                (output) => {
-                    stderr += output;
-                },
-            );
+            const blame = mapBlameOutputToBlameModel(stdout);
 
-            const blame = mapBlameOutputToBlameModel(data);
-
+            // The SVN CLI clears SVN_ERR_CLIENT_IS_BINARY_FILE and writes a warning
+            // to stderr, so it can exit successfully without returning blame entries.
+            // Match the English warning because the CLI does not expose that error code.
+            // Other locales may miss this prompt; the force command/setting still work.
+            // Revisit localisation if users report missed prompts.
             if (
                 !force &&
                 blame.length === 0 &&
@@ -225,11 +215,11 @@ export class SVN {
             const dir = dirname(fileName);
             const file = basename(fileName);
 
-            const data = await this.command(["log", "--xml", "-r", revision, "--", file], {
+            const { stdout } = await this.command(["log", "--xml", "-r", revision, "--", file], {
                 cwd: dir,
                 fileName,
             });
-            return mapLogOutputToMessage(data);
+            return mapLogOutputToMessage(stdout);
         } catch (err: unknown) {
             this.logger.error("Failed to get revision log", { err: String(err) });
             throw err;

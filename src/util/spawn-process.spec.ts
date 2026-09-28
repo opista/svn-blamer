@@ -22,7 +22,7 @@ suite("spawnProcess Utility Test Suite", () => {
             "process.stdout.write('hello world')",
         ]);
         const result = await promise;
-        assert.strictEqual(result.trim(), "hello world");
+        assert.deepStrictEqual(result, { stdout: "hello world", stderr: "" });
     });
 
     test("should reject with stderr when process exits with non-zero code", async () => {
@@ -88,7 +88,7 @@ suite("spawnProcess Utility Test Suite", () => {
             { input: inputData },
         );
         const result = await promise;
-        assert.strictEqual(result, inputData);
+        assert.deepStrictEqual(result, { stdout: inputData, stderr: "" });
     });
 
     test("should reject when stdin is not writable", async () => {
@@ -123,20 +123,16 @@ suite("spawnProcess Utility Test Suite", () => {
     });
 
     test("should expose stderr when process exits with code 0", async () => {
-        const onStderr = sandbox.spy();
-
-        const promise = spawnProcessModule.spawnProcess(
-            "node",
-            [
-                "-e",
-                "process.stderr.write('Skipping binary file'); process.stdout.write('success output')",
-            ],
-            { onStderr },
-        );
+        const promise = spawnProcessModule.spawnProcess("node", [
+            "-e",
+            "process.stderr.write('Skipping binary file'); process.stdout.write('success output')",
+        ]);
 
         const result = await promise;
 
-        assert.strictEqual(result, "success output");
-        assert.ok(onStderr.calledOnceWithExactly("Skipping binary file"));
+        assert.deepStrictEqual(result, {
+            stdout: "success output",
+            stderr: "Skipping binary file",
+        });
     });
 });

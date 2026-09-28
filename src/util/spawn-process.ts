@@ -2,16 +2,20 @@ import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
 
 export interface ISpawnProcessOptions extends SpawnOptionsWithoutStdio {
     input?: string;
-    onStderr?: (stderr: string) => void;
+}
+
+export interface ISpawnProcessResult {
+    stdout: string;
+    stderr: string;
 }
 
 export const spawnProcess = (
     command: string,
     args: string[],
     options?: ISpawnProcessOptions,
-): Promise<string> => {
+): Promise<ISpawnProcessResult> => {
     return new Promise((resolve, reject) => {
-        const { input, onStderr, ...spawnOptions } = options ?? {};
+        const { input, ...spawnOptions } = options ?? {};
         const child = spawn(command, args, { ...spawnOptions, shell: false });
         const data: Buffer[] = [];
         const err: Buffer[] = [];
@@ -25,7 +29,7 @@ export const spawnProcess = (
             }
         };
 
-        const resolveOnce = (output: string): void => {
+        const resolveOnce = (output: ISpawnProcessResult): void => {
             if (!settled) {
                 settled = true;
                 resolve(output);
@@ -43,15 +47,11 @@ export const spawnProcess = (
         child.on("close", (code: number | null) => {
             const stderrOutput = Buffer.concat(err).toString();
 
-            if (stderrOutput) {
-                onStderr?.(stderrOutput);
-            }
-
             if (code !== 0 || inputWriteFailed) {
                 rejectOnce(stderrOutput);
             } else {
                 const dataString = Buffer.concat(data).toString();
-                resolveOnce(dataString);
+                resolveOnce({ stdout: dataString, stderr: stderrOutput });
             }
         });
 

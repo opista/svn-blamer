@@ -12,10 +12,14 @@ import { SVN } from "./svn";
 import { DummyLogOutputChannel } from "./test/mock-vscode";
 import { ICredentials } from "./types/credentials.model";
 import * as spawnProcessModule from "./util/spawn-process";
+import { ISpawnProcessResult } from "./util/spawn-process";
 
 interface TestedSVN {
-    execSvn(args: string[], cwd: string, credentials?: ICredentials): Promise<string>;
-    command(args: string[], params: { cwd: string; fileName: string }): Promise<string>;
+    execSvn(args: string[], cwd: string, credentials?: ICredentials): Promise<ISpawnProcessResult>;
+    command(
+        args: string[],
+        params: { cwd: string; fileName: string },
+    ): Promise<ISpawnProcessResult>;
 }
 
 suite("SVN Test Suite", () => {
@@ -57,14 +61,14 @@ suite("SVN Test Suite", () => {
         });
 
         test("should execute svn command correctly", async () => {
-            spawnProcessStub.resolves("success output");
+            spawnProcessStub.resolves({ stdout: "success output", stderr: "" });
 
             const result = await (svn as unknown as TestedSVN).execSvn(
                 ["arg1", "arg2"],
                 "/mock/cwd",
             );
 
-            assert.strictEqual(result, "success output");
+            assert.deepStrictEqual(result, { stdout: "success output", stderr: "" });
             assert.ok(spawnProcessStub.calledOnce);
             assert.deepStrictEqual(spawnProcessStub.firstCall.args, [
                 "svn",
@@ -93,7 +97,7 @@ suite("SVN Test Suite", () => {
         });
 
         test("should append auth arguments if credentials are provided and no '--' exists", async () => {
-            spawnProcessStub.resolves("success output");
+            spawnProcessStub.resolves({ stdout: "success output", stderr: "" });
 
             await (svn as unknown as TestedSVN).execSvn(["arg1"], "/mock/cwd", {
                 user: "u",
@@ -112,7 +116,7 @@ suite("SVN Test Suite", () => {
         });
 
         test("should insert auth arguments before '--' if it exists", async () => {
-            spawnProcessStub.resolves("success output");
+            spawnProcessStub.resolves({ stdout: "success output", stderr: "" });
 
             await (svn as unknown as TestedSVN).execSvn(["arg1", "--", "file.txt"], "/mock/cwd", {
                 user: "u",
@@ -141,13 +145,16 @@ suite("SVN Test Suite", () => {
         });
 
         test("should return repository root from xml", async () => {
-            execSvnStub.resolves(`<info>
+            execSvnStub.resolves({
+                stdout: `<info>
     <entry>
         <repository>
             <root>https://svn.example.com/repo</root>
         </repository>
     </entry>
-</info>`);
+</info>`,
+                stderr: "",
+            });
 
             const root = await svn.getRepositoryRoot("/mock/path/file.txt");
             assert.strictEqual(root, "https://svn.example.com/repo");
@@ -181,7 +188,7 @@ suite("SVN Test Suite", () => {
 </entry>
 </target>
 </blame>`;
-            execSvnStub.resolves(xml);
+            execSvnStub.resolves({ stdout: xml, stderr: "" });
 
             const result = await svn.blameFile("/mock/path/file.txt");
 
@@ -204,11 +211,14 @@ suite("SVN Test Suite", () => {
         });
 
         test("should not use --force by default", async () => {
-            execSvnStub.resolves(`<?xml version="1.0" encoding="UTF-8"?>
+            execSvnStub.resolves({
+                stdout: `<?xml version="1.0" encoding="UTF-8"?>
 <blame>
 <target path="file.txt">
 </target>
-</blame>`);
+</blame>`,
+                stderr: "",
+            });
 
             await svn.blameFile("/mock/path/file.txt");
 
@@ -227,11 +237,14 @@ suite("SVN Test Suite", () => {
         });
 
         test("should use --force when force blame is requested", async () => {
-            execSvnStub.resolves(`<?xml version="1.0" encoding="UTF-8"?>
+            execSvnStub.resolves({
+                stdout: `<?xml version="1.0" encoding="UTF-8"?>
 <blame>
 <target path="file.txt">
 </target>
-</blame>`);
+</blame>`,
+                stderr: "",
+            });
 
             await svn.blameFile("/mock/path/file.txt", true);
 
@@ -251,22 +264,10 @@ suite("SVN Test Suite", () => {
         });
 
         test("should throw BinaryFileError when SVN skips a binary file", async () => {
-            execSvnStub.callsFake(
-                async (
-                    _args: string[],
-                    _cwd: string,
-                    _credentials?: ICredentials,
-                    onStderr?: (stderr: string) => void,
-                ) => {
-                    onStderr?.("Skipping binary file 'file.txt'\n");
-
-                    return `<?xml version="1.0" encoding="UTF-8"?>
-<blame>
-<target path="file.txt">
-</target>
-</blame>`;
-                },
-            );
+            execSvnStub.resolves({
+                stdout: '<blame><target path="file.txt"></target></blame>',
+                stderr: "Skipping binary file 'file.txt'\n",
+            });
 
             await assert.rejects(
                 svn.blameFile("/mock/path/file.txt"),
@@ -275,24 +276,45 @@ suite("SVN Test Suite", () => {
         });
 
         test("should not throw BinaryFileError when force blame is enabled", async () => {
-            execSvnStub.callsFake(
-                async (
-                    _args: string[],
-                    _cwd: string,
-                    _credentials?: ICredentials,
-                    onStderr?: (stderr: string) => void,
-                ) => {
-                    onStderr?.("Skipping binary file 'file.txt'\n");
-
-                    return `<?xml version="1.0" encoding="UTF-8"?>
-<blame>
-<target path="file.txt">
-</target>
-</blame>`;
-                },
-            );
+            execSvnStub.resolves({
+                stdout: '<blame><target path="file.txt"></target></blame>',
+                stderr: "Skipping binary file 'file.txt'\n",
+            });
 
             await assert.doesNotReject(svn.blameFile("/mock/path/file.txt", true));
+        });
+
+        for (const useStoredCredentials of [true, false]) {
+            test(`preserves binary warnings after retry with ${useStoredCredentials ? "stored" : "new"} credentials`, async () => {
+                const credentials = { user: "u", pass: "p" };
+                execSvnStub.onFirstCall().rejects(new Error("Authentication failed"));
+                execSvnStub.onSecondCall().resolves({
+                    stdout: "<info><entry><repository><root>https://svn.example.com/repo</root></repository></entry></info>",
+                    stderr: "",
+                });
+                execSvnStub.onThirdCall().resolves({
+                    stdout: "<blame></blame>",
+                    stderr: "Skipping binary file 'file.txt'\n",
+                });
+                credentialManagerMock.getCredentials.resolves(
+                    useStoredCredentials ? credentials : undefined,
+                );
+                credentialManagerMock.promptForCredentials.resolves(credentials);
+
+                await assert.rejects(svn.blameFile("/mock/path/file.txt"), BinaryFileError);
+                assert.ok(
+                    execSvnStub.thirdCall.calledWithExactly(
+                        ["blame", "--xml", "-x", "-w --ignore-eol-style", "--", "file.txt"],
+                        "/mock/path",
+                        credentials,
+                    ),
+                );
+            });
+        }
+
+        test("does not treat unrelated successful stderr as a binary error", async () => {
+            execSvnStub.resolves({ stdout: "<blame></blame>", stderr: "Unrelated warning" });
+            assert.deepStrictEqual(await svn.blameFile("/mock/path/file.txt"), []);
         });
     });
 
@@ -310,7 +332,7 @@ suite("SVN Test Suite", () => {
 <msg>Fix typo</msg>
 </logentry>
 </log>`;
-            execSvnStub.resolves(xml);
+            execSvnStub.resolves({ stdout: xml, stderr: "" });
 
             const result = await svn.getLogForRevision("/mock/path/file.txt", "123");
             assert.strictEqual(result, "Fix typo");
@@ -368,14 +390,13 @@ suite("SVN Test Suite", () => {
                 execSvnStub.onFirstCall().rejects(new Error("Authentication failed"));
 
                 // 2nd call to execSvn (from getRepositoryRoot) succeeds
-                execSvnStub
-                    .onSecondCall()
-                    .resolves(
-                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
-                    );
+                execSvnStub.onSecondCall().resolves({
+                    stdout: `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    stderr: "",
+                });
 
                 // 3rd call to execSvn (retry with stored credentials) succeeds
-                execSvnStub.onThirdCall().resolves("blame output success");
+                execSvnStub.onThirdCall().resolves({ stdout: "blame output success", stderr: "" });
 
                 credentialManagerMock.getCredentials.resolves({ user: "u", pass: "p" });
 
@@ -386,7 +407,7 @@ suite("SVN Test Suite", () => {
                 });
 
                 const result = await promise;
-                assert.strictEqual(result, "blame output success");
+                assert.deepStrictEqual(result, { stdout: "blame output success", stderr: "" });
 
                 assert.ok(credentialManagerMock.getCredentials.calledWith(repoRoot));
                 assert.ok(execSvnStub.calledThrice);
@@ -396,12 +417,11 @@ suite("SVN Test Suite", () => {
                 const repoRoot = "https://svn.example.com/repo";
 
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub
-                    .onCall(1)
-                    .resolves(
-                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
-                    );
-                execSvnStub.onCall(2).resolves("blame output success");
+                execSvnStub.onCall(1).resolves({
+                    stdout: `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    stderr: "",
+                });
+                execSvnStub.onCall(2).resolves({ stdout: "blame output success", stderr: "" });
 
                 credentialManagerMock.getCredentials.resolves(undefined);
                 credentialManagerMock.promptForCredentials.resolves({ user: "newU", pass: "newP" });
@@ -412,7 +432,7 @@ suite("SVN Test Suite", () => {
                 });
                 const result = await promise;
 
-                assert.strictEqual(result, "blame output success");
+                assert.deepStrictEqual(result, { stdout: "blame output success", stderr: "" });
                 assert.ok(credentialManagerMock.promptForCredentials.calledWith(repoRoot));
                 assert.ok(
                     credentialManagerMock.storeCredentials.calledWith(repoRoot, "newU", "newP"),
@@ -423,11 +443,10 @@ suite("SVN Test Suite", () => {
                 const repoRoot = "https://svn.example.com/repo";
 
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub
-                    .onCall(1)
-                    .resolves(
-                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
-                    );
+                execSvnStub.onCall(1).resolves({
+                    stdout: `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    stderr: "",
+                });
 
                 credentialManagerMock.getCredentials.resolves(undefined);
                 credentialManagerMock.promptForCredentials.resolves(undefined);
@@ -446,7 +465,7 @@ suite("SVN Test Suite", () => {
 
             test("should throw AuthenticationError if getRepositoryRoot returns undefined", async () => {
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub.onCall(1).resolves("invalid xml"); // getRepositoryRoot fails to parse
+                execSvnStub.onCall(1).resolves({ stdout: "invalid xml", stderr: "" }); // getRepositoryRoot fails to parse
 
                 await assert.rejects(
                     async () => {
@@ -464,11 +483,10 @@ suite("SVN Test Suite", () => {
                 const repoRoot = "https://svn.example.com/repo";
 
                 execSvnStub.onCall(0).rejects(new Error("Authentication failed"));
-                execSvnStub
-                    .onCall(1)
-                    .resolves(
-                        `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
-                    );
+                execSvnStub.onCall(1).resolves({
+                    stdout: `<info><entry><repository><root>${repoRoot}</root></repository></entry></info>`,
+                    stderr: "",
+                });
 
                 // Retry also fails
                 execSvnStub.onCall(2).rejects(new Error("Auth failed again"));
