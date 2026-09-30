@@ -4,13 +4,19 @@ export interface ISpawnProcessOptions extends SpawnOptionsWithoutStdio {
     input?: string;
 }
 
+export interface ISpawnProcessResult {
+    stdout: string;
+    stderr: string;
+}
+
 export const spawnProcess = (
     command: string,
     args: string[],
     options?: ISpawnProcessOptions,
-): Promise<string> => {
+): Promise<ISpawnProcessResult> => {
     return new Promise((resolve, reject) => {
-        const child = spawn(command, args, { ...options, shell: false });
+        const { input, ...spawnOptions } = options ?? {};
+        const child = spawn(command, args, { ...spawnOptions, shell: false });
         const data: Buffer[] = [];
         const err: Buffer[] = [];
         let settled = false;
@@ -23,7 +29,7 @@ export const spawnProcess = (
             }
         };
 
-        const resolveOnce = (output: string): void => {
+        const resolveOnce = (output: ISpawnProcessResult): void => {
             if (!settled) {
                 settled = true;
                 resolve(output);
@@ -39,18 +45,19 @@ export const spawnProcess = (
         });
 
         child.on("close", (code: number | null) => {
+            const stderrOutput = Buffer.concat(err).toString();
+
             if (code !== 0 || inputWriteFailed) {
-                const errorString = Buffer.concat(err).toString();
-                rejectOnce(errorString);
+                rejectOnce(stderrOutput);
             } else {
                 const dataString = Buffer.concat(data).toString();
-                resolveOnce(dataString);
+                resolveOnce({ stdout: dataString, stderr: stderrOutput });
             }
         });
 
         child.on("error", (childError) => rejectOnce(childError));
 
-        if (options?.input !== undefined) {
+        if (input !== undefined) {
             const failStdin = (message: string): void => {
                 inputWriteFailed = true;
                 err.push(Buffer.from(message));
@@ -64,7 +71,7 @@ export const spawnProcess = (
                     failStdin(`Failed to write input to stdin: ${e.message}`),
                 );
                 try {
-                    child.stdin.write(options.input);
+                    child.stdin.write(input);
                     child.stdin.end();
                 } catch (e) {
                     const message = e instanceof Error ? e.message : String(e);

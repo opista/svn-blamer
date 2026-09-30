@@ -33,6 +33,10 @@ export async function activate(context: ExtensionContext) {
         blamer.showBlameForActiveTextEditor(),
     );
 
+    const forceShow = commands.registerCommand("blamer-vs.forceShowBlame", () =>
+        blamer.showBlameForActiveTextEditor(true),
+    );
+
     const toggle = commands.registerCommand("blamer-vs.toggleBlame", () =>
         blamer.toggleBlameForActiveTextEditor(),
     );
@@ -80,6 +84,7 @@ export async function activate(context: ExtensionContext) {
 
     context.subscriptions.push(clear);
     context.subscriptions.push(show);
+    context.subscriptions.push(forceShow);
     context.subscriptions.push(toggle);
     context.subscriptions.push(trackLine);
     context.subscriptions.push(clearOnClose);

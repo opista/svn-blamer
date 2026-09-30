@@ -4,6 +4,7 @@ import { LogOutputChannel, workspace } from "vscode";
 import { EXTENSION_CONFIGURATION } from "./const/extension";
 import { CredentialManager } from "./credential-manager";
 import { AuthenticationError } from "./errors/authentication-error";
+import { BinaryFileError } from "./errors/binary-file-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { SvnCommandError } from "./errors/svn-command-error";
@@ -12,7 +13,7 @@ import { mapInfoOutputToRepoRoot } from "./mapping/map-info-output-to-repo-root"
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
 import { Blame } from "./types/blame.model";
 import { ICredentials } from "./types/credentials.model";
-import { spawnProcess } from "./util/spawn-process";
+import { ISpawnProcessResult, spawnProcess } from "./util/spawn-process";
 
 export class SVN {
     constructor(
@@ -24,7 +25,7 @@ export class SVN {
         args: string[],
         cwd: string,
         credentials?: ICredentials,
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         const { svnExecutablePath } = workspace.getConfiguration(EXTENSION_CONFIGURATION);
 
         if (!svnExecutablePath) {
@@ -57,7 +58,10 @@ export class SVN {
         }
 
         try {
-            return await spawnProcess(svnExecutablePath, allArgs, { cwd, input });
+            return await spawnProcess(svnExecutablePath, allArgs, {
+                cwd,
+                input,
+            });
         } catch (err: unknown) {
             const errorString = String(err);
             if (errorString.includes("password-from-stdin")) {
@@ -72,7 +76,7 @@ export class SVN {
     private async handleAuthFailure(
         args: string[],
         params: { cwd: string; fileName: string },
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         this.logger.warn("Authentication failed");
 
         try {
@@ -116,7 +120,7 @@ export class SVN {
     private async command(
         args: string[],
         params: { cwd: string; fileName: string },
-    ): Promise<string> {
+    ): Promise<ISpawnProcessResult> {
         try {
             return await this.execSvn(args, params.cwd);
         } catch (err: unknown) {
@@ -160,32 +164,46 @@ export class SVN {
             const dir = dirname(fileName);
             // "svn info --xml" gives us the repo info. We want <repository><root>
             // We use the file name to target the specific file's repo
-            const data = await this.execSvn(["info", "--xml", "--", basename(fileName)], dir);
+            const { stdout } = await this.execSvn(["info", "--xml", "--", basename(fileName)], dir);
 
-            return mapInfoOutputToRepoRoot(data);
+            return mapInfoOutputToRepoRoot(stdout);
         } catch (err: unknown) {
             this.logger.warn("Failed to get repository root", { err: String(err) });
             return undefined;
         }
     }
 
-    async blameFile(fileName: string): Promise<Blame[]> {
+    async blameFile(fileName: string, force = false): Promise<Blame[]> {
         this.logger.debug("Running blame child process");
         try {
             const dir = dirname(fileName);
             const file = basename(fileName);
 
-            const data = await this.command(
-                ["blame", "--xml", "-x", "-w --ignore-eol-style", "--", file],
-                {
-                    cwd: dir,
-                    fileName,
-                },
-            );
+            const args = ["blame", "--xml", "-x", "-w --ignore-eol-style"];
+            if (force) {
+                args.push("--force");
+            }
+            args.push("--", file);
 
-            this.logger.debug("Blame child process successful");
+            const { stdout, stderr } = await this.command(args, { cwd: dir, fileName });
 
-            return mapBlameOutputToBlameModel(data);
+            const blame = mapBlameOutputToBlameModel(stdout);
+
+            // The SVN CLI clears SVN_ERR_CLIENT_IS_BINARY_FILE and writes a warning
+            // to stderr, so it can exit successfully without returning blame entries.
+            // Match the English warning because the CLI does not expose that error code.
+            // Other locales may miss this prompt; the force command/setting still work.
+            // Revisit localisation if users report missed prompts.
+            if (
+                !force &&
+                blame.length === 0 &&
+                (stderr.includes("Skipping binary file") ||
+                    stderr.includes("use --force to treat as text"))
+            ) {
+                throw new BinaryFileError(fileName);
+            }
+
+            return blame;
         } catch (err: unknown) {
             this.logger.error("Failed to blame file", { err: String(err), fileName });
             throw err;
@@ -197,11 +215,11 @@ export class SVN {
             const dir = dirname(fileName);
             const file = basename(fileName);
 
-            const data = await this.command(["log", "--xml", "-r", revision, "--", file], {
+            const { stdout } = await this.command(["log", "--xml", "-r", revision, "--", file], {
                 cwd: dir,
                 fileName,
             });
-            return mapLogOutputToMessage(data);
+            return mapLogOutputToMessage(stdout);
         } catch (err: unknown) {
             this.logger.error("Failed to get revision log", { err: String(err) });
             throw err;

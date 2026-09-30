@@ -78,18 +78,20 @@ You can manage your stored credentials at any time using the command palette:
 
 This extension contributes the following commands to the Command palette.
 
-| Command                            | Description                                                            | Shortcut                                               |
-| ---------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
-| **SVN Blamer - Show blame**        | Blames file, and retrieves log data (if setting is enabled)            | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
-| **SVN Blamer - Clear blame**       | Clears the applied blame for the active file                           |                                                        |
-| **SVN Blamer - Toggle blame**      | Will toggle between fetching blame data and clearing visual indicators | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
-| **SVN Blamer - Clear credentials** | Opens a management UI to clear stored credentials for specific repos   |                                                        |
+| Command                            | Description                                                                                                                                              | Shortcut                                               |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **SVN Blamer - Show blame**        | Blames file, and retrieves log data (if setting is enabled)                                                                                              | `CTRL + ALT + D` (Windows) <br/>`CTRL + CMD + X` (Mac) |
+| **SVN Blamer - Force show blame**  | Blames the active file using SVN `--force`, allowing files that are otherwise skipped due to SVN's default behavior (such as binary files) to be blamed. |                                                        |
+| **SVN Blamer - Clear blame**       | Clears the applied blame for the active file                                                                                                             |                                                        |
+| **SVN Blamer - Toggle blame**      | Will toggle between fetching blame data and clearing visual indicators                                                                                   | `CTRL + ALT + E` (Windows) <br/>`CTRL + CMD + Y` (Mac) |
+| **SVN Blamer - Clear credentials** | Opens a management UI to clear stored credentials for specific repos                                                                                     |                                                        |
 
 ## Configuration
 
 | Setting                             | Description                                                                                                                                                                                                                          | Default value |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | **Auto Blame**                      | Automatically blames files as you open them.                                                                                                                                                                                         | `false`       |
+| **Force Blame**                     | Uses SVN `--force` for normal, toggle and automatic blame.                                                                                                                                                                           | `false`       |
 | **Enable Logs**                     | Fetches and displays revision log data in the popup.                                                                                                                                                                                 | `true`        |
 | **Enable Visual Indicators**        | Toggle visual indicators that sit to the left of the line number.                                                                                                                                                                    | `true`        |
 | **Indicator colour scheme**         | `random` preserves the existing mixed colours. Red → Green maps oldest to newest. Blue, Teal, Violet, and Vermilion use white-to-strong gradients with a thin outline on light themes. Custom gradient uses the exact colours below. | `random`      |
@@ -100,6 +102,10 @@ This extension contributes the following commands to the Command palette.
 | **SVN Executable Path**             | Path to svn executable or alternative command.                                                                                                                                                                                       | `"svn"`       |
 
 All chronological schemes have 500 positions. Files with more than 500 revisions reuse the nearest position. The Blue, Teal, Violet, and Vermilion schemes use the same white-to-strong gradient in every theme. Light and High Contrast Light add a thin outline so older commits remain visible. Custom gradient accepts identical colours when you want a single-colour indicator.
+
+### Force blame
+
+If SVN skips a file, due to its default behavior (such as considering it binary), a manually requested Show or Toggle offers to retry with `--force`. You can also run **SVN Blamer - Force show blame** for one file, or enable **Force Blame** to use `--force` by default, including automatic blame. This does not modify the file or its SVN properties.
 
 ## Known Issues
 
