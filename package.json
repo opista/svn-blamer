@@ -225,7 +225,7 @@
         "@types/luxon": "^3.7.2",
         "@types/mocha": "^10.0.6",
         "@types/node": "26.x",
-        "@types/sinon": "^21.0.0",
+        "@types/sinon": "^22.0.0",
         "@types/sinonjs__fake-timers": "^15.0.1",
         "@types/vscode": "^1.66.0",
         "@typescript-eslint/eslint-plugin": "^8.65.0",
@@ -241,7 +241,7 @@
         "lint-staged": "^17.0.8",
         "mocha": "^11.7.6",
         "prettier": "3.9.6",
-        "sinon": "^21.0.3",
+        "sinon": "^22.1.0",
         "ts-loader": "^9.6.2",
         "ts-node": "^10.9.2",
         "typescript": "^6.0.3"
