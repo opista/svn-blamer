@@ -232,7 +232,7 @@
         "@typescript-eslint/parser": "^8.68.0",
         "@vscode/test-cli": "^0.0.15",
         "@vscode/test-electron": "^3.0.0",
-        "esbuild": "^0.28.1",
+        "esbuild": "^0.28.2",
         "eslint": "^10.9.1",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-simple-import-sort": "^14.0.0",
