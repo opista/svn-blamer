@@ -2,6 +2,13 @@
 
 All notable changes to the "blamer-vs" extension will be documented in this file.
 
+## [1.2.0](https://github.com/opista/svn-blamer/compare/v1.1.0...v1.2.0) (2026-10-01)
+
+
+### Added
+
+* support forced blame and clear stuck status ([#713](https://github.com/opista/svn-blamer/issues/713)) ([a273e9e](https://github.com/opista/svn-blamer/commit/a273e9ebecfe482d26695cd749b0853d0aa17e1a))
+
 ## [1.1.0](https://github.com/opista/svn-blamer/compare/v1.0.0...v1.1.0) (2026-08-03)
 
 
