@@ -8,6 +8,7 @@ import { BinaryFileError } from "./errors/binary-file-error";
 import { ConfigurationError } from "./errors/configuration-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { SvnCommandError } from "./errors/svn-command-error";
+import { GitSvnContext, joinSvnUrl, resolveGitSvnContext } from "./git-svn";
 import { mapBlameOutputToBlameModel } from "./mapping/map-blame-output-to-blame-model";
 import { mapInfoOutputToRepoRoot } from "./mapping/map-info-output-to-repo-root";
 import { mapLogOutputToMessage } from "./mapping/map-log-output-to-message";
@@ -16,6 +17,10 @@ import { ICredentials } from "./types/credentials.model";
 import { ISpawnProcessResult, spawnProcess } from "./util/spawn-process";
 
 export class SVN {
+    /** Remote blame keyed by URL and synced revision, so scrolling does not re-query SVN. */
+    private readonly remoteBlameCache = new Map<string, Blame[]>();
+    private readonly remoteLogCache = new Map<string, string | undefined>();
+
     constructor(
         private logger: LogOutputChannel,
         private credentialManager: CredentialManager,
@@ -137,6 +142,8 @@ export class SVN {
             }
 
             if (errorString) {
+                // git-svn checkouts have no .svn directory. Callers resolve that case
+                // before invoking a working-copy command.
                 if (errorString.includes("E155007")) {
                     this.logger.warn("File is not a working copy, cannot complete action");
                     throw new NotWorkingCopyError(params.fileName);
@@ -159,7 +166,97 @@ export class SVN {
         }
     }
 
+    private remoteTarget(context: GitSvnContext): string {
+        return `${joinSvnUrl(context.svnBaseUrl, context.relativePath)}@${context.syncRevision}`;
+    }
+
+    private runRemote(
+        args: string[],
+        context: GitSvnContext,
+        fileName: string,
+    ): Promise<ISpawnProcessResult> {
+        return this.command(["--non-interactive", ...args], {
+            cwd: context.repoRoot,
+            fileName,
+        });
+    }
+
+    private async blameRemote(
+        context: GitSvnContext,
+        fileName: string,
+        force: boolean,
+    ): Promise<Blame[]> {
+        const cacheKey = `${this.remoteTarget(context)}|force=${force}`;
+        const cached = this.remoteBlameCache.get(cacheKey);
+        if (cached) {
+            this.logger.debug("Using cached remote blame", {
+                fileName,
+                revision: context.syncRevision,
+            });
+            return cached;
+        }
+
+        const args = [
+            "blame",
+            "--xml",
+            "-r",
+            context.syncRevision,
+            "-x",
+            "-w --ignore-eol-style",
+        ];
+        if (force) {
+            args.push("--force");
+        }
+        args.push(this.remoteTarget(context));
+
+        this.logger.info("Blaming git-svn file from the SVN server", {
+            fileName,
+            revision: context.syncRevision,
+            url: context.svnBaseUrl,
+        });
+
+        const { stdout, stderr } = await this.runRemote(args, context, fileName);
+        const blame = mapBlameOutputToBlameModel(stdout);
+
+        if (
+            !force &&
+            blame.length === 0 &&
+            (stderr.includes("Skipping binary file") ||
+                stderr.includes("use --force to treat as text"))
+        ) {
+            throw new BinaryFileError(fileName);
+        }
+
+        this.remoteBlameCache.set(cacheKey, blame);
+        return blame;
+    }
+
+    private async logRemote(
+        context: GitSvnContext,
+        fileName: string,
+        revision: string,
+    ): Promise<string | undefined> {
+        const cacheKey = `${joinSvnUrl(context.svnBaseUrl, context.relativePath)}@${revision}`;
+        if (this.remoteLogCache.has(cacheKey)) {
+            return this.remoteLogCache.get(cacheKey);
+        }
+
+        const { stdout } = await this.runRemote(
+            ["log", "--xml", "-r", revision, this.remoteTarget(context)],
+            context,
+            fileName,
+        );
+        const message = mapLogOutputToMessage(stdout);
+        this.remoteLogCache.set(cacheKey, message);
+        return message;
+    }
+
     async getRepositoryRoot(fileName: string): Promise<string | undefined> {
+        const gitSvn = await resolveGitSvnContext(fileName);
+        if (gitSvn) {
+            return gitSvn.svnBaseUrl;
+        }
+
         try {
             const dir = dirname(fileName);
             // "svn info --xml" gives us the repo info. We want <repository><root>
@@ -176,6 +273,11 @@ export class SVN {
     async blameFile(fileName: string, force = false): Promise<Blame[]> {
         this.logger.debug("Running blame child process");
         try {
+            const gitSvn = await resolveGitSvnContext(fileName);
+            if (gitSvn) {
+                return await this.blameRemote(gitSvn, fileName, force);
+            }
+
             const dir = dirname(fileName);
             const file = basename(fileName);
 
@@ -212,6 +314,11 @@ export class SVN {
 
     async getLogForRevision(fileName: string, revision: string) {
         try {
+            const gitSvn = await resolveGitSvnContext(fileName);
+            if (gitSvn) {
+                return await this.logRemote(gitSvn, fileName, revision);
+            }
+
             const dir = dirname(fileName);
             const file = basename(fileName);
 

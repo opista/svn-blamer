@@ -15,6 +15,7 @@ import {
 
 import { EXTENSION_CONFIGURATION, EXTENSION_NAME } from "./const/extension";
 import { DecorationManager } from "./decoration-manager";
+import { classifyGitSvnFile } from "./git-svn";
 import { BinaryFileError } from "./errors/binary-file-error";
 import { NotWorkingCopyError } from "./errors/not-working-copy-error";
 import { mapToDecorationRecord } from "./mapping/map-to-decoration-record";
@@ -416,7 +417,20 @@ export class Blamer {
         }
     }
 
-    async showBlameForFile(textEditor?: TextEditor, fileName?: string, force?: boolean) {
+    private warnSkip(quiet: boolean, message: string) {
+        this.logger.info(message);
+        window.setStatusBarMessage(`$(warning) ${EXTENSION_NAME}: ${message}`, 5000);
+        if (!quiet) {
+            window.showWarningMessage(`${EXTENSION_NAME}: ${message}`);
+        }
+    }
+
+    async showBlameForFile(
+        textEditor?: TextEditor,
+        fileName?: string,
+        force?: boolean,
+        quiet = false,
+    ) {
         if (!textEditor || !fileName) {
             this.logger.debug("No editor or file found, aborting...");
             return;
@@ -425,8 +439,22 @@ export class Blamer {
         // Check if the document has unsaved changes
         if (textEditor.document.isDirty) {
             this.logger.info("Document has unsaved changes, cannot blame", { fileName });
-            window.showWarningMessage(
-                `${EXTENSION_NAME}: File has unsaved changes. Please save the file to ensure accurate blame information.`,
+            this.warnSkip(
+                quiet,
+                "File has unsaved changes. Please save the file to ensure accurate blame information.",
+            );
+            return;
+        }
+
+        const gitSvnFile = await classifyGitSvnFile(fileName);
+        if (gitSvnFile.state === "untracked") {
+            this.warnSkip(quiet, "File is not in the git-svn checkout yet, so blame was skipped.");
+            return;
+        }
+        if (gitSvnFile.state === "dirty" || gitSvnFile.state === "missing-at-sync") {
+            this.warnSkip(
+                quiet,
+                "File differs from the git-svn sync revision, so blame was skipped to avoid misaligned lines.",
             );
             return;
         }
@@ -633,7 +661,7 @@ export class Blamer {
                 return;
             }
 
-            return await this.showBlameForFile(textEditor, fileName);
+            return await this.showBlameForFile(textEditor, fileName, undefined, true);
         } catch (err: unknown) {
             this.statusBarItem.hide();
             this.logger.debug("Blame attempted via auto-blame, silently failing", { err });

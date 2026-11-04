@@ -9,6 +9,17 @@ export interface ISpawnProcessResult {
     stderr: string;
 }
 
+/**
+ * Prefer UTF-8. Some SVN servers emit GBK when a byte sequence is not valid UTF-8.
+ */
+const decodeSvnOutput = (buffer: Buffer): string => {
+    try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+    } catch {
+        return new TextDecoder("gb18030").decode(buffer);
+    }
+};
+
 export const spawnProcess = (
     command: string,
     args: string[],
@@ -45,12 +56,12 @@ export const spawnProcess = (
         });
 
         child.on("close", (code: number | null) => {
-            const stderrOutput = Buffer.concat(err).toString();
+            const stderrOutput = decodeSvnOutput(Buffer.concat(err));
 
             if (code !== 0 || inputWriteFailed) {
                 rejectOnce(stderrOutput);
             } else {
-                const dataString = Buffer.concat(data).toString();
+                const dataString = decodeSvnOutput(Buffer.concat(data));
                 resolveOnce({ stdout: dataString, stderr: stderrOutput });
             }
         });

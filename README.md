@@ -22,6 +22,8 @@ When run, this extension will place an icon next to each line of your file. Each
 
 SVN Blamer requires Visual Studio Code 1.66 or later.
 
+The extension accepts both a normal SVN working copy and a `git svn` checkout. A working copy keeps using local `svn blame`. A git-svn checkout has no `.svn` directory, so blame is queried from the SVN server at the revision recorded by the git-svn remote-tracking ref. Git must be available for that path. Files that differ from the synced revision are skipped so line numbers are not shown against the wrong commit.
+
 ### Windows users
 
 If you use TortoiseSVN, make sure the option Command Line Tools is checked during installation, and C:\Program Files\TortoiseSVN\bin is available in PATH.
@@ -109,7 +111,7 @@ If SVN skips a file, due to its default behavior (such as considering it binary)
 
 ## Known Issues
 
-- None known currently. Please report any issues you find!
+- On a git-svn checkout, annotations match the last fetched git-svn revision, not necessarily the SVN server HEAD.
 
 ## Feedback & Contributing
 
